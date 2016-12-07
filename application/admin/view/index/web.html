@@ -1,0 +1,116 @@
+{include file="index/header" /}
+<link href="{$domain}public/common/uploadify/uploadify.css" type="text/css" rel="stylesheet">
+<div class="row bg-info text-center">
+    <h4>{:lang('Website information')}</h4>
+</div><br>
+<div class="container-fluid" style="min-height: 800px;">
+    <div class="row">
+        <form method="post" action="">
+            <div class="form-group">
+                <label>{:lang('Site title')}：</label>
+                <input type="text" class="form-control" name="title" value="{$data.title}" placeholder="{:lang('Site title')}">
+            </div>
+            <div class="form-group">
+                <label>{:lang('Subtitle')}：</label>
+                <input type="text" class="form-control" name="subtitle" value="{$data.subtitle}" placeholder="{:lang('Subtitle')}">
+            </div>
+            <div class="form-group">
+                <label>{:lang('Site domain name')}：</label>
+                <input type="text" class="form-control" name="domain" value="{$data.domain}">
+                <p class="help-block">{:lang('The domain name ends with "/".')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Site keywords')}：</label>
+                <input type="text" class="form-control" name="keyword" value="{$data.keyword}">
+            </div>
+            <div class="form-group">
+                <label>{:lang('Site description')}：</label>
+                <textarea class="form-control" name="description" rows="3">{$data.description}</textarea>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Webmaster E-mail')}：</label>
+                <input type="email" class="form-control" name="email" value="{$data.email}" placeholder="{:lang('Webmaster E-mail')}">
+            </div>
+            <div class="form-group">
+                <label>{:lang('Template program')}：</label>
+                <select class="form-control" name="template">
+                    {volist name="dir" id="vo"}
+                    <option value="{$vo}"{if condition="$vo eq $data.template"} selected{/if}>{$vo}</option>
+                    {/volist}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Review whether the audit')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="pinglun"{if condition="$data.comment eq 1"} checked{/if}> {:lang('Comments need to be audited')}
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>{:lang('User name filtering')}：</label>
+                <input type="text" class="form-control" name="guolv" value="{$data.filter}">
+                <p class="help-block">{:lang('You can set the user names that are not allowed to be registered, separated by a comma ","')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Slide size')}：</label>
+                <div class="row">
+                    <div class="col-md-1"><h5 class="text-center">{:lang('Width')}</h5></div>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="kuan" value="{$data.slideshowWidth}">
+                    </div>
+                    <div class="col-md-1"><h5 class="text-center">{:lang('Height')}</h5></div>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" name="gao" value="{$data.slideshowHeight}">
+                    </div>
+                </div>
+                <p class="help-block">{:lang('The units are pixels')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Login requires a verification code?')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="yanzheng"{if condition="$data.captcha eq 1"} checked{/if}> {:lang('Login requires a verification code')}
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Whether to enable short address mode')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="rewrite"{notempty name="data.rewrite"}{if condition="$data.rewrite eq 1"} checked{/if}{/notempty}> {:lang('Enable short addresses')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Site logo')}：</label>
+                <div id="upload"></div>
+                <div style="width: 200px;">
+                    <img src="{$domain}public/common/images/default-thumbnail.png" class="img-thumbnail img-responsive" id="tubiaoImg">
+                </div>
+                <input type="hidden" value="{$data.logo}" name="tubiao" id="tubiao">
+            </div>
+            <div class="form-group{if condition="$lang neq 'zh-cn'"} hidden{/if}">
+                <label>{:lang('Archival information')}：</label>
+                <input type="text" class="form-control" name="record" value="{$data.record}">
+            </div>
+            <div class="form-group">
+                <label>{:lang('Copyright Information')}：</label>
+                <textarea class="form-control" name="copyright" rows="3">{$data.copyright}</textarea>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Statistical code')}：</label>
+                <textarea class="form-control" name="statistics" rows="3">{$data.statistics}</textarea>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-default">{:lang('Save')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing.gif" width="16" height="16"></span></button>
+            </div>
+        </form>
+    </div>
+</div><br><br>
+<div class="hidden" id="webroot">{$domain}</div>
+<div class="hidden" id="buttonText">{:lang('Select Image')}</div>
+<script type="text/javascript" src="{$domain}public/common/uploadify/jquery.uploadify.js"></script>
+<script src="{$domain}public/common/js/web.js"></script>
+{include file="index/footer" /}

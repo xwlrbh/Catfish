@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{notempty name="neirong.biaoti"}{$neirong.biaoti} | {/notempty}{$title} | {$subtitle}</title>
+    <meta name="keywords" content="{$keyword}">
+    <meta name="description" content="{$description}">
+    <link rel="icon" href="{$domain}public/common/images/favicon.ico">
+    <link rel="stylesheet" href="{$domain}public/common/css/bootstrap.min.css">
+    <script src="{$domain}public/common/js/jquery.min.js"></script>
+    <script src="{$domain}public/common/js/bootstrap.min.js"></script>
+</head>
+<body style="padding-top: 70px; background-color:#f1f1f1;">
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{:Url('/')}">
+                <img alt="Catfish(鲶鱼)" src="{if condition="$logo eq ''"}{$domain}public/{$template}/images/catfish.png{else /}{$logo}{/if}" width="20" height="20">
+            </a>
+            <a class="navbar-brand" href="{:Url('/')}">{$title}</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav" id="daohangcaidan">
+                {notempty name="menu"}
+                {volist name="menu.menu1" id="vo"}
+                {empty name="vo.children"}
+                <li{if condition="$page eq Url($vo.href)"} class="active"{/if}>{if condition="$vo.icon neq ''"}{$vo.icon}{/if}<a href="{:Url($vo.href)}" target="{$vo.target}">{$vo.label}</a></li>
+                {else /}
+                <li class="dropdown">
+                    <a href="{:Url($vo.href)}" class="dropdown-toggle" data-toggle="dropdown" target="{$vo.target}">{$vo.label} <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        {volist name="vo.children" id="voc"}
+                        <li><a href="{:Url($voc.href)}" target="{$voc.target}">{$voc.label}</a></li>
+                        {/volist}
+                    </ul>
+                </li>
+                {/empty}
+                {/volist}
+                {/notempty}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <form class="navbar-form navbar-left" role="search" method="get" action="{:Url('/index/Index/search')}">
+                    <div class="form-group">
+                        <input type="text" name="keyword" class="form-control" placeholder="关键字">
+                    </div>
+                    <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span> 搜索</button>
+                </form>
+                <li class="weidenglu{notempty name="login"} hidden{/notempty}"><a href="{:Url('/login/index/register')}">注册</a></li>
+                <li class="weidenglu{notempty name="login"} hidden{/notempty}"><a href="{:Url('/login')}">登录</a></li>
+                <li class="dropdown yidenglu{empty name="login"} hidden{/empty}">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span id="dengluyonghuming">{$login}</span> <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{:Url('index/Index/userCenter')}"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;用户中心</a></li>
+                        <li><a href="{:Url('index/Index/quit')}"><span class="glyphicon glyphicon-log-out"></span>&nbsp;&nbsp;退出</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{notempty name="top"}{$top}{/notempty}
