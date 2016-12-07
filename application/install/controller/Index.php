@@ -235,7 +235,7 @@ class Index extends Controller
             $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (13, 'slideshowHeight', 390, 0)");
             $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (14, 'domain', '".$domain."', 1)");
             $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (15, 'logo', '', 1)");
-            $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (16, 'captcha', '0', 0)");
+            $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (16, 'captcha', '1', 0)");
             $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (17, 'bulletin', '', 0)");
             $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (18, 'spare', '', 0)");
             $this->dbExec("INSERT INTO `" . Request::instance()->post('prefix') . "options` (option_id,option_name,option_value,autoload) VALUES (19, 'write', '0', 0)");
