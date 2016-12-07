@@ -12,6 +12,6 @@ Catfish(鲶鱼) CMS系统适合不同程度的使用者使用。
 
 4、更进一步，如果您有一定的php基础，那么您还可以开发自己的插件，并方便地应用到Catfish(鲶鱼) CMS系统中。
 
-**开发插件要注意：Catfish(鲶鱼) CMS系统使用UTF-8字符编码。**
+**开发插件要注意：Catfish(鲶鱼) CMS系统需要使用UTF-8字符编码。**
 
 官方网站：www.catfish-cms.top
