@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Project: Catfish.
  * Author: A.J
