@@ -30,7 +30,7 @@ class Index extends Common
         $this->checkUser();
         if(Request::instance()->isPost())
         {
-            $data = ['user_nicename' => Request::instance()->post('nicheng'), 'user_url' => Request::instance()->post('gerenwangzhi'), 'sex' => Request::instance()->post('xingbie'), 'birthday' => Request::instance()->post('shengri'), 'signature' => Request::instance()->post('qianming')];
+            $data = ['user_nicename' => htmlspecialchars(Request::instance()->post('nicheng')), 'user_url' => htmlspecialchars(Request::instance()->post('gerenwangzhi')), 'sex' => Request::instance()->post('xingbie'), 'birthday' => htmlspecialchars(Request::instance()->post('shengri')), 'signature' => htmlspecialchars(Request::instance()->post('qianming'))];
             Db::name('users')
                 ->where('id', Session::get($this->session_prefix.'user_id'))
                 ->update($data);

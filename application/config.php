@@ -252,7 +252,7 @@ return [
     'version'               => [
         'name'      => 'Catfish(鲶鱼)',
         'description'      => 'CMS',
-        'number'  => 'V 4.1.6',
+        'number'  => 'V 4.1.10',
         'official'  => 'catfish-cms.top'
     ]
 ];

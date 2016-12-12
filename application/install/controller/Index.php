@@ -22,9 +22,7 @@ class Index extends Controller
     }
     public function index()
     {
-        if(is_file(APP_PATH . 'install.lock')){
-            $this->redirect(Url::build('/index'));
-        }
+        $this->check();
         $this->assign('version',Config::get('version'));
         $this->domain();
         $view = $this->fetch();
@@ -32,6 +30,7 @@ class Index extends Controller
     }
     public function step1()
     {
+        $this->check();
         $right = '<span class="glyphicon glyphicon-ok text-success"></span> ';
         $wrong = '<span class="glyphicon glyphicon-remove text-danger"></span> ';
         $data=array();
@@ -139,6 +138,7 @@ class Index extends Controller
     }
     public function step2()
     {
+        $this->check();
         $this->assign('version',Config::get('version'));
         $this->domain();
         $view = $this->fetch();
@@ -146,6 +146,7 @@ class Index extends Controller
     }
     public function step3()
     {
+        $this->check();
         $rule = [
             'host' => 'require',
             'port' => 'require|number',
@@ -268,6 +269,13 @@ class Index extends Controller
         $domain = substr($domain, -1, 1) == '/' ? $domain : $domain . '/';
         $this->assign('domain',$domain);
         return $domain;
+    }
+    private function check()
+    {
+        if(is_file(APP_PATH . 'install.lock')){
+            $this->redirect(Url::build('/index'));
+            exit;
+        }
     }
     private function dbExec($exStr)
     {

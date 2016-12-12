@@ -74,7 +74,7 @@ class Index extends Controller
             }
             //判断正确
             $users = new Users();
-            $user = $users->where('user_login', Request::instance()->post('user'))
+            $user = $users->where('user_login', htmlspecialchars(Request::instance()->post('user')))
                 ->find();
             if(empty($user))
             {
@@ -104,6 +104,7 @@ class Index extends Controller
                 Cookie::set($this->session_prefix.'user_id',$user['id'],604800);
                 Cookie::set($this->session_prefix.'user',$user['user_login'],604800);
                 Cookie::set($this->session_prefix.'user_type',$user['user_type'],604800);
+                Cookie::set($this->session_prefix.'user_p',md5($user['user_pass']),604800);
             }
         }
         //显示登录页
@@ -137,7 +138,7 @@ class Index extends Controller
         }
         //判断正确
         $users = new Users();
-        $user = $users->where('user_login', Request::instance()->post('user'))
+        $user = $users->where('user_login', htmlspecialchars(Request::instance()->post('user')))
             ->find();
         if(empty($user))
         {
@@ -199,10 +200,19 @@ class Index extends Controller
             }
             //过滤用户名
             $guolv = Options::get(['option_name' => 'filter']);
-            if(strpos($guolv->option_value,Request::instance()->post('user')) !== false)
+            $jinyg = $guolv->option_value;
+            if(!empty($jinyg))
             {
-                $this->error(Lang::get('Please use a different username'));//验证错误输出
-                return false;
+                $jinyg = str_replace('，',',',$jinyg);
+                $jinygArr = explode(',', $jinyg);
+                foreach($jinygArr as $key => $val)
+                {
+                    if(strpos(Request::instance()->post('user'),$val) !== false)
+                    {
+                        $this->error(Lang::get('Please use a different username'));//验证错误输出
+                        return false;
+                    }
+                }
             }
             $users = new Users;
             $user = $users->where('user_login', Request::instance()->post('user'))
@@ -213,9 +223,9 @@ class Index extends Controller
                 return false;
             }
             $users->data([
-                'user_login' => Request::instance()->post('user'),
+                'user_login' => htmlspecialchars(Request::instance()->post('user')),
                 'user_pass' => md5(Request::instance()->post('pwd')),
-                'user_nicename' => Request::instance()->post('user'),
+                'user_nicename' => htmlspecialchars(Request::instance()->post('user')),
                 'user_email' => Request::instance()->post('email'),
                 'last_login_ip' => get_client_ip(0,true),
                 'create_time' => date("Y-m-d H:i:s"),

@@ -34,6 +34,7 @@ class Common extends Controller
             {
                 $this->redirect(Url::build('/index.php/install'));
             }
+            exit;
         }
         $dm = Url::build('/');
         if(strpos($dm,'/index.php') ===false)
@@ -128,6 +129,7 @@ class Common extends Controller
         Cookie::delete($this->session_prefix.'user_id');
         Cookie::delete($this->session_prefix.'user');
         Cookie::delete($this->session_prefix.'user_type');
+        Cookie::delete($this->session_prefix.'user_p');
         $this->redirect(Url::build('/'));
     }
     protected function is_rewrite()

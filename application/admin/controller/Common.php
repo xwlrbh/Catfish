@@ -80,11 +80,18 @@ class Common extends Controller
     protected function checkUser()
     {
         Debug::remark('begin');
-        if(Cookie::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user') && Cookie::has($this->session_prefix.'user_type'))
+        if(!Session::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user') && Cookie::has($this->session_prefix.'user_type'))
         {
-            Session::set($this->session_prefix.'user_id',Cookie::get($this->session_prefix.'user_id'));
-            Session::set($this->session_prefix.'user',Cookie::get($this->session_prefix.'user'));
-            Session::set($this->session_prefix.'user_type',Cookie::get($this->session_prefix.'user_type'));
+            if(Cookie::has($this->session_prefix.'user_p'))
+            {
+                $user = Db::name('users')->where('user_login', Cookie::get($this->session_prefix.'user'))->field('user_pass')->find();
+                if(!empty($user) && md5($user['user_pass']) == Cookie::get($this->session_prefix.'user_p'))
+                {
+                    Session::set($this->session_prefix.'user_id',Cookie::get($this->session_prefix.'user_id'));
+                    Session::set($this->session_prefix.'user',Cookie::get($this->session_prefix.'user'));
+                    Session::set($this->session_prefix.'user_type',Cookie::get($this->session_prefix.'user_type'));
+                }
+            }
         }
         if(!Session::has($this->session_prefix.'user_id'))
         {
