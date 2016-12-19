@@ -140,6 +140,10 @@ class Index extends Common
     public function uploadhead()
     {
         $file = request()->file('file');
+        $validate = [
+            'ext' => 'jpg,png,gif,jpeg'
+        ];
+        $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
             //生成缩略图

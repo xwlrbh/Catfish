@@ -103,8 +103,13 @@ class Index extends Controller
             {
                 Cookie::set($this->session_prefix.'user_id',$user['id'],604800);
                 Cookie::set($this->session_prefix.'user',$user['user_login'],604800);
-                Cookie::set($this->session_prefix.'user_type',$user['user_type'],604800);
-                Cookie::set($this->session_prefix.'user_p',md5($user['user_pass']),604800);
+                $cookie_user_p = Cache::get('cookie_user_p');
+                if($cookie_user_p == false)
+                {
+                    $cookie_user_p = md5(time());
+                    Cache::set('cookie_user_p',$cookie_user_p,604800);
+                }
+                Cookie::set($this->session_prefix.'user_p',md5($cookie_user_p.$user['user_pass']),604800);
             }
         }
         //显示登录页

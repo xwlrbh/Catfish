@@ -42,7 +42,7 @@
                 {volist name="data" id="vo"}
                 <tr>
                     <td>
-                        <input type="text" value="{$vo.listorder}" name="{$vo.id}" class="form-control" style="width: 80px;">
+                        <input type="text" value="{$vo.listorder}" name="{$vo.id}" class="form-control" maxlength="8" style="width: 80px;">
                     </td>
                     <td>{$vo.id}</td>
                     <td>{$vo.level}{if condition="$vo.level neq ''"}└&nbsp;{/if}{$vo.label}</td>

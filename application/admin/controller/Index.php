@@ -60,7 +60,7 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['term_name' => Request::instance()->post('fenleim'), 'description' => Request::instance()->post('miaoshu'), 'parent_id' => Request::instance()->post('shangji')];
+            $data = ['term_name' => htmlspecialchars(Request::instance()->post('fenleim')), 'description' => htmlspecialchars(Request::instance()->post('miaoshu')), 'parent_id' => Request::instance()->post('shangji')];
             Db::name('terms')->insert($data);
         }
         $fufenlei = 0;//父分类
@@ -119,7 +119,7 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['term_name' => Request::instance()->post('fenleim'), 'description' => Request::instance()->post('miaoshu'), 'parent_id' => Request::instance()->post('shangji')];
+            $data = ['term_name' => htmlspecialchars(Request::instance()->post('fenleim')), 'description' => htmlspecialchars(Request::instance()->post('miaoshu')), 'parent_id' => Request::instance()->post('shangji')];
             Db::name('terms')
                 ->where('id', Request::instance()->post('cid'))
                 ->update($data);
@@ -169,7 +169,7 @@ class Index extends Common
             $biaoti = $params['title'];
             $neirong = $params['content'];
             $zhaiyao = $params['summary'];
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => Request::instance()->post('guanjianci'), 'post_source' => Request::instance()->post('laiyuan'), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => $neirong, 'post_title' => $biaoti, 'post_excerpt' => $zhaiyao, 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => Request::instance()->post('fabushijian'), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
+            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => $neirong, 'post_title' => htmlspecialchars($biaoti), 'post_excerpt' => htmlspecialchars($zhaiyao), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => Request::instance()->post('fabushijian'), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
             $id = Db::name('posts')->insertGetId($data);
             if(isset($_POST['fenlei']) && is_array($_POST['fenlei']))
             {
@@ -438,7 +438,7 @@ class Index extends Common
             }
             $neirong = str_replace('<img class="img-responsive"','<img',Request::instance()->post('neirong'));
             $neirong = str_replace('<img','<img class="img-responsive"',$neirong);
-            $data = ['post_keywords' => Request::instance()->post('guanjianci'), 'post_source' => Request::instance()->post('laiyuan'), 'post_content' => $neirong, 'post_title' => Request::instance()->post('biaoti'), 'post_excerpt' => Request::instance()->post('zhaiyao'), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
+            $data = ['post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
             Db::name('posts')
                 ->where('id', Request::instance()->post('postId'))
                 ->update($data);
@@ -552,7 +552,7 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => Request::instance()->post('guanjianci'), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => Request::instance()->post('neirong'), 'post_title' => Request::instance()->post('biaoti'), 'post_excerpt' => Request::instance()->post('zhaiyao'), 'post_modified' => Request::instance()->post('fabushijian'), 'post_type' => 1, 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
+            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => Request::instance()->post('neirong'), 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => Request::instance()->post('fabushijian'), 'post_type' => 1, 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
             Db::name('posts')->insert($data);
         }
         //获取模板目录
@@ -631,7 +631,7 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => Request::instance()->post('guanjianci'), 'post_content' => Request::instance()->post('neirong'), 'post_title' => Request::instance()->post('biaoti'), 'post_excerpt' => Request::instance()->post('zhaiyao'), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
+            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_content' => Request::instance()->post('neirong'), 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
             Db::name('posts')
                 ->where('id', Request::instance()->post('postId'))
                 ->update($data);
@@ -722,7 +722,14 @@ class Index extends Common
             foreach(Request::instance()->post() as $key => $val)
             {
                 $sx = explode('_',$key);
-                $pageSettings[$sx[1]][$sx[2]][$sx[0]] = $val;
+                if($sx[0] == 'biaoti')
+                {
+                    $pageSettings[$sx[1]][$sx[2]][$sx[0]] = htmlspecialchars($val);
+                }
+                else
+                {
+                    $pageSettings[$sx[1]][$sx[2]][$sx[0]] = $val;
+                }
             }
             Db::name('options')
                 ->where('option_name','pageSettings')
@@ -761,7 +768,7 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['slide_name' => Request::instance()->post('mingcheng'), 'slide_pic' => Request::instance()->post('slideshow'), 'slide_url' => Request::instance()->post('lianjie'), 'slide_des' => Request::instance()->post('miaoshu')];
+            $data = ['slide_name' => htmlspecialchars(Request::instance()->post('mingcheng')), 'slide_pic' => Request::instance()->post('slideshow'), 'slide_url' => htmlspecialchars(Request::instance()->post('lianjie')), 'slide_des' => htmlspecialchars(Request::instance()->post('miaoshu'))];
             Db::name('slide')->insert($data);
         }
         //获取幻灯片宽和高
@@ -795,7 +802,7 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['slide_name' => Request::instance()->post('mingcheng'), 'slide_pic' => Request::instance()->post('slideshow'), 'slide_url' => Request::instance()->post('lianjie'), 'slide_des' => Request::instance()->post('miaoshu')];
+            $data = ['slide_name' => htmlspecialchars(Request::instance()->post('mingcheng')), 'slide_pic' => Request::instance()->post('slideshow'), 'slide_url' => htmlspecialchars(Request::instance()->post('lianjie')), 'slide_des' => htmlspecialchars(Request::instance()->post('miaoshu'))];
             Db::name('slide')
                 ->where('slide_id', Request::instance()->post('slideId'))
                 ->update($data);
@@ -912,7 +919,7 @@ class Index extends Common
             {
                 $weizhi = 1;
             }
-            $data = ['link_url' => Request::instance()->post('dizhi'), 'link_name' => Request::instance()->post('mingcheng'), 'link_image' => Request::instance()->post('tubiao'), 'link_target' => Request::instance()->post('dakai'), 'link_description' => Request::instance()->post('miaoshu'), 'link_location' => $weizhi];
+            $data = ['link_url' => htmlspecialchars(Request::instance()->post('dizhi')), 'link_name' => htmlspecialchars(Request::instance()->post('mingcheng')), 'link_image' => Request::instance()->post('tubiao'), 'link_target' => Request::instance()->post('dakai'), 'link_description' => htmlspecialchars(Request::instance()->post('miaoshu')), 'link_location' => $weizhi];
             Db::name('links')->insert($data);
         }
         $this->assign('backstageMenu', 'yemian');
@@ -973,7 +980,7 @@ class Index extends Common
             {
                 $weizhi = 1;
             }
-            $data = ['link_url' => Request::instance()->post('dizhi'), 'link_name' => Request::instance()->post('mingcheng'), 'link_image' => Request::instance()->post('tubiao'), 'link_target' => Request::instance()->post('dakai'), 'link_description' => Request::instance()->post('miaoshu'), 'link_location' => $weizhi];
+            $data = ['link_url' => htmlspecialchars(Request::instance()->post('dizhi')), 'link_name' => htmlspecialchars(Request::instance()->post('mingcheng')), 'link_image' => Request::instance()->post('tubiao'), 'link_target' => Request::instance()->post('dakai'), 'link_description' => htmlspecialchars(Request::instance()->post('miaoshu')), 'link_location' => $weizhi];
             Db::name('links')
                 ->where('link_id', Request::instance()->post('linkId'))
                 ->update($data);
@@ -1100,7 +1107,7 @@ class Index extends Common
                 $this->error(Lang::get('Username already exists'));//验证错误输出
                 return false;
             }
-            $data = ['user_login' => Request::instance()->post('yonghuming'), 'user_pass' => md5(Request::instance()->post('pwd')), 'user_nicename' => Request::instance()->post('yonghuming'), 'create_time' => date("Y-m-d H:i:s"), 'user_type' => Request::instance()->post('juese')];
+            $data = ['user_login' => htmlspecialchars(Request::instance()->post('yonghuming')), 'user_pass' => md5(Request::instance()->post('pwd')), 'user_nicename' => htmlspecialchars(Request::instance()->post('yonghuming')), 'create_time' => date("Y-m-d H:i:s"), 'user_type' => Request::instance()->post('juese')];
             Db::name('users')->insert($data);
         }
         $this->assign('backstageMenu', 'yonghu');
@@ -1170,7 +1177,7 @@ class Index extends Common
             {
                 $active = 1;
             }
-            $data = ['nav_name' => Request::instance()->post('fenleiming'), 'active' => $active, 'remark' => Request::instance()->post('miaoshu')];
+            $data = ['nav_name' => htmlspecialchars(Request::instance()->post('fenleiming')), 'active' => $active, 'remark' => htmlspecialchars(Request::instance()->post('miaoshu'))];
             $id = Db::name('nav_cat')->insertGetId($data);
             if($active == 1)
             {
@@ -1220,7 +1227,7 @@ class Index extends Common
             {
                 $active = 1;
             }
-            $data = ['nav_name' => Request::instance()->post('fenleiming'), 'active' => $active, 'remark' => Request::instance()->post('miaoshu')];
+            $data = ['nav_name' => htmlspecialchars(Request::instance()->post('fenleiming')), 'active' => $active, 'remark' => htmlspecialchars(Request::instance()->post('miaoshu'))];
             Db::name('nav_cat')
                 ->where('navcid', Request::instance()->post('navcid'))
                 ->update($data);
@@ -1278,7 +1285,7 @@ class Index extends Common
                 return false;
             }
             $lianjie = '';
-            $tmp = trim(Request::instance()->post('zidingyi'));
+            $tmp = htmlspecialchars(trim(Request::instance()->post('zidingyi')));
             if($tmp != '')
             {
                 $lianjie = substr($tmp,0,4)=='http' ? $tmp : 'http://'.$tmp;
@@ -1287,7 +1294,7 @@ class Index extends Common
             {
                 $lianjie = Request::instance()->post('lianjie');
             }
-            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => Request::instance()->post('caidanming'), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => Request::instance()->post('tubiao'), 'status' => Request::instance()->post('zhuangtai')];
+            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => htmlspecialchars(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
             Db::name('nav')->insert($data);
         }
         //添加子菜单时用
@@ -1368,7 +1375,7 @@ class Index extends Common
                 return false;
             }
             $lianjie = '';
-            $tmp = trim(Request::instance()->post('zidingyi'));
+            $tmp = htmlspecialchars(trim(Request::instance()->post('zidingyi')));
             if($tmp != '')
             {
                 $lianjie = substr($tmp,0,4)=='http' ? $tmp : 'http://'.$tmp;
@@ -1377,7 +1384,7 @@ class Index extends Common
             {
                 $lianjie = Request::instance()->post('lianjie');
             }
-            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => Request::instance()->post('caidanming'), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => Request::instance()->post('tubiao'), 'status' => Request::instance()->post('zhuangtai')];
+            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => htmlspecialchars(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
             Db::name('nav')
                 ->where('id', Request::instance()->post('caidanId'))
                 ->update($data);
@@ -1540,16 +1547,16 @@ class Index extends Common
             $spare = serialize($spare);
             Db::name('options')
                 ->where('option_name', 'title')
-                ->update(['option_value' => Request::instance()->post('title')]);
+                ->update(['option_value' => htmlspecialchars(Request::instance()->post('title'))]);
             Db::name('options')
                 ->where('option_name', 'subtitle')
-                ->update(['option_value' => Request::instance()->post('subtitle')]);
+                ->update(['option_value' => htmlspecialchars(Request::instance()->post('subtitle'))]);
             Db::name('options')
                 ->where('option_name', 'keyword')
-                ->update(['option_value' => Request::instance()->post('keyword')]);
+                ->update(['option_value' => htmlspecialchars(Request::instance()->post('keyword'))]);
             Db::name('options')
                 ->where('option_name', 'description')
-                ->update(['option_value' => Request::instance()->post('description')]);
+                ->update(['option_value' => htmlspecialchars(Request::instance()->post('description'))]);
             Db::name('options')
                 ->where('option_name', 'email')
                 ->update(['option_value' => Request::instance()->post('email')]);
@@ -1680,11 +1687,11 @@ class Index extends Common
                 }
             }
             $pdata = [
-                'user_nicename' => Request::instance()->post('user_nicename'),
+                'user_nicename' => htmlspecialchars(Request::instance()->post('user_nicename')),
                 'sex' => Request::instance()->post('sex'),
-                'birthday' => Request::instance()->post('birthday'),
-                'user_url' => Request::instance()->post('user_url'),
-                'signature' => Request::instance()->post('signature'),
+                'birthday' => htmlspecialchars(Request::instance()->post('birthday')),
+                'user_url' => htmlspecialchars(Request::instance()->post('user_url')),
+                'signature' => htmlspecialchars(Request::instance()->post('signature')),
                 'avatar' => Request::instance()->post('avatar')
             ];
             Db::name('users')
@@ -1704,6 +1711,10 @@ class Index extends Common
     public function uploadhead()
     {
         $file = request()->file('file');
+        $validate = [
+            'ext' => 'jpg,png,gif,jpeg'
+        ];
+        $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
             echo $info->getSaveName();
@@ -1999,6 +2010,10 @@ class Index extends Common
     public function uploadLogo()
     {
         $file = request()->file('file');
+        $validate = [
+            'ext' => 'jpg,png,gif,jpeg'
+        ];
+        $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
             echo $info->getSaveName();
@@ -2010,9 +2025,11 @@ class Index extends Common
     //图片上传
     public function upload()
     {
-        // 获取表单上传文件 例如上传了001.jpg
         $file = request()->file('file');
-        // 移动到框架应用根目录/data/uploads/ 目录下
+        $validate = [
+            'ext' => 'jpg,png,gif,jpeg'
+        ];
+        $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
             //生成缩略图
@@ -2023,10 +2040,8 @@ class Index extends Common
             {
                 @$image->thumb(300, 300)->save(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             }
-            // 输出 20160820/42a79759f284b767dfcb2a0197904287.jpg
             echo $info->getSaveName();
         }else{
-            // 上传失败获取错误信息
             echo $file->getError();
         }
     }
@@ -2034,6 +2049,10 @@ class Index extends Common
     public function uploadLinks()
     {
         $file = request()->file('file');
+        $validate = [
+            'ext' => 'jpg,png,gif,jpeg'
+        ];
+        $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
             //生成图标
@@ -2055,6 +2074,10 @@ class Index extends Common
     public function uploadSlideshow()
     {
         $file = request()->file('file');
+        $validate = [
+            'ext' => 'jpg,png,gif,jpeg'
+        ];
+        $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
             //生成幻灯片

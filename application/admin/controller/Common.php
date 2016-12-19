@@ -80,16 +80,17 @@ class Common extends Controller
     protected function checkUser()
     {
         Debug::remark('begin');
-        if(!Session::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user') && Cookie::has($this->session_prefix.'user_type'))
+        if(!Session::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user'))
         {
-            if(Cookie::has($this->session_prefix.'user_p'))
+            $cookie_user_p = Cache::get('cookie_user_p');
+            if(Cookie::has($this->session_prefix.'user_p') && $cookie_user_p !== false)
             {
-                $user = Db::name('users')->where('user_login', Cookie::get($this->session_prefix.'user'))->field('user_pass')->find();
-                if(!empty($user) && md5($user['user_pass']) == Cookie::get($this->session_prefix.'user_p'))
+                $user = Db::name('users')->where('user_login', Cookie::get($this->session_prefix.'user'))->field('user_pass,user_type')->find();
+                if(!empty($user) && md5($cookie_user_p.$user['user_pass']) == Cookie::get($this->session_prefix.'user_p'))
                 {
                     Session::set($this->session_prefix.'user_id',Cookie::get($this->session_prefix.'user_id'));
                     Session::set($this->session_prefix.'user',Cookie::get($this->session_prefix.'user'));
-                    Session::set($this->session_prefix.'user_type',Cookie::get($this->session_prefix.'user_type'));
+                    Session::set($this->session_prefix.'user_type',$user['user_type']);
                 }
             }
         }
@@ -111,7 +112,7 @@ class Common extends Controller
         Session::delete($this->session_prefix.'user_type');
         Cookie::delete($this->session_prefix.'user_id');
         Cookie::delete($this->session_prefix.'user');
-        Cookie::delete($this->session_prefix.'user_type');
+        Cookie::delete($this->session_prefix.'user_p');
         $this->redirect(Url::build('/login'));
     }
     protected function is_rewrite()

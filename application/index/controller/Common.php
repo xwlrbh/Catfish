@@ -96,7 +96,7 @@ class Common extends Controller
             $template = Db::name('options')->where('option_name','template')->field('option_value')->find();
             Cache::set('template',$template,3600);
         }
-        Lang::load(APP_PATH . '..\public\\'.$template['option_value'].'\lang\\'.$lang.'.php');
+        Lang::load(APP_PATH . '../public/'.$template['option_value'].'/lang/'.$lang.'.php');
     }
     protected function login()
     {
@@ -128,7 +128,6 @@ class Common extends Controller
         Session::delete($this->session_prefix.'user_type');
         Cookie::delete($this->session_prefix.'user_id');
         Cookie::delete($this->session_prefix.'user');
-        Cookie::delete($this->session_prefix.'user_type');
         Cookie::delete($this->session_prefix.'user_p');
         $this->redirect(Url::build('/'));
     }

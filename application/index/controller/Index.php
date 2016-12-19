@@ -537,10 +537,10 @@ class Index extends Common
             exit;
         }
         $data = [
-            'full_name' => Request::instance()->post('xingming'),
-            'email' => Request::instance()->post('youxiang'),
-            'title' => Request::instance()->post('biaoti'),
-            'msg' => Request::instance()->post('neirong'),
+            'full_name' => htmlspecialchars(Request::instance()->post('xingming')),
+            'email' => htmlspecialchars(Request::instance()->post('youxiang')),
+            'title' => htmlspecialchars(Request::instance()->post('biaoti')),
+            'msg' => htmlspecialchars(Request::instance()->post('neirong')),
             'createtime' => date("Y-m-d H:i:s")
         ];
         Db::name('guestbook')->insert($data);
