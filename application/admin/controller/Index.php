@@ -1842,6 +1842,7 @@ class Index extends Common
         foreach($dir as $key => $val)
         {
             $pluginName = basename($val);
+            Lang::load(APP_PATH . 'plugins/'.$pluginName.'/lang/'.$this->lang.'.php');
             $readme = APP_PATH.'plugins/'.$pluginName.'/readme.txt';
             if(!is_file($readme))
             {
@@ -1873,14 +1874,14 @@ class Index extends Common
                 $pluginVers = trim($matches[3]);
             }
             $pluginUri = '';
-            if(preg_match("/(插件网址|Plugin URI)\s*(：|:)(.*)/i", $pluginStr ,$matches))
+            if(preg_match("/(插件网址|Plugin URI|Plugin URL)\s*(：|:)(.*)/i", $pluginStr ,$matches))
             {
                 $pluginUri = trim($matches[3]);
             }
             $data[] = [
                 'plugin' => $pluginName,
-                'name' => $pName,
-                'description' => $pluginDesc,
+                'name' => Lang::get($pName),
+                'description' => Lang::get($pluginDesc),
                 'author' => $pluginAuth,
                 'version' => $pluginVers,
                 'pluginUrl' => $pluginUri

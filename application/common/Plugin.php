@@ -15,7 +15,7 @@ use think\Url;
 
 class Plugin
 {
-    public function get($key)
+    protected function get($key)
     {
         $re = Db::name('options')->where('option_name','p_'.$key)->field('option_value')->find();
         if(isset($re['option_value']))
@@ -27,7 +27,7 @@ class Plugin
             return '';
         }
     }
-    public function set($key,$value)
+    protected function set($key,$value)
     {
         $re = Db::name('options')->where('option_name','p_'.$key)->field('option_value')->find();
         if(empty($re))
@@ -46,7 +46,7 @@ class Plugin
                 ->update(['option_value' => $value]);
         }
     }
-    public function delete($key)
+    protected function delete($key)
     {
         Db::name('options')->where('option_name', 'p_'.$key)->delete();
     }
@@ -54,7 +54,7 @@ class Plugin
     {
 
     }
-    public function domain()
+    protected function domain()
     {
         $domain = Cache::get('domain');
         if($domain == false)
@@ -65,10 +65,14 @@ class Plugin
         }
         return $domain;
     }
-    public function upload($width = 0, $height = 0)
+    protected function upload($width = 0, $height = 0)
     {
         //$width，$height不等于0时，生成缩略图
         $file = request()->file('file');
+        $validate = [
+            'ext' => 'jpg,png,gif,jpeg'
+        ];
+        $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
             if($width > 0 && $height >0)
@@ -90,7 +94,7 @@ class Plugin
         }
     }
     //获取分类
-    public function category()
+    protected function category()
     {
         $data = Db::name('terms')->field('id,term_name,parent_id')->select();
         if(is_array($data) && count($data) > 0)
@@ -107,23 +111,23 @@ class Plugin
         }
     }
     //获取用户id
-    public function userID()
+    protected function userID()
     {
         $session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
         return Session::get($session_prefix.'user_id');
     }
     //获取用户名
-    public function user()
+    protected function user()
     {
         $session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
         return Session::get($session_prefix.'user');
     }
-    public function prefix()
+    protected function prefix()
     {
         //返回表前缀
         return Config::get('database.prefix');
     }
-    public function execute($statement)
+    protected function execute($statement)
     {
         //执行语句
         if(strtolower(substr(ltrim($statement),0,6)) == 'select' || strtolower(substr(ltrim($statement),0,4)) == 'show')
@@ -144,7 +148,7 @@ class Plugin
         }
     }
     //给标签添加数据
-    public function add(&$params,$label,$data)
+    protected function add(&$params,$label,$data)
     {
         if(isset($params[$label]))
         {
@@ -153,6 +157,34 @@ class Plugin
         else
         {
             $params[$label] = $data;
+        }
+    }
+    protected function import($path)
+    {
+        $path = str_replace('\\','/',$path);
+        $pathinfo = pathinfo($path);
+        $pluginName = basename(dirname(get_class($this)));
+        $path = substr($path,0,1) == '/' ? substr($path,1) : $path;
+        $file = APP_PATH.'plugins/'.$pluginName.'/'.$path;
+        if(is_file($file))
+        {
+            $content = file_get_contents($file);
+            if($pathinfo['extension'] == 'js')
+            {
+                return '<script type="text/javascript"> ' . $content . ' </script>';
+            }
+            elseif($pathinfo['extension'] == 'css')
+            {
+                return '<style type="text/css"> ' . $content . ' </style>';
+            }
+            else
+            {
+                return '';
+            }
+        }
+        else
+        {
+            return '';
         }
     }
 }

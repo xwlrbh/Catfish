@@ -299,5 +299,6 @@ return [
     'The plugin has no settings' => '插件没有设置项',
     'Whether to enable short address mode' => '是否启用短地址模式',
     'Enable short addresses' => '启用短地址',
-    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => '启用短地址需要开启rewrite，勾选前请先确认您的web运行环境开启了rewrite'
+    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => '启用短地址需要开启rewrite，勾选前请先确认您的web运行环境开启了rewrite',
+    'More plug-ins' => '更多插件'
 ];

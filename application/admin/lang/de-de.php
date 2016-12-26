@@ -299,5 +299,6 @@ return [
     'The plugin has no settings' => 'Das Plugin hat keine Einstellungen',
     'Whether to enable short address mode' => 'Ob der kurze Adressmodus aktiviert werden soll',
     'Enable short addresses' => 'Aktivieren Kurzadresse ',
-    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => 'Aktivieren Sie kurze Adresse müssen Rewrite zu öffnen, zu überprüfen, bevor Sie sicherstellen, dass Ihre Web-Umgebung ein Rewrite ausgeführt wird'
+    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => 'Aktivieren Sie kurze Adresse müssen Rewrite zu öffnen, zu überprüfen, bevor Sie sicherstellen, dass Ihre Web-Umgebung ein Rewrite ausgeführt wird',
+    'More plug-ins' => 'Weitere Plug-ins'
 ];

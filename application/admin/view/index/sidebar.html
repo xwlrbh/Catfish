@@ -209,13 +209,31 @@
                             {:lang('Plug-ins')}
                             </button>
                         </a>
-                        {volist name="pluginslist" id="vo"}
+                        {volist name="pluginslist" id="vo" offset="0" length='6'}
                         <a id="kz_plugin_{$vo.plugin}" href="{:Url('/admin/Index/plugins/plugin/'.$vo.plugin)}">
                             <button type="button" class="btn btn-default btn-block{eq name="option" value="$vo.plugin"} btn-primary{/eq}">
-                            {$vo.pname}
+                            {:lang($vo.pname)}
                             </button>
                         </a>
                         {/volist}
+                        {if condition="$numberOfPlugins > 6 "}
+                        <div class="btn-group btn-block dropup">
+                            <button type="button" class="btn btn-default btn-block" data-toggle="dropdown">
+                                {:lang('More plug-ins')} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                {volist name="pluginslist" id="vo" offset="6"}
+                                <li>
+                                    <a id="kz_plugin_{$vo.plugin}" href="{:Url('/admin/Index/plugins/plugin/'.$vo.plugin)}">
+                                        <button type="button" class="btn btn-default btn-block{eq name="option" value="$vo.plugin"} btn-primary{/eq}">
+                                        {:lang($vo.pname)}
+                                        </button>
+                                    </a>
+                                </li>
+                                {/volist}
+                            </ul>
+                        </div>
+                        {/if}
                     </div>
                 </div>
             </div>

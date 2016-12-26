@@ -299,5 +299,6 @@ return [
     'The plugin has no settings' => 'Плагин не имеет настроек',
     'Whether to enable short address mode' => 'Включена  ли  короткий  адрес режим',
     'Enable short addresses' => 'Включите  короткий  адрес',
-    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => 'Включите  короткий  адрес  нужно  открыть  rewrite  ,  отметьте  назад  пожалуйста, убедитесь, что ваш  веб -  операционной среды  открыл  rewrite'
+    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => 'Включите  короткий  адрес  нужно  открыть  rewrite  ,  отметьте  назад  пожалуйста, убедитесь, что ваш  веб -  операционной среды  открыл  rewrite',
+    'More plug-ins' => 'больше  плагин'
 ];

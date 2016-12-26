@@ -19,6 +19,7 @@ class Common extends Controller
 {
     protected $plugins = [];
     protected $session_prefix;
+    protected $lang;
     public function _initialize()
     {
         $this->session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
@@ -66,10 +67,15 @@ class Common extends Controller
             }
             Cache::set('pluginslist',$pluginslist,3600);
         }
+        $this->lang = Lang::detect();
+        $this->assign('lang', $this->lang);
+        foreach((array)$pluginslist as $pkey => $pval)
+        {
+            Lang::load(APP_PATH . 'plugins/'.$pval['plugin'].'/lang/'.$this->lang.'.php');
+        }
         $this->assign('pluginslist', $pluginslist);
+        $this->assign('numberOfPlugins', count($pluginslist,COUNT_NORMAL));
         $this->assign('permissions', Session::get($this->session_prefix.'user_type'));
-        $lang = Lang::detect();
-        $this->assign('lang', $lang);
     }
     //获取登录用户名
     protected function getUser()

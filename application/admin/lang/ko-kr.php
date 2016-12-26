@@ -299,5 +299,6 @@ return [
     'The plugin has no settings' => '플러그인 설정 항목이 없습니다',
     'Whether to enable short address mode' => '사용 여부 짧은 주소 모드',
     'Enable short addresses' => '짧은 주소 사용',
-    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => '이 짧은 주소 필요한 켜기 rewrite, 그려 선별 전에 먼저 확인 웹 실행 환경 열었다 rewrite'
+    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => '이 짧은 주소 필요한 켜기 rewrite, 그려 선별 전에 먼저 확인 웹 실행 환경 열었다 rewrite',
+    'More plug-ins' => '더 많은 플러그인'
 ];

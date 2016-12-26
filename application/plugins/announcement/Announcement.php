@@ -1,10 +1,10 @@
 <?php
 /**
- * 插件名: 公告
- * 描述: 公告插件可以在首页的顶部显示一条公告
- * 作者: A.J
- * 版本: V1.0
- * 插件网址: www.catfish-cms.top
+ * Plugin Name: Announcement
+ * Description: The Announcement Plugin displays a bulletin at the top of the Home page
+ * Author: A.J
+ * Version: V1.0
+ * Plugin URL: www.catfish-cms.top
  */
 namespace app\plugins\announcement;
 
@@ -28,10 +28,10 @@ class Announcement extends Plugin
         //后台设置，表单页，$this->plugin为插件名
         $params['view'] = '<form method="post">
     <div class="form-group">
-        <label>公告内容：</label>
+        <label>'.lang('Notice content').'：</label>
         <textarea class="form-control" name="gonggao" rows="3" autofocus>'.$this->get($this->plugin.'_announcement').'</textarea>
     </div>
-    <button type="submit" class="btn btn-default">保存</button>
+    <button type="submit" class="btn btn-default">'.lang('Save').'</button>
 </form>'; //$this->get($this->plugin.'_announcement')获取变量的内容
     }
     public function settings_post(&$params)

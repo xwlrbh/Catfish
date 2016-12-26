@@ -299,5 +299,6 @@ return [
     'The plugin has no settings' => 'プラグインは設置していない',
     'Whether to enable short address mode' => 'ショートアドレスモードを使用します',
     'Enable short addresses' => 'ショートアドレス',
-    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => '起用が必要rewrite短いアドレスを開いて、チェック前に先にご確認のweb実行環境が開いたrewrite'
+    'Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite' => '起用が必要rewrite短いアドレスを開いて、チェック前に先にご確認のweb実行環境が開いたrewrite',
+    'More plug-ins' => 'もっと'
 ];
