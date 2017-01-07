@@ -23,6 +23,7 @@ class Common extends Controller
     protected $plugins = [];
     protected $params = [];
     protected $session_prefix;
+    protected $lang;
     public function _initialize()
     {
         if(!is_file(APP_PATH . 'install.lock')){
@@ -34,7 +35,7 @@ class Common extends Controller
             {
                 $this->redirect(Url::build('/index.php/install'));
             }
-            exit;
+            exit();
         }
         $dm = Url::build('/');
         if(strpos($dm,'/index.php') ===false)
@@ -58,6 +59,7 @@ class Common extends Controller
                 }
             }
         }
+        $this->lang = Lang::detect();
         $this->session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
         $plugins = Cache::get('plugins');
         if($plugins == false)
@@ -81,6 +83,7 @@ class Common extends Controller
                 if(is_file($pluginFile))
                 {
                     $plugins[$key] = 'app\\plugins\\'.$val.'\\'.ucfirst($val);
+                    Lang::load(APP_PATH . 'plugins/'.$val.'/lang/'.$this->lang.'.php');
                 }
                 else
                 {
@@ -89,14 +92,13 @@ class Common extends Controller
             }
             $this->plugins = $plugins;
         }
-        $lang = Lang::detect();
         $template = Cache::get('template');
         if($template == false)
         {
             $template = Db::name('options')->where('option_name','template')->field('option_value')->find();
             Cache::set('template',$template,3600);
         }
-        Lang::load(APP_PATH . '../public/'.$template['option_value'].'/lang/'.$lang.'.php');
+        Lang::load(APP_PATH . '../public/'.$template['option_value'].'/lang/'.$this->lang.'.php');
     }
     protected function login()
     {

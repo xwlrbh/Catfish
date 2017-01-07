@@ -27,7 +27,7 @@ class Plugin
             return '';
         }
     }
-    protected function set($key,$value)
+    protected function set($key,$value,$protection = false)
     {
         $re = Db::name('options')->where('option_name','p_'.$key)->field('option_value')->find();
         if(empty($re))
@@ -41,9 +41,12 @@ class Plugin
         }
         else
         {
-            Db::name('options')
-                ->where('option_name', 'p_'.$key)
-                ->update(['option_value' => $value]);
+            if($protection == false)
+            {
+                Db::name('options')
+                    ->where('option_name', 'p_'.$key)
+                    ->update(['option_value' => $value]);
+            }
         }
     }
     protected function delete($key)
