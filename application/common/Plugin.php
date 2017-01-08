@@ -55,7 +55,6 @@ class Plugin
     }
     public function run(&$params)
     {
-
     }
     protected function domain()
     {
@@ -166,7 +165,12 @@ class Plugin
     {
         $path = str_replace('\\','/',$path);
         $pathinfo = pathinfo($path);
-        $pluginName = basename(dirname(get_class($this)));
+        $pluginName = get_class($this);
+        $pluginName = str_replace('\\','/',$pluginName);
+        $pluginName = trim($pluginName,'/');
+        $pluginNameArr = explode('/',$pluginName);
+        $pluginNameArr = array_slice($pluginNameArr,-2,1);
+        $pluginName = $pluginNameArr[0];
         $path = substr($path,0,1) == '/' ? substr($path,1) : $path;
         $file = APP_PATH.'plugins/'.$pluginName.'/'.$path;
         if(is_file($file))

@@ -198,6 +198,10 @@ class Common extends Controller
             }
             Cache::set('menu',$menu,3600);
         }
+        $menu['lang'] = $this->lang;
+        Hook::add('filter_menu',$this->plugins);
+        Hook::listen('filter_menu',$menu);
+        unset($menu['lang']);
         $this->assign('menu', $menu);
         //获取混合内容
         $page = 1;
@@ -244,14 +248,23 @@ class Common extends Controller
                         ->order($val['fangshi'].' '.$aord)
                         ->paginate($val['shuliang']);
                 }
+                $pages = $data->render();
+                $pageArr = $data->toArray();
                 $hunhe['hunhe'.$start] = [
                     'biaoti' => $val['biaoti'],
-                    'neirong' => $data
+                    'neirong' => $pageArr['data'],
+                    'pages' => $pages
                 ];
                 $start++;
             }
             Cache::set('hunhe'.$page,$hunhe,3600);
         }
+        $hunhe['lang'] = $this->lang;
+        $hunhe['page'] = $page;
+        Hook::add('filter_hunhe',$this->plugins);
+        Hook::listen('filter_hunhe',$hunhe);
+        unset($hunhe['lang']);
+        unset($hunhe['page']);
         $this->assign('hunhe', $hunhe);
         //获取图文内容
         $page = 1;
@@ -300,14 +313,23 @@ class Common extends Controller
                         ->order($val['fangshi'].' '.$aord)
                         ->paginate($val['shuliang']);
                 }
+                $pages = $data->render();
+                $pageArr = $data->toArray();
                 $tuwen['tuwen'.$start] = [
                     'biaoti' => $val['biaoti'],
-                    'neirong' => $data
+                    'neirong' => $pageArr['data'],
+                    'pages' => $pages
                 ];
                 $start++;
             }
             Cache::set('tuwen'.$page,$tuwen,3600);
         }
+        $tuwen['lang'] = $this->lang;
+        $tuwen['page'] = $page;
+        Hook::add('filter_tuwen',$this->plugins);
+        Hook::listen('filter_tuwen',$tuwen);
+        unset($tuwen['lang']);
+        unset($tuwen['page']);
         $this->assign('tuwen', $tuwen);
         //获取推荐
         $tuijian = Cache::get('tuijian');
@@ -320,9 +342,14 @@ class Common extends Controller
                 ->where('status','=',1)
                 ->where('recommended','=',1)
                 ->order('post_modified desc')
-                ->paginate(10);
+                ->limit(10)
+                ->select();
             Cache::set('tuijian',$tuijian,3600);
         }
+        $tuijian['lang'] = $this->lang;
+        Hook::add('filter_tuijian',$this->plugins);
+        Hook::listen('filter_tuijian',$tuijian);
+        unset($tuijian['lang']);
         $this->assign('tuijian', $tuijian);
         //获取登录状态
         $this->assign('login', $this->login());

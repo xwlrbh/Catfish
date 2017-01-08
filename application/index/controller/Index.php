@@ -143,7 +143,17 @@ class Index extends Common
                     ->paginate(10);
                 Cache::set('article'.$page,$data,3600);
             }
+            $pages = $data->render();
+            $pageArr = $data->toArray();
+            $data = $pageArr['data'];
+            $data['lang'] = $this->lang;
+            $data['page'] = $page;
+            Hook::add('filter_articleList',$this->plugins);
+            Hook::listen('filter_articleList',$data);
+            unset($data['lang']);
+            unset($data['page']);
             $this->assign('fenlei', $data);
+            $this->assign('pages', $pages);
             $this->assign('daohang1', Lang::get('Article list'));
             $template = $this->receive();//主题目录
             $this->assign('page', $this->getpage());//确定是哪个页面
@@ -161,6 +171,10 @@ class Index extends Common
                 ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                 ->where('posts.id',$id)
                 ->find();
+            $data['lang'] = $this->lang;
+            Hook::add('filter_article',$this->plugins);
+            Hook::listen('filter_article',$data);
+            unset($data['lang']);
             Hook::add('read',$this->plugins);
             $params = [
                 'title' => $data['biaoti'],
@@ -238,8 +252,22 @@ class Index extends Common
 
             //前后内容
             $previous = Db::name('posts')->where('id','<',$id)->where('post_type',0)->field('id,post_title as biaoti')->order('id desc')->find();
+            if(!empty($previous))
+            {
+                $previous['lang'] = $this->lang;
+                Hook::add('filter_prevArticle',$this->plugins);
+                Hook::listen('filter_prevArticle',$previous);
+                unset($previous['lang']);
+            }
             $this->assign('previous', $previous);
             $next = Db::name('posts')->where('id','>',$id)->where('post_type',0)->field('id,post_title as biaoti')->order('id')->find();
+            if(!empty($next))
+            {
+                $next['lang'] = $this->lang;
+                Hook::add('filter_nextArticle',$this->plugins);
+                Hook::listen('filter_nextArticle',$next);
+                unset($next['lang']);
+            }
             $this->assign('next', $next);
             if($data['comment_status'] == 1)
             {
@@ -358,7 +386,11 @@ class Index extends Common
         }
 
         //文章分类
-        $fenleiming = Db::name('terms')->where('id',$id)->field('term_name')->find();
+        $fenleiming = Db::name('terms')->where('id',$id)->field('id,term_name')->find();
+        $fenleiming['lang'] = $this->lang;
+        Hook::add('filter_categoryName',$this->plugins);
+        Hook::listen('filter_categoryName',$fenleiming);
+        unset($fenleiming['lang']);
         $this->assign('daohang1', $fenleiming['term_name']);//获取分类名
         $page = 1;
         if(Request::instance()->has('page','get'))
@@ -379,7 +411,17 @@ class Index extends Common
                 ->paginate(10);
             Cache::set('category'.$id.$page,$data,3600);
         }
+        $pages = $data->render();
+        $pageArr = $data->toArray();
+        $data = $pageArr['data'];
+        $data['lang'] = $this->lang;
+        $data['page'] = $page;
+        Hook::add('filter_category',$this->plugins);
+        Hook::listen('filter_category',$data);
+        unset($data['lang']);
+        unset($data['page']);
         $this->assign('fenlei', $data);
+        $this->assign('pages', $pages);
         $template = $this->receive();//主题目录
         $this->assign('page', $this->getpage());//确定是哪个页面
         $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/category.html');
@@ -390,8 +432,12 @@ class Index extends Common
         //页面
         $data = Db::name('posts')
             ->where('id',$id)
-            ->field('id,post_keywords,post_content as zhengwen,post_title as biaoti,post_excerpt,thumbnail as suolvetu,template')
+            ->field('id,post_keywords as guanjianzi,post_content as zhengwen,post_title as biaoti,post_excerpt as zhaiyao,thumbnail as suolvetu,template')
             ->find();
+        $data['lang'] = $this->lang;
+        Hook::add('filter_page',$this->plugins);
+        Hook::listen('filter_page',$data);
+        unset($data['lang']);
         $this->assign('page', $data);
 
         Hook::add('page_top',$this->plugins);
@@ -442,8 +488,8 @@ class Index extends Common
         }
 
         $template = $this->receive();//主题目录
-        $this->assign('keyword', $data['post_keywords']);
-        $this->assign('description', $data['post_excerpt']);
+        $this->assign('keyword', $data['guanjianzi']);
+        $this->assign('description', $data['zhaiyao']);
         $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/page/'.$data['template']);
         return $htmls;
     }
@@ -490,6 +536,13 @@ class Index extends Common
         }
 
         //搜索
+        $search = [
+            'lang' => $this->lang,
+            'key' => Request::instance()->get('keyword'),
+            'ids' => ''
+        ];
+        Hook::add('search',$this->plugins);
+        Hook::listen('search',$search);
         $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
             ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
             ->where('post_status','=',1)
@@ -497,17 +550,26 @@ class Index extends Common
             ->where('status','=',1)
             ->where('post_title','like','%'.Request::instance()->get('keyword').'%')
             ->whereOr('post_excerpt','like','%'.Request::instance()->get('keyword').'%')
+            ->whereOr('id','in',$search['ids'])
             ->order('post_modified desc')
             ->paginate(10,false,[
                 'query' => [
                     'keyword' => Request::instance()->get('keyword')
                 ]
             ]);
+        $pages = $data->render();
+        $pageArr = $data->toArray();
+        $data = $pageArr['data'];
         if(count($data) == 0)
         {
             $this->assign('sousuo', Lang::get('No search found'));
         }
+        $data['lang'] = $this->lang;
+        Hook::add('filter_search',$this->plugins);
+        Hook::listen('filter_search',$data);
+        unset($data['lang']);
         $this->assign('fenlei', $data);
+        $this->assign('pages', $pages);
         $this->assign('daohang1', Lang::get('Search'));
         $template = $this->receive();//主题目录
         $this->assign('page', $this->getpage());//确定是哪个页面
