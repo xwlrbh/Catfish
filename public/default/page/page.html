@@ -17,7 +17,7 @@
             {notempty name="page_side_top"}{$page_side_top}{/notempty}
             <ul class="nav nav-pills nav-stacked" role="tablist">
                 {volist name="hunhe.hunhe2.neirong" id="vo" offset="0" length='6'}
-                <li role="presentation"><a href="{:Url('/index/Index/article/id/'.$vo.id)}">{$vo.biaoti}</a></li>
+                <li role="presentation"><a href="{:Url($vo.href)}">{$vo.biaoti}</a></li>
                 {/volist}
             </ul>
             {notempty name="page_side_bottom"}{$page_side_bottom}{/notempty}

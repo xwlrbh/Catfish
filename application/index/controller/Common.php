@@ -155,7 +155,7 @@ class Common extends Controller
             Cache::set('options',$data_options,3600);
         }
         $version = Config::get('version');
-        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
+        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
         $template = 'default';
         $pageSettings = '';
         foreach($data_options as $key => $val)
@@ -191,7 +191,7 @@ class Common extends Controller
                 $submenu = Db::name('nav')->where('cid',$val['navcid'])->where('status',1)->field('id,parent_id,label,target,href,icon')->order('listorder')->select();
                 if(!empty($submenu))
                 {
-                    $submenu = Tree::makeTree($submenu);
+                    $submenu = $this->checkUrl(Tree::makeTree($submenu));
                 }
                 $menu['menu'.$start] = $submenu;
                 $start++;
@@ -252,7 +252,7 @@ class Common extends Controller
                 $pageArr = $data->toArray();
                 $hunhe['hunhe'.$start] = [
                     'biaoti' => $val['biaoti'],
-                    'neirong' => $pageArr['data'],
+                    'neirong' => $this->addArticleHref($pageArr['data']),
                     'pages' => $pages
                 ];
                 $start++;
@@ -317,7 +317,7 @@ class Common extends Controller
                 $pageArr = $data->toArray();
                 $tuwen['tuwen'.$start] = [
                     'biaoti' => $val['biaoti'],
-                    'neirong' => $pageArr['data'],
+                    'neirong' => $this->addArticleHref($pageArr['data']),
                     'pages' => $pages
                 ];
                 $start++;
@@ -344,6 +344,7 @@ class Common extends Controller
                 ->order('post_modified desc')
                 ->limit(10)
                 ->select();
+            $tuijian = $this->addArticleHref($tuijian);
             Cache::set('tuijian',$tuijian,3600);
         }
         $tuijian['lang'] = $this->lang;
@@ -407,5 +408,25 @@ class Common extends Controller
         }
 
         return $template;
+    }
+    private function checkUrl($params)
+    {
+        foreach($params as $key => $val)
+        {
+            $params[$key]['href'] = str_replace(['/index/Index','/id'],'',$val['href']);
+            if(isset($val['children']))
+            {
+                $params[$key]['children'] = $this->checkUrl($val['children']);
+            }
+        }
+        return $params;
+    }
+    protected function addArticleHref($params)
+    {
+        foreach($params as $key => $val)
+        {
+            $params[$key]['href'] = '/article/'.$val['id'];
+        }
+        return $params;
     }
 }

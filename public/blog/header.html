@@ -33,7 +33,7 @@
                 {notempty name="menu"}
                 {volist name="menu.menu1" id="vo"}
                 {empty name="vo.children"}
-                <li{if condition="$page eq Url($vo.href)"} class="active"{/if}>{if condition="$vo.icon neq ''"}{$vo.icon}{/if}<a href="{:Url($vo.href)}" target="{$vo.target}">{$vo.label}</a></li>
+                <li{if condition="$pageUrl eq Url($vo.href)"} class="active"{/if}>{if condition="$vo.icon neq ''"}{$vo.icon}{/if}<a href="{:Url($vo.href)}" target="{$vo.target}">{$vo.label}</a></li>
                 {else /}
                 <li class="dropdown">
                     <a href="{:Url($vo.href)}" class="dropdown-toggle" data-toggle="dropdown" target="{$vo.target}">{$vo.label} <span class="caret"></span></a>

@@ -80,7 +80,7 @@ class Index extends Common
         }
         $this->assign('links', $data_links);//输出友情链接
         $template = $this->receive();//主题目录
-        $this->assign('page', $this->getpage());//确定是哪个页面
+        $this->assign('pageUrl', $this->getpage());//确定是哪个页面
         $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/index.html');
         return $htmls;
     }
@@ -145,7 +145,7 @@ class Index extends Common
             }
             $pages = $data->render();
             $pageArr = $data->toArray();
-            $data = $pageArr['data'];
+            $data = $this->addArticleHref($pageArr['data']);
             $data['lang'] = $this->lang;
             $data['page'] = $page;
             Hook::add('filter_articleList',$this->plugins);
@@ -156,7 +156,7 @@ class Index extends Common
             $this->assign('pages', $pages);
             $this->assign('daohang1', Lang::get('Article list'));
             $template = $this->receive();//主题目录
-            $this->assign('page', $this->getpage());//确定是哪个页面
+            $this->assign('pageUrl', $this->getpage());//确定是哪个页面
             $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/category.html');
             return $htmls;
         }
@@ -254,6 +254,7 @@ class Index extends Common
             $previous = Db::name('posts')->where('id','<',$id)->where('post_type',0)->field('id,post_title as biaoti')->order('id desc')->find();
             if(!empty($previous))
             {
+                $previous['href'] = '/article/'.$previous['id'];
                 $previous['lang'] = $this->lang;
                 Hook::add('filter_prevArticle',$this->plugins);
                 Hook::listen('filter_prevArticle',$previous);
@@ -263,6 +264,7 @@ class Index extends Common
             $next = Db::name('posts')->where('id','>',$id)->where('post_type',0)->field('id,post_title as biaoti')->order('id')->find();
             if(!empty($next))
             {
+                $next['href'] = '/article/'.$next['id'];
                 $next['lang'] = $this->lang;
                 Hook::add('filter_nextArticle',$this->plugins);
                 Hook::listen('filter_nextArticle',$next);
@@ -284,7 +286,7 @@ class Index extends Common
             $template = $this->receive();
             $this->assign('keyword', $data['guanjianzi']);
             $this->assign('description', $data['zhaiyao']);
-            $this->assign('page', $this->getpage());//确定是哪个页面
+            $this->assign('pageUrl', $this->getpage());//确定是哪个页面
             $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/article.html');
             return $htmls;
         }
@@ -413,7 +415,7 @@ class Index extends Common
         }
         $pages = $data->render();
         $pageArr = $data->toArray();
-        $data = $pageArr['data'];
+        $data = $this->addArticleHref($pageArr['data']);
         $data['lang'] = $this->lang;
         $data['page'] = $page;
         Hook::add('filter_category',$this->plugins);
@@ -423,11 +425,11 @@ class Index extends Common
         $this->assign('fenlei', $data);
         $this->assign('pages', $pages);
         $template = $this->receive();//主题目录
-        $this->assign('page', $this->getpage());//确定是哪个页面
+        $this->assign('pageUrl', $this->getpage());//确定是哪个页面
         $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/category.html');
         return $htmls;
     }
-    public function page($id)//路由：/index/Index/page/id/8
+    public function page($id)
     {
         //页面
         $data = Db::name('posts')
@@ -490,6 +492,7 @@ class Index extends Common
         $template = $this->receive();//主题目录
         $this->assign('keyword', $data['guanjianzi']);
         $this->assign('description', $data['zhaiyao']);
+        $this->assign('pageUrl', $this->getpage());
         $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/page/'.$data['template']);
         return $htmls;
     }
@@ -548,8 +551,7 @@ class Index extends Common
             ->where('post_status','=',1)
             ->where('post_type','=',0)
             ->where('status','=',1)
-            ->where('post_title','like','%'.Request::instance()->get('keyword').'%')
-            ->whereOr('post_excerpt','like','%'.Request::instance()->get('keyword').'%')
+            ->where('post_keywords|post_title|post_excerpt','like','%'.Request::instance()->get('keyword').'%')
             ->whereOr('id','in',$search['ids'])
             ->order('post_modified desc')
             ->paginate(10,false,[
@@ -559,7 +561,7 @@ class Index extends Common
             ]);
         $pages = $data->render();
         $pageArr = $data->toArray();
-        $data = $pageArr['data'];
+        $data = $this->addArticleHref($pageArr['data']);
         if(count($data) == 0)
         {
             $this->assign('sousuo', Lang::get('No search found'));
@@ -572,7 +574,7 @@ class Index extends Common
         $this->assign('pages', $pages);
         $this->assign('daohang1', Lang::get('Search'));
         $template = $this->receive();//主题目录
-        $this->assign('page', $this->getpage());//确定是哪个页面
+        $this->assign('pageUrl', $this->getpage());//确定是哪个页面
         $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/category.html');
         return $htmls;
     }

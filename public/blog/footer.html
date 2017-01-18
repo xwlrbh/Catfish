@@ -4,7 +4,7 @@
         <div class="container">
             <div class="panel panel-default">
                 <div class="panel-body">
-                    <div class="text-center">{$copyright}{$statistics}&nbsp;&nbsp;<a href="#" data-toggle="modal" data-target="#catfishModal"><span class="glyphicon glyphicon-edit"></span>&nbsp;我要留言</a></div>
+                    <div class="text-center">{$copyright}{$statistics}&nbsp;&nbsp;<a href="#" data-toggle="modal" data-target="#catfishModal"><span class="glyphicon glyphicon-edit"></span>&nbsp;我要留言</a>{notempty name="record"}<br>{$record}{/notempty}</div>
                 </div>
             </div>
         </div>

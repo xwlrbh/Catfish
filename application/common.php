@@ -45,3 +45,7 @@ function subtext($text, $length)
         return mb_substr($text, 0, $length, 'utf8').'...';
     return $text;
 }
+use think\Route;
+Route::rule('page/:id','index/Index/page');
+Route::rule(['article','article/:id'],'index/Index/article');
+Route::rule('category/:id','index/Index/category');
