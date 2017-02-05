@@ -1285,7 +1285,7 @@ class Index extends Common
                 return false;
             }
             $lianjie = '';
-            $tmp = htmlspecialchars(trim(Request::instance()->post('zidingyi')));
+            $tmp = trim(Request::instance()->post('zidingyi'));
             if($tmp != '')
             {
                 $lianjie = substr($tmp,0,4)=='http' ? $tmp : 'http://'.$tmp;
@@ -1294,7 +1294,7 @@ class Index extends Common
             {
                 $lianjie = Request::instance()->post('lianjie');
             }
-            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => htmlspecialchars(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
+            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => Request::instance()->post('tubiao'), 'status' => Request::instance()->post('zhuangtai')];
             Db::name('nav')->insert($data);
         }
         //添加子菜单时用
@@ -1375,7 +1375,7 @@ class Index extends Common
                 return false;
             }
             $lianjie = '';
-            $tmp = htmlspecialchars(trim(Request::instance()->post('zidingyi')));
+            $tmp = trim(Request::instance()->post('zidingyi'));
             if($tmp != '')
             {
                 $lianjie = substr($tmp,0,4)=='http' ? $tmp : 'http://'.$tmp;
@@ -1384,7 +1384,7 @@ class Index extends Common
             {
                 $lianjie = Request::instance()->post('lianjie');
             }
-            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => htmlspecialchars(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
+            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => Request::instance()->post('tubiao'), 'status' => Request::instance()->post('zhuangtai')];
             Db::name('nav')
                 ->where('id', Request::instance()->post('caidanId'))
                 ->update($data);
@@ -1399,6 +1399,7 @@ class Index extends Common
             $zidingyi = $caidanxiang['href'];
         }
         $this->assign('zidingyi', $zidingyi);//自定义项
+        $caidanxiang['icon'] = str_replace('"','&#34;',$caidanxiang['icon']);
         $this->assign('cdxiang', $caidanxiang);//菜单项
         $this->addModifyMenu($caidanxiang['cid']);
         $this->assign('backstageMenu', 'caidan');
@@ -1874,7 +1875,7 @@ class Index extends Common
                 $pluginVers = trim($matches[3]);
             }
             $pluginUri = '';
-            if(preg_match("/(插件网址|Plugin URI|Plugin URL)\s*(：|:)(.*)/i", $pluginStr ,$matches))
+            if(preg_match("/(插件网址|插件網址|Plugin URI|Plugin URL)\s*(：|:)(.*)/i", $pluginStr ,$matches))
             {
                 $pluginUri = trim($matches[3]);
             }

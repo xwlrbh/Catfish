@@ -33,13 +33,13 @@
                 {notempty name="menu"}
                 {volist name="menu.menu1" id="vo"}
                 {empty name="vo.children"}
-                <li{if condition="$pageUrl eq Url($vo.href)"} class="active"{/if}>{if condition="$vo.icon neq ''"}{$vo.icon}{/if}<a href="{:Url($vo.href)}" target="{$vo.target}">{$vo.label}</a></li>
+                <li{if condition="$pageUrl eq Url($vo.href)"} class="active"{/if}><a href="{notempty name="vo.zidingyi"}{$vo.href}{else /}{:Url($vo.href)}{/notempty}" target="{$vo.target}">{if condition="$vo.icon neq ''"}{$vo.icon} {/if}{$vo.label}</a></li>
                 {else /}
                 <li class="dropdown">
-                    <a href="{:Url($vo.href)}" class="dropdown-toggle" data-toggle="dropdown" target="{$vo.target}">{$vo.label} <span class="caret"></span></a>
+                    <a href="{notempty name="vo.zidingyi"}{$vo.href}{else /}{:Url($vo.href)}{/notempty}" class="dropdown-toggle" data-toggle="dropdown" target="{$vo.target}">{$vo.label} <span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
                         {volist name="vo.children" id="voc"}
-                        <li><a href="{:Url($voc.href)}" target="{$voc.target}">{$voc.label}</a></li>
+                        <li><a href="{notempty name="voc.zidingyi"}{$voc.href}{else /}{:Url($voc.href)}{/notempty}" target="{$voc.target}">{$voc.label}</a></li>
                         {/volist}
                     </ul>
                 </li>

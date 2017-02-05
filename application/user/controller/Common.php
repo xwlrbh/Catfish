@@ -90,7 +90,7 @@ class Common extends Controller
                 $submenu = Db::name('nav')->where('cid',$val['navcid'])->where('status',1)->field('id,parent_id,label,target,href,icon')->order('listorder')->select();
                 if(!empty($submenu))
                 {
-                    $submenu = Tree::makeTree($submenu);
+                    $submenu = $this->checkUrl(Tree::makeTree($submenu));
                 }
                 $menu['menu'.$start] = $submenu;
                 $start++;
@@ -116,5 +116,24 @@ class Common extends Controller
             $root = 'index.php/';
         }
         $this->assign('root', $root);
+    }
+    private function checkUrl($params)
+    {
+        foreach($params as $key => $val)
+        {
+            if(substr($val['href'],0,4) == 'http')
+            {
+                $params[$key]['zidingyi'] = '1';
+            }
+            else
+            {
+                $params[$key]['href'] = str_replace(['/index/Index','/id'],'',$val['href']);
+            }
+            if(isset($val['children']))
+            {
+                $params[$key]['children'] = $this->checkUrl($val['children']);
+            }
+        }
+        return $params;
     }
 }

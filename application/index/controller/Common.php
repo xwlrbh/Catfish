@@ -228,31 +228,69 @@ class Common extends Controller
                 $data = '';
                 if($val['fenlei'] == 0)
                 {
-                    $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                        ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
-                        ->where('post_status','=',1)
-                        ->where('post_type','=',0)
-                        ->where('status','=',1)
-                        ->order($val['fangshi'].' '.$aord)
-                        ->paginate($val['shuliang']);
+                    if($key == 1)
+                    {
+                        $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                            ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                            ->where('post_status','=',1)
+                            ->where('post_type','=',0)
+                            ->where('status','=',1)
+                            ->order($val['fangshi'].' '.$aord)
+                            ->paginate($val['shuliang']);
+                    }
+                    else
+                    {
+                        $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                            ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                            ->where('post_status','=',1)
+                            ->where('post_type','=',0)
+                            ->where('status','=',1)
+                            ->order($val['fangshi'].' '.$aord)
+                            ->limit($val['shuliang'])
+                            ->select();
+                    }
                 }
                 else
                 {
-                    $data = Db::view('term_relationships','term_id')
-                        ->view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan','posts.id=term_relationships.object_id')
-                        ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
-                        ->where('term_id','=',$val['fenlei'])
-                        ->where('post_status','=',1)
-                        ->where('post_type','=',0)
-                        ->where('status','=',1)
-                        ->order($val['fangshi'].' '.$aord)
-                        ->paginate($val['shuliang']);
+                    if($key == 1)
+                    {
+                        $data = Db::view('term_relationships','term_id')
+                            ->view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan','posts.id=term_relationships.object_id')
+                            ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                            ->where('term_id','=',$val['fenlei'])
+                            ->where('post_status','=',1)
+                            ->where('post_type','=',0)
+                            ->where('status','=',1)
+                            ->order($val['fangshi'].' '.$aord)
+                            ->paginate($val['shuliang']);
+                    }
+                    else
+                    {
+                        $data = Db::view('term_relationships','term_id')
+                            ->view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan','posts.id=term_relationships.object_id')
+                            ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                            ->where('term_id','=',$val['fenlei'])
+                            ->where('post_status','=',1)
+                            ->where('post_type','=',0)
+                            ->where('status','=',1)
+                            ->order($val['fangshi'].' '.$aord)
+                            ->limit($val['shuliang'])
+                            ->select();
+                    }
                 }
-                $pages = $data->render();
-                $pageArr = $data->toArray();
+                if($key == 1)
+                {
+                    $pages = $data->render();
+                    $pageArr = $data->toArray();
+                    $data = $pageArr['data'];
+                }
+                else
+                {
+                    $pages = '';
+                }
                 $hunhe['hunhe'.$start] = [
                     'biaoti' => $val['biaoti'],
-                    'neirong' => $this->addArticleHref($pageArr['data']),
+                    'neirong' => $this->addArticleHref($data),
                     'pages' => $pages
                 ];
                 $start++;
@@ -267,12 +305,7 @@ class Common extends Controller
         unset($hunhe['page']);
         $this->assign('hunhe', $hunhe);
         //获取图文内容
-        $page = 1;
-        if(Request::instance()->has('page','get'))
-        {
-            $page = Request::instance()->get('page');
-        }
-        $tuwen = Cache::get('tuwen'.$page);
+        $tuwen = Cache::get('tuwen');
         if($tuwen == false)
         {
             $start = 1;
@@ -298,7 +331,8 @@ class Common extends Controller
                         ->where('status','=',1)
                         ->where('thumbnail','neq','')
                         ->order($val['fangshi'].' '.$aord)
-                        ->paginate($val['shuliang']);
+                        ->limit($val['shuliang'])
+                        ->select();
                 }
                 else
                 {
@@ -311,25 +345,21 @@ class Common extends Controller
                         ->where('status','=',1)
                         ->where('thumbnail','neq','')
                         ->order($val['fangshi'].' '.$aord)
-                        ->paginate($val['shuliang']);
+                        ->limit($val['shuliang'])
+                        ->select();
                 }
-                $pages = $data->render();
-                $pageArr = $data->toArray();
                 $tuwen['tuwen'.$start] = [
                     'biaoti' => $val['biaoti'],
-                    'neirong' => $this->addArticleHref($pageArr['data']),
-                    'pages' => $pages
+                    'neirong' => $this->addArticleHref($data)
                 ];
                 $start++;
             }
-            Cache::set('tuwen'.$page,$tuwen,3600);
+            Cache::set('tuwen',$tuwen,3600);
         }
         $tuwen['lang'] = $this->lang;
-        $tuwen['page'] = $page;
         Hook::add('filter_tuwen',$this->plugins);
         Hook::listen('filter_tuwen',$tuwen);
         unset($tuwen['lang']);
-        unset($tuwen['page']);
         $this->assign('tuwen', $tuwen);
         //获取推荐
         $tuijian = Cache::get('tuijian');
@@ -352,6 +382,26 @@ class Common extends Controller
         Hook::listen('filter_tuijian',$tuijian);
         unset($tuijian['lang']);
         $this->assign('tuijian', $tuijian);
+        //获取最新
+        $zuixin = Cache::get('zuixin');
+        if($zuixin == false)
+        {
+            $zuixin = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                ->where('post_status','=',1)
+                ->where('post_type','=',0)
+                ->where('status','=',1)
+                ->order('post_modified desc')
+                ->limit(10)
+                ->select();
+            $zuixin = $this->addArticleHref($zuixin);
+            Cache::set('zuixin',$zuixin,3600);
+        }
+        $zuixin['lang'] = $this->lang;
+        Hook::add('filter_zuixin',$this->plugins);
+        Hook::listen('filter_zuixin',$zuixin);
+        unset($zuixin['lang']);
+        $this->assign('zuixin', $zuixin);
         //获取登录状态
         $this->assign('login', $this->login());
         $domain = Cache::get('domain');
@@ -413,7 +463,14 @@ class Common extends Controller
     {
         foreach($params as $key => $val)
         {
-            $params[$key]['href'] = str_replace(['/index/Index','/id'],'',$val['href']);
+            if(substr($val['href'],0,4) == 'http')
+            {
+                $params[$key]['zidingyi'] = '1';
+            }
+            else
+            {
+                $params[$key]['href'] = str_replace(['/index/Index','/id'],'',$val['href']);
+            }
             if(isset($val['children']))
             {
                 $params[$key]['children'] = $this->checkUrl($val['children']);

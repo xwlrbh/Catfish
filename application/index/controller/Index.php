@@ -418,10 +418,12 @@ class Index extends Common
         $data = $this->addArticleHref($pageArr['data']);
         $data['lang'] = $this->lang;
         $data['page'] = $page;
+        $data['id'] = $id;
         Hook::add('filter_category',$this->plugins);
         Hook::listen('filter_category',$data);
         unset($data['lang']);
         unset($data['page']);
+        unset($data['id']);
         $this->assign('fenlei', $data);
         $this->assign('pages', $pages);
         $template = $this->receive();//主题目录
