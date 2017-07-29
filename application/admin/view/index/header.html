@@ -32,7 +32,9 @@
                     <li><a href="{:Url('/admin/Index/write')}" title="{:lang('Write an article')}"><span class="glyphicon glyphicon-pencil"></span></a></li>
                     <li><a href="{:Url('/admin/Index/personal')}" title="{:lang('Modify personal information')}"><span class="glyphicon glyphicon-list-alt"></span></a></li>
                     <li><a href="{:Url('/admin/Index/change')}" title="{:lang('Modify the login password')}"><span class="glyphicon glyphicon-lock"></span></a></li>
+                    {if condition="$permissions < 6"}
                     <li><a href="{:Url('/admin/Index/clearcache')}" title="{:lang('Clear cache')}"><span class="glyphicon glyphicon-repeat"></span></a></li>
+                    {/if}
                     <li><a href="{:Url('/admin/Common/quit')}" title="{:lang('Sign out')}"><span class="glyphicon glyphicon-log-out"></span></a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">

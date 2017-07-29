@@ -53,6 +53,11 @@
                 <p class="help-block">{:lang('You can set the user names that are not allowed to be registered, separated by a comma ","')}</p>
             </div>
             <div class="form-group">
+                <label>{:lang('The number of records displayed per page')}：</label>
+                <input type="number" class="form-control" name="everyPageShows" value="{notempty name="data.everyPageShows"}{$data.everyPageShows}{else /}10{/notempty}">
+                <p class="help-block">{:lang('You can set the number of displays in the category page')}</p>
+            </div>
+            <div class="form-group">
                 <label>{:lang('Slide size')}：</label>
                 <div class="row">
                     <div class="col-md-1"><h5 class="text-center">{:lang('Width')}</h5></div>
@@ -67,12 +72,38 @@
                 <p class="help-block">{:lang('The units are pixels')}</p>
             </div>
             <div class="form-group">
+                <label>{:lang('Whether to close the slide')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="closeSlide"{notempty name="data.closeSlide"}{if condition="$data.closeSlide eq 1"} checked{/if}{/notempty}> {:lang('Close the slide')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('Shutting down slides requires theme support')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Whether to allow registration')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="notAllowLogin"{notempty name="data.notAllowLogin"}{if condition="$data.notAllowLogin eq 1"} checked{/if}{/notempty}> {:lang('Registrations are not allowed')}
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
                 <label>{:lang('Login requires a verification code?')}：</label>
                 <div class="checkbox">
                     <label>
                         <input type="checkbox" name="yanzheng"{if condition="$data.captcha eq 1"} checked{/if}> {:lang('Login requires a verification code')}
                     </label>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Whether to close the big image generation')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="datu"{notempty name="data.datu"}{if condition="$data.datu eq 1"} checked{/if}{/notempty}> {:lang('Close Generate large images')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('Turning off big-picture generation saves space, but it can make large-picture effects for some topics unavailable')}</p>
             </div>
             <div class="form-group">
                 <label>{:lang('Whether to enable short address mode')}：</label>
@@ -90,6 +121,23 @@
                     <img src="{$domain}public/common/images/default-thumbnail.png" class="img-thumbnail img-responsive" id="tubiaoImg">
                 </div>
                 <input type="hidden" value="{$data.logo}" name="tubiao" id="tubiao">
+            </div>
+            <div class="form-group">
+                <label>{:lang('Website icon')}：</label>
+                <div id="upload_ico"></div>
+                <div style="width: 200px;">
+                    <img src="{$domain}public/common/images/favicon.ico" class="img-thumbnail img-responsive" id="icotubiaoIco">
+                </div>
+                <input type="hidden" value="{notempty name="data.ico"}{$data.ico}{/notempty}" name="ico" id="icotubiao">
+                <p class="help-block">{:lang('Please upload the "ico" icon file')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Set the time format')}：</label>
+                <select class="form-control" name="timeFormat">
+                    {volist name="timeFormat" id="vo"}
+                    <option value="{$vo.val}"{notempty name="data.timeFormat"}{if condition="$vo.val eq $data.timeFormat"} selected{/if}{/notempty}>{$vo.show}</option>
+                    {/volist}
+                </select>
             </div>
             <div class="form-group{if condition="$lang neq 'zh-cn'"} hidden{/if}">
                 <label>{:lang('Archival information')}：</label>
@@ -111,6 +159,7 @@
 </div><br><br>
 <div class="hidden" id="webroot">{$domain}</div>
 <div class="hidden" id="buttonText">{:lang('Select Image')}</div>
+<div class="hidden" id="icobuttonText">{:lang('Select the icon')}</div>
 <script type="text/javascript" src="{$domain}public/common/uploadify/jquery.uploadify.js"></script>
 <script src="{$domain}public/common/js/web.js"></script>
 {include file="index/footer" /}

@@ -13,6 +13,7 @@ use think\Request;
 use think\Db;
 use think\Validate;
 use think\Lang;
+use think\Hook;
 
 class Index extends Common
 {
@@ -30,7 +31,8 @@ class Index extends Common
         $this->checkUser();
         if(Request::instance()->isPost())
         {
-            $data = ['user_nicename' => htmlspecialchars(Request::instance()->post('nicheng')), 'user_url' => htmlspecialchars(Request::instance()->post('gerenwangzhi')), 'sex' => Request::instance()->post('xingbie'), 'birthday' => htmlspecialchars(Request::instance()->post('shengri')), 'signature' => htmlspecialchars(Request::instance()->post('qianming'))];
+            $xingbie = Request::instance()->post('xingbie');
+            $data = ['user_nicename' => htmlspecialchars(Request::instance()->post('nicheng')), 'user_url' => htmlspecialchars(Request::instance()->post('gerenwangzhi')), 'sex' => intval($xingbie), 'birthday' => htmlspecialchars(Request::instance()->post('shengri')), 'signature' => htmlspecialchars(Request::instance()->post('qianming'))];
             Db::name('users')
                 ->where('id', Session::get($this->session_prefix.'user_id'))
                 ->update($data);
@@ -111,25 +113,28 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $avatar = Db::name('users')
-                ->where('id', Session::get($this->session_prefix.'user_id'))
-                ->field('avatar')
-                ->find();
-            $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-            //删除原图
-            if(Request::instance()->post('avatar') != $avatar['avatar'])
+            if($this->isLegalPicture(Request::instance()->post('avatar')))
             {
-                $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
-                if(!empty($yfile)){
-                    $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
-                    $yfile = str_replace("/", DS, $yfile);
-                    @unlink(APP_PATH . '..'. DS . $yfile);
+                $avatar = Db::name('users')
+                    ->where('id', Session::get($this->session_prefix.'user_id'))
+                    ->field('avatar')
+                    ->find();
+                $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+                //删除原图
+                if(Request::instance()->post('avatar') != $avatar['avatar'] && $this->isLegalPicture($avatar['avatar']))
+                {
+                    $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
+                    if(!empty($yfile)){
+                        $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
+                        $yfile = str_replace("/", DS, $yfile);
+                        @unlink(APP_PATH . '..'. DS . $yfile);
+                    }
                 }
+                $data = ['avatar' => Request::instance()->post('avatar')];
+                Db::name('users')
+                    ->where('id', Session::get($this->session_prefix.'user_id'))
+                    ->update($data);
             }
-            $data = ['avatar' => Request::instance()->post('avatar')];
-            Db::name('users')
-                ->where('id', Session::get($this->session_prefix.'user_id'))
-                ->update($data);
         }
         $this->receive();
         $this->assign('active', 'touxiang');
@@ -174,7 +179,7 @@ class Index extends Common
     //删除收藏
     public function removeshoucang()
     {
-        Db::name('user_favorites')->where('id',Request::instance()->post('id'))->delete();
+        Db::name('user_favorites')->where('id',Request::instance()->post('id'))->where('uid',Session::get($this->session_prefix.'user_id'))->delete();
         return true;
     }
     //我的评论
@@ -194,7 +199,71 @@ class Index extends Common
     //删除评论
     public function removepinglun()
     {
-        Db::name('comments')->where('id',Request::instance()->post('id'))->delete();
+        Db::name('comments')->where('id',Request::instance()->post('id'))->where('uid',Session::get($this->session_prefix.'user_id'))->delete();
         return true;
+    }
+    public function plugin($name)
+    {
+        $this->checkUser();
+        $this->receive();
+        Hook::add('user_post_append',$this->plugins);
+        if(Request::instance()->isPost())
+        {
+            $params = [];
+            Hook::listen('user_post_append',$params);
+        }
+        Hook::add('user_view_append',$this->plugins);
+        $params = [
+            'name' => $name,
+            'view' => ''
+        ];
+        Hook::listen('user_view_append',$params);
+        $title = '';
+        if(isset($this->params['user_menu_append'][$name]['title']))
+        {
+            $title = $this->params['user_menu_append'][$name]['title'];
+        }
+        else if(isset($params['title']))
+        {
+            $title = $params['title'];
+        }
+        $this->assign('menuTitle', $title);
+        $this->assign('data', $params['view']);
+        $this->assign('active', $name);
+        $this->assign('isTop', '0');
+        $view = $this->fetch();
+        return $view;
+    }
+    public function plugint($name)
+    {
+        $this->checkUser();
+        $this->receive();
+        Hook::add('user_post_top',$this->plugins);
+        if(Request::instance()->isPost())
+        {
+            $params = [];
+            Hook::listen('user_post_top',$params);
+        }
+        Hook::add('user_view_top',$this->plugins);
+        $params = [
+            'name' => $name,
+            'view' => ''
+        ];
+        Hook::listen('user_view_top',$params);
+        $title = '';
+        if(isset($this->params['user_menu_top'][$name]['title']))
+        {
+            $title = $this->params['user_menu_top'][$name]['title'];
+        }
+        else if(isset($params['title']))
+        {
+            $title = $params['title'];
+        }
+        $this->assign('menuTitle', $title);
+        $this->assign('data', $params['view']);
+        $this->assign('active', $name);
+        $this->assign('isTop', '1');
+        $view = $this->fetch(APP_PATH.'user/view/index/plugin.html');
+        return $view;
     }
 }

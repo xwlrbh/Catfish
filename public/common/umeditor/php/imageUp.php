@@ -16,7 +16,7 @@
     $config[ "savePath" ] = $Path;
     $up = new Uploader( "upfile" , $config );
     $type = $_REQUEST['type'];
-    $callback=$_GET['callback'];
+    $callback=htmlspecialchars(str_replace(['(',')'],'',$_GET['callback']));
 
     $info = $up->getFileInfo();
     /**

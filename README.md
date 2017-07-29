@@ -14,7 +14,7 @@ Catfish(鲶鱼) CMS系统适合不同程度的使用者使用。
 
 **开发插件要注意：Catfish(鲶鱼) CMS系统使用UTF-8字符编码。**
 
-官方网站：www.catfish-cms.top
+官方网站：www.catfish-cms.com
 
 ## Catfish CMS系统特点： ##
 
@@ -49,7 +49,7 @@ CURL PHP Extension
 
 ## 系统安装： ##
 
-将解压后index.php所在目录的所有文件以及文件夹全部复制到您的WEB运行环境的根目录下。复制完所有文件后，您可以打开浏览器，然后在浏览器的地址栏输入您站点的域名，系统将自动进入安装页面。例如：如果域名是www.catfish-cms.top，那么只要在浏览器地址栏输入www.catfish-cms.top，然后回车就可以开始自动安装系统了。记住要换成您自己的域名哦！
+将解压后index.php所在目录的所有文件以及文件夹全部复制到您的WEB运行环境的根目录下。复制完所有文件后，您可以打开浏览器，然后在浏览器的地址栏输入您站点的域名，系统将自动进入安装页面。例如：如果域名是www.catfish-cms.com，那么只要在浏览器地址栏输入www.catfish-cms.com，然后回车就可以开始自动安装系统了。记住要换成您自己的域名哦！
 
 
 ----------
@@ -103,6 +103,6 @@ CURL PHP Extension
 
 ## System installation: ##
 
-After decompression, the index.php file storage directory files and folders all copied to the root directory of your WEB operating environment. After copying all the files, you can open the browser, and then in the browser's address bar enter your site domain name, the system will automatically enter the installation page. For example: If the domain name is www.catfish-cms.top, then as long as the browser address bar enter "www.catfish-cms.top" can begin to install the system. Remember to replace your own domain name!
+After decompression, the index.php file storage directory files and folders all copied to the root directory of your WEB operating environment. After copying all the files, you can open the browser, and then in the browser's address bar enter your site domain name, the system will automatically enter the installation page. For example: If the domain name is www.catfish-cms.com, then as long as the browser address bar enter "www.catfish-cms.com" can begin to install the system. Remember to replace your own domain name!
 
-Welcome to the official website：www.catfish-cms.top
+Welcome to the official website：www.catfish-cms.com

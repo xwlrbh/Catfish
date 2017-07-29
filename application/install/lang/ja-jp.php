@@ -75,5 +75,6 @@ return [
     'Database information error' => 'データベース情報のエラー',
     'Another Catfish CMS site' => 'また一つ Catfish CMS サイト',
     'Catfish CMS' => 'Catfish CMS',
-    'Installation completed' => '取り付けが終わり'
+    'Installation completed' => '取り付けが終わり',
+    'If you use an existing database, replace it with the actual database name' => '既存のデータベースを使用する場合は、実際のデータベース名で置き換えます'
 ];

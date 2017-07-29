@@ -3,10 +3,12 @@
  */
 $(document).ready(function(){
     $(".shanchu").click(function(){
-        var obj = $(this);
-        $.post("removepinglun", { id: $(this).prev().val()},
-            function(data){
-                obj.parent().parent().remove();
-            });
+        if($.catfish()){
+            var obj = $(this);
+            $.post("removepinglun", { id: $(this).prev().val()},
+                function(data){
+                    obj.parent().parent().remove();
+                });
+        }
     });
 });

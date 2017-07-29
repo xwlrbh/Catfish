@@ -29,7 +29,7 @@ class Announcement extends Plugin
         $params['view'] = '<form method="post">
     <div class="form-group">
         <label>'.lang('Notice content').'：</label>
-        <textarea class="form-control" name="gonggao" rows="3" autofocus>'.$this->get($this->plugin.'_announcement').'</textarea>
+        <textarea class="form-control" name="announcement_gonggao" rows="3" autofocus>'.$this->get($this->plugin.'_announcement').'</textarea>
     </div>
     <button type="submit" class="btn btn-default">'.lang('Save').'</button>
 </form>'; //$this->get($this->plugin.'_announcement')获取变量的内容
@@ -37,7 +37,7 @@ class Announcement extends Plugin
     public function settings_post(&$params)
     {
         //后台设置，表单提交，$this->plugin为插件名
-        $this->set($this->plugin.'_announcement',input('post.gonggao'));
+        $this->set($this->plugin.'_announcement',input('post.announcement_gonggao'));
     }
 
     //输出公告内容

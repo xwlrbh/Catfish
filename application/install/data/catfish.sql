@@ -63,7 +63,8 @@ CREATE TABLE `catfish_posts` (
   KEY `status` (`status`),
   KEY `post_modified` (`post_modified`),
   KEY `post_author` (`post_author`),
-  KEY `post_date` (`post_date`)
+  KEY `post_date` (`post_date`),
+  KEY `post_hits` (`post_hits`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 --

@@ -26,7 +26,7 @@
                     <td>{$vo.id}</td>
                     <td>{$vo.user_login}</td>
                     <td>{$vo.user_nicename}</td>
-                    <td>{if condition="$vo.user_type eq 3"}{:lang('Administrator')}{elseif condition="$vo.user_type eq 5"/}{:lang('Editor')}{else /} {/if}</td>
+                    <td>{if condition="$vo.user_type eq 3"}{:lang('Administrator')}{elseif condition="$vo.user_type eq 5"/}{:lang('Editor')}{elseif condition="$vo.user_type eq 6"/}{:lang('Author')}{else /} {/if}</td>
                     <td>{notempty name="$vo.avatar"}<img src="{$vo.avatar}" width="50">{/notempty}</td>
                     <td>{$vo.user_email}</td>
                     <td>{$vo.last_login_time}</td>

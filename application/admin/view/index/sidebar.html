@@ -21,6 +21,7 @@
                                 {:lang('All articles')}
                             </button>
                         </a>
+                        {if condition="$permissions < 6"}
                         <a href="{:Url('/admin/Index/addclassify')}">
                             <button type="button" class="btn btn-default btn-block{eq name="option" value="addclassify"} btn-primary{/eq}">
                                 {:lang('Add category')}
@@ -41,6 +42,7 @@
                                 {:lang('All messages')}
                             </button>
                         </a>
+                        {/if}
                         <a href="{:Url('/admin/Index/recycle')}">
                             <button type="button" class="btn btn-default btn-block{eq name="option" value="recycle"} btn-primary{/eq}">
                                 {:lang('Recycle bin')}
@@ -174,6 +176,11 @@
                         <a href="{:Url('/admin/Index/web')}">
                             <button type="button" class="btn btn-default btn-block{eq name="option" value="web"} btn-primary{/eq}">
                                 {:lang('Website information')}
+                            </button>
+                        </a>
+                        <a href="{:Url('/admin/Index/themes')}">
+                            <button type="button" class="btn btn-default btn-block{eq name="option" value="themes"} btn-primary{/eq}">
+                            {:lang('Themes')}
                             </button>
                         </a>
                         <a href="{:Url('/admin/Index/personal')}">

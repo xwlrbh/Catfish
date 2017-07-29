@@ -15,14 +15,21 @@ use think\Cache;
 use think\Db;
 use think\Config;
 use think\Lang;
+use think\Hook;
+use think\Request;
 
 class Common extends Controller
 {
     protected $session_prefix;
+    protected $lang;
+    protected $params = [];
+    protected $plugins = [];
     public function _initialize()
     {
-        $this->session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
-        Lang::detect();
+        $this->session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
+        $this->lang = Lang::detect();
+        $this->lang = $this->filterLanguages($this->lang);
+        Lang::load(APP_PATH . 'user/lang/'.$this->lang.'.php');
     }
     //判断登录状态
     protected function checkUser()
@@ -66,12 +73,16 @@ class Common extends Controller
             Cache::set('options',$data_options,3600);
         }
         $version = Config::get('version');
-        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
+        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
         foreach($data_options as $key => $val)
         {
             if($val['option_name'] == 'copyright' || $val['option_name'] == 'statistics')
             {
                 $this->assign($val['option_name'], unserialize($val['option_value']));
+            }
+            else if($val['option_name'] == 'pageSettings')
+            {
+                ;
             }
             else
             {
@@ -116,12 +127,102 @@ class Common extends Controller
             $root = 'index.php/';
         }
         $this->assign('root', $root);
+        $this->getPlugins();
+        Hook::add('user_menu_append',$this->plugins);
+        Hook::listen('user_menu_append',$this->params);
+        if(isset($this->params['user_menu_append']))
+        {
+            $this->assign('user_menu_append', $this->params['user_menu_append']);
+        }
+        Hook::add('user_menu_top',$this->plugins);
+        Hook::listen('user_menu_top',$this->params);
+        if(isset($this->params['user_menu_top']))
+        {
+            $this->assign('user_menu_top', $this->params['user_menu_top']);
+        }
+    }
+    private function filterLanguages($parameter)
+    {
+        $param = strtolower($parameter);
+        if($param == 'zh')
+        {
+            Lang::range('zh-cn');
+            return 'zh-cn';
+        }
+        else if(stripos($param,'zh') === false)
+        {
+            $paramsub = substr($param,0,2);
+            switch($paramsub)
+            {
+                case 'de':
+                    Lang::range('de-de');
+                    return 'de-de';
+                    break;
+                case 'fr':
+                    Lang::range('fr-fr');
+                    return 'fr-fr';
+                    break;
+                case 'ja':
+                    Lang::range('ja-jp');
+                    return 'ja-jp';
+                    break;
+                case 'ko':
+                    Lang::range('ko-kr');
+                    return 'ko-kr';
+                    break;
+                case 'ru':
+                    Lang::range('ru-ru');
+                    return 'ru-ru';
+                    break;
+                default:
+                    return $param;
+            }
+        }
+        else
+        {
+            return $param;
+        }
+    }
+    private function getPlugins()
+    {
+        $plugins = Cache::get('plugins');
+        if($plugins == false)
+        {
+            $plugins = Db::name('options')->where('option_name','plugins')->field('option_value')->find();
+            if(!empty($plugins))
+            {
+                $plugins = unserialize($plugins['option_value']);
+            }
+            else
+            {
+                $plugins = [];
+            }
+            Cache::set('plugins',$plugins,3600);
+        }
+        if(!empty($plugins))
+        {
+            foreach($plugins as $key => $val)
+            {
+                $pluginFile = APP_PATH.'plugins/'.$val.'/'.ucfirst($val).'.php';
+                if(is_file($pluginFile))
+                {
+                    $plugins[$key] = 'app\\plugins\\'.$val.'\\'.ucfirst($val);
+                    //加载插件语言包
+                    Lang::load(APP_PATH . 'plugins/'.$val.'/lang/'.$this->lang.'.php');
+                }
+                else
+                {
+                    unset($plugins[$key]);
+                }
+            }
+            $this->plugins = $plugins;
+        }
     }
     private function checkUrl($params)
     {
         foreach($params as $key => $val)
         {
-            if(substr($val['href'],0,4) == 'http')
+            if(substr($val['href'],0,4) == 'http' || $this->doNothing($val['href']))
             {
                 $params[$key]['zidingyi'] = '1';
             }
@@ -135,5 +236,34 @@ class Common extends Controller
             }
         }
         return $params;
+    }
+    protected function doNothing($param)
+    {
+        $param = strtolower(trim($param));
+        if(substr($param,0,1)=='#')
+        {
+            return true;
+        }
+        if(substr($param,0,10)=='javascript')
+        {
+            $param = str_replace(' ','',$param);
+            if($param == 'javascript:;' || $param == 'javascript:void(0)' || $param == 'javascript:void(0);')
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    protected function isLegalPicture($picture)
+    {
+        $pathinfo = pathinfo($picture);
+        if(isset($pathinfo["extension"]))
+        {
+            if(in_array($pathinfo["extension"],['jpeg','jpg','png','gif']) && stripos($pathinfo['dirname'],'/data/') !== false)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

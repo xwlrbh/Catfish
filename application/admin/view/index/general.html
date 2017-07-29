@@ -4,6 +4,17 @@
 </div><br>
 <div class="container-fluid" style="min-height: 800px;">
     <div class="row">
+        <div class="well">
+            <form class="form-inline" role="form" method="get" action="searchuser">
+                <div class="form-group">
+                    <label>{:lang('User name or nickname')}：</label>
+                    <input type="text" name="user" class="form-control" placeholder="{:lang('User name or nickname')}">
+                </div>
+                <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>&nbsp;{:lang('Search')}</button>
+            </form>
+        </div>
+    </div>
+    <div class="row">
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>

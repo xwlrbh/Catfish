@@ -46,6 +46,8 @@ function subtext($text, $length)
     return $text;
 }
 use think\Route;
-Route::rule('page/:id','index/Index/page');
+Route::rule(['page','page/:id'],'index/Index/page');
 Route::rule(['article','article/:id'],'index/Index/article');
-Route::rule('category/:id','index/Index/category');
+Route::rule(['category','category/:id'],'index/Index/category');
+Route::rule(['search','search/:word'],'index/Index/search');
+Route::rule('sitemap','index/Index/sitemap');

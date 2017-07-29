@@ -16,9 +16,12 @@ use think\Lang;
 
 class Index extends Controller
 {
+    private $lang;
     public function _initialize()
     {
-        Lang::detect();
+        $this->lang = Lang::detect();
+        $this->lang = $this->filterLanguages($this->lang);
+        Lang::load(APP_PATH . 'install/lang/'.$this->lang.'.php');
     }
     public function index()
     {
@@ -307,5 +310,47 @@ class Index extends Controller
             return false;
         }
         return true;
+    }
+    private function filterLanguages($parameter)
+    {
+        $param = strtolower($parameter);
+        if($param == 'zh')
+        {
+            Lang::range('zh-cn');
+            return 'zh-cn';
+        }
+        else if(stripos($param,'zh') === false)
+        {
+            $paramsub = substr($param,0,2);
+            switch($paramsub)
+            {
+                case 'de':
+                    Lang::range('de-de');
+                    return 'de-de';
+                    break;
+                case 'fr':
+                    Lang::range('fr-fr');
+                    return 'fr-fr';
+                    break;
+                case 'ja':
+                    Lang::range('ja-jp');
+                    return 'ja-jp';
+                    break;
+                case 'ko':
+                    Lang::range('ko-kr');
+                    return 'ko-kr';
+                    break;
+                case 'ru':
+                    Lang::range('ru-ru');
+                    return 'ru-ru';
+                    break;
+                default:
+                    return $param;
+            }
+        }
+        else
+        {
+            return $param;
+        }
     }
 }

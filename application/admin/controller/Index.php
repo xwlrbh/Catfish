@@ -39,6 +39,7 @@ class Index extends Common
     public function addclassify()
     {
         $this->checkUser();
+        $this->checkPermissions(5);
         if(Request::instance()->has('fenleim','post'))
         {
             //验证输入内容
@@ -78,6 +79,7 @@ class Index extends Common
     public function classify()
     {
         $this->checkUser();
+        $this->checkPermissions(5);
         if(Request::instance()->has('d','get'))
         {
             //删除对应分类
@@ -98,6 +100,7 @@ class Index extends Common
     public function modifyclassify()
     {
         $this->checkUser();
+        $this->checkPermissions(5);
         if(Request::instance()->has('cid','post'))
         {
             //验证输入内容
@@ -135,6 +138,7 @@ class Index extends Common
     public function write()
     {
         $this->checkUser();
+        $this->checkPermissions(6);
         if(Request::instance()->has('biaoti','post'))
         {
             //验证输入内容
@@ -159,6 +163,7 @@ class Index extends Common
             $biaoti = Request::instance()->post('biaoti');
             $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
             $zhaiyao = Request::instance()->post('zhaiyao');
+            $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
             Hook::add('write',$this->plugins);
             $params = [
                 'title' => $biaoti,
@@ -169,7 +174,32 @@ class Index extends Common
             $biaoti = $params['title'];
             $neirong = $params['content'];
             $zhaiyao = $params['summary'];
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => $neirong, 'post_title' => htmlspecialchars($biaoti), 'post_excerpt' => htmlspecialchars($zhaiyao), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => Request::instance()->post('fabushijian'), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
+            $fabushijian = date('Y-m-d H:i:s');
+            if(Request::instance()->has('fabushijian','post'))
+            {
+                $fabushijian = Request::instance()->post('fabushijian');
+            }
+            $zhiding = 0;
+            if(Request::instance()->has('zhiding','post'))
+            {
+                $zhiding = Request::instance()->post('zhiding');
+            }
+            $tuijian = 0;
+            if(Request::instance()->has('tuijian','post'))
+            {
+                $tuijian = Request::instance()->post('tuijian');
+            }
+            $pinglun = 1;
+            if(Request::instance()->has('pinglun','post'))
+            {
+                $pinglun = Request::instance()->post('pinglun');
+            }
+            $shenhe = 1;
+            if($this->permissions > 5)
+            {
+                $shenhe = 0;
+            }
+            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_date' => $fabushijian, 'post_content' => $neirong, 'post_title' => htmlspecialchars($biaoti), 'post_excerpt' => htmlspecialchars($zhaiyao), 'post_status' => $shenhe, 'comment_status' => $pinglun, 'post_modified' => $fabushijian, 'post_type' => Request::instance()->post('xingshi'), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => $zhiding, 'recommended' => $tuijian];
             $id = Db::name('posts')->insertGetId($data);
             if(isset($_POST['fenlei']) && is_array($_POST['fenlei']))
             {
@@ -180,7 +210,18 @@ class Index extends Common
                 }
                 Db::name('term_relationships')->insertAll($data);
             }
+            Hook::add('write_post',$this->plugins);
+            $params = [
+                'id' => $id
+            ];
+            Hook::listen('write_post',$params);
+            if(Request::instance()->has('jsfb','post') && Request::instance()->post('jsfb') == 'on')
+            {
+                Cache::clear();
+            }
         }
+        $this->writeAlias(0);
+        $this->switchEditor();
         $this->assign('backstageMenu', 'neirong');
         $this->assign('option', 'write');
         $this->assign('fenlei', $this->getfenlei());
@@ -190,12 +231,28 @@ class Index extends Common
     public function articles()
     {
         $this->checkUser();
-        $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended')
-            ->view('users','user_login','users.id=posts.post_author')
-            ->where('post_type','=',0)
-            ->where('status','=',1)
-            ->order('post_date desc')
-            ->paginate(10);
+        $this->checkPermissions(6);
+        if($this->permissions < 6)
+        {
+            $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended')
+                ->view('users','user_login','users.id=posts.post_author')
+                ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                ->where('status','=',1)
+                ->order('post_date desc')
+                ->paginate(10);
+            $this->assign('authority', 'all');
+        }
+        else
+        {
+            $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended')
+                ->view('users','user_login','users.id=posts.post_author')
+                ->where('post_author','=',Session::get($this->session_prefix.'user_id'))
+                ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                ->where('status','=',1)
+                ->order('post_date desc')
+                ->paginate(10);
+            $this->assign('authority', 'part');
+        }
         $this->assign('data', $data);
         $this->assign('backstageMenu', 'neirong');
         $this->assign('option', 'articles');
@@ -206,6 +263,7 @@ class Index extends Common
     public function comments()
     {
         $this->checkUser();
+        $this->checkPermissions(5);
         $data = Db::view('comments','id,createtime,content,status')
             ->view('users','user_login,user_nicename,user_email,avatar','users.id=comments.uid')
             ->order('comments.createtime desc')
@@ -218,6 +276,7 @@ class Index extends Common
     //审核评论
     public function shenhepinglun()
     {
+        $this->checkPermissions(5);
         $zt = Request::instance()->post('zt');
         if($zt == 1)
         {
@@ -235,6 +294,7 @@ class Index extends Common
     //删除评论
     public function removeComment()
     {
+        $this->checkPermissions(5);
         $post = Db::name('comments')
             ->where('id', Request::instance()->post('id'))
             ->field('post_id')
@@ -250,6 +310,7 @@ class Index extends Common
     //批量审核评论
     public function commentbatch()
     {
+        $this->checkPermissions(5);
         $zhi = 0;
         switch(Request::instance()->post('cz')){
             case 'shenhe':
@@ -268,6 +329,7 @@ class Index extends Common
     public function messages()
     {
         $this->checkUser();
+        $this->checkPermissions(5);
         $data = Db::name('guestbook')->order('createtime desc')->paginate(10);
         $this->assign('data', $data);
         $this->assign('backstageMenu', 'neirong');
@@ -277,6 +339,7 @@ class Index extends Common
     //删除留言
     public function removeMessage()
     {
+        $this->checkPermissions(5);
         Db::name('guestbook')->where('id',Request::instance()->post('id'))->delete();
         return true;
     }
@@ -284,12 +347,26 @@ class Index extends Common
     public function recycle()
     {
         $this->checkUser();
-        $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
-            ->view('users','user_login','users.id=posts.post_author')
-            ->where('post_type','=',0)
-            ->where('status','=',0)
-            ->order('post_date desc')
-            ->paginate(10);
+        $this->checkPermissions(6);
+        if($this->permissions < 6)
+        {
+            $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
+                ->view('users','user_login','users.id=posts.post_author')
+                ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                ->where('status','=',0)
+                ->order('post_date desc')
+                ->paginate(10);
+        }
+        else
+        {
+            $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
+                ->view('users','user_login','users.id=posts.post_author')
+                ->where('post_author','=',Session::get($this->session_prefix.'user_id'))
+                ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                ->where('status','=',0)
+                ->order('post_date desc')
+                ->paginate(10);
+        }
         $this->assign('data', $data);
         $this->assign('backstageMenu', 'neirong');
         $this->assign('option', 'recycle');
@@ -298,6 +375,7 @@ class Index extends Common
     //从回收站删除
     public function removeArticle()
     {
+        $this->checkPermissions(6);
         Db::name('posts')->where('id',Request::instance()->post('id'))->delete();
         Db::name('term_relationships')->where('object_id',Request::instance()->post('id'))->delete();
         Db::name('comments')->where('post_id',Request::instance()->post('id'))->delete();
@@ -306,6 +384,7 @@ class Index extends Common
     //从回收站还原
     public function reductionArticle()
     {
+        $this->checkPermissions(6);
         Db::name('posts')
             ->where('id', Request::instance()->post('id'))
             ->update(['status' => 1]);
@@ -314,6 +393,7 @@ class Index extends Common
     //回收站批量操作
     public function recycleBatch()
     {
+        $this->checkPermissions(6);
         switch(Request::instance()->post('cz')){
             case 'phuanyuan':
                 Db::name('posts')
@@ -332,6 +412,7 @@ class Index extends Common
     public function search()
     {
         $this->checkUser();
+        $this->checkPermissions(6);
         $fenlei = 0;
         $start = '2000-01-01 01:01:01';
         $end = date("Y-m-d H:i:s");
@@ -361,41 +442,91 @@ class Index extends Common
         //查询
         if($fenlei != 0)
         {
-            $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
-                ->view('users','user_login','users.id=posts.post_author')
-                ->view('term_relationships','term_id','term_relationships.object_id=posts.id')
-                ->where('term_id','=',$fenlei)
-                ->where('post_type','=',0)
-                ->where('status','=',1)
-                ->whereTime('post_date', 'between', [$start, $end])
-                ->where('post_title|post_content','like','%'.$key.'%')
-                ->order('post_date desc')
-                ->paginate(10,false,[
-                    'query' => [
-                        'fenlei' => urlencode($fenlei),
-                        'start' => urlencode($start),
-                        'end' => urlencode($end),
-                        'key' => urlencode($key)
-                    ]
-                ]);
+            if($this->permissions < 6)
+            {
+                $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
+                    ->view('users','user_login','users.id=posts.post_author')
+                    ->view('term_relationships','term_id','term_relationships.object_id=posts.id')
+                    ->where('term_id','=',$fenlei)
+                    ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                    ->where('status','=',1)
+                    ->whereTime('post_date', 'between', [$start, $end])
+                    ->where('post_title|post_content','like','%'.$key.'%')
+                    ->order('post_date desc')
+                    ->paginate(10,false,[
+                        'query' => [
+                            'fenlei' => urlencode($fenlei),
+                            'start' => urlencode($start),
+                            'end' => urlencode($end),
+                            'key' => urlencode($key)
+                        ]
+                    ]);
+                $this->assign('authority', 'all');
+            }
+            else
+            {
+                $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
+                    ->view('users','user_login','users.id=posts.post_author')
+                    ->view('term_relationships','term_id','term_relationships.object_id=posts.id')
+                    ->where('term_id','=',$fenlei)
+                    ->where('post_author','=',Session::get($this->session_prefix.'user_id'))
+                    ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                    ->where('status','=',1)
+                    ->whereTime('post_date', 'between', [$start, $end])
+                    ->where('post_title|post_content','like','%'.$key.'%')
+                    ->order('post_date desc')
+                    ->paginate(10,false,[
+                        'query' => [
+                            'fenlei' => urlencode($fenlei),
+                            'start' => urlencode($start),
+                            'end' => urlencode($end),
+                            'key' => urlencode($key)
+                        ]
+                    ]);
+                $this->assign('authority', 'part');
+            }
         }
         else
         {
-            $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
-                ->view('users','user_login','users.id=posts.post_author')
-                ->where('post_type','=',0)
-                ->where('status','=',1)
-                ->whereTime('post_date', 'between', [$start, $end])
-                ->where('post_title|post_content','like','%'.$key.'%')
-                ->order('post_date desc')
-                ->paginate(10,false,[
-                    'query' => [
-                        'fenlei' => urlencode($fenlei),
-                        'start' => urlencode($start),
-                        'end' => urlencode($end),
-                        'key' => urlencode($key)
-                    ]
-                ]);
+            if($this->permissions < 6)
+            {
+                $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
+                    ->view('users','user_login','users.id=posts.post_author')
+                    ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                    ->where('status','=',1)
+                    ->whereTime('post_date', 'between', [$start, $end])
+                    ->where('post_title|post_content','like','%'.$key.'%')
+                    ->order('post_date desc')
+                    ->paginate(10,false,[
+                        'query' => [
+                            'fenlei' => urlencode($fenlei),
+                            'start' => urlencode($start),
+                            'end' => urlencode($end),
+                            'key' => urlencode($key)
+                        ]
+                    ]);
+                $this->assign('authority', 'all');
+            }
+            else
+            {
+                $data = Db::view('posts','id,post_date,post_title,post_status,comment_count,thumbnail,post_hits,istop,recommended,status')
+                    ->view('users','user_login','users.id=posts.post_author')
+                    ->where('post_author','=',Session::get($this->session_prefix.'user_id'))
+                    ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                    ->where('status','=',1)
+                    ->whereTime('post_date', 'between', [$start, $end])
+                    ->where('post_title|post_content','like','%'.$key.'%')
+                    ->order('post_date desc')
+                    ->paginate(10,false,[
+                        'query' => [
+                            'fenlei' => urlencode($fenlei),
+                            'start' => urlencode($start),
+                            'end' => urlencode($end),
+                            'key' => urlencode($key)
+                        ]
+                    ]);
+                $this->assign('authority', 'part');
+            }
         }
         $this->assign('data', $data);
         $this->assign('backstageMenu', 'neirong');
@@ -406,6 +537,7 @@ class Index extends Common
     //文章放入回收站
     public function recycleArticle()
     {
+        $this->checkPermissions(6);
         Db::name('posts')
             ->where('id', Request::instance()->post('id'))
             ->update(['status' => 0]);
@@ -415,6 +547,7 @@ class Index extends Common
     public function rewrite()
     {
         $this->checkUser();
+        $this->checkPermissions(6);
         if(Request::instance()->has('postId','post'))
         {
             //验证输入内容
@@ -436,9 +569,9 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $neirong = str_replace('<img class="img-responsive"','<img',Request::instance()->post('neirong'));
-            $neirong = str_replace('<img','<img class="img-responsive"',$neirong);
-            $data = ['post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
+            $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
+            $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
+            $data = ['post_keywords' => htmlspecialchars($guanjianci), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => date("Y-m-d H:i:s"), 'post_type' => Request::instance()->post('xingshi'), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
             Db::name('posts')
                 ->where('id', Request::instance()->post('postId'))
                 ->update($data);
@@ -454,6 +587,11 @@ class Index extends Common
                 }
                 Db::name('term_relationships')->insertAll($data);
             }
+            Hook::add('rewrite_post',$this->plugins);
+            $params = [
+                'id' => Request::instance()->post('postId')
+            ];
+            Hook::listen('rewrite_post',$params);
         }
         //查找分类
         $classify = Db::name('term_relationships')->field('term_id')->where('object_id',Request::instance()->get('art'))->select();
@@ -479,7 +617,10 @@ class Index extends Common
             $wzid = Request::instance()->get('art');
         }
         $data = Db::name('posts')->where('id',$wzid)->select();
+        $data[0]['post_content'] = str_replace('<img class="img-responsive"','<img',$data[0]['post_content']);
         $this->assign('data', $data[0]);
+        $this->writeAlias($wzid);
+        $this->switchEditor();
         $this->assign('backstageMenu', 'neirong');
         $this->assign('option', 'articles');
         $this->assign('fenlei', $fenlei);
@@ -488,6 +629,7 @@ class Index extends Common
     //批量修改文章
     public function modify()
     {
+        $this->checkPermissions(6);
         $xiugai = '';
         $zhi = 0;
         switch(Request::instance()->post('cz')){
@@ -531,6 +673,7 @@ class Index extends Common
     public function newpage()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->has('biaoti','post'))
         {
             //验证输入内容
@@ -552,7 +695,9 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => Request::instance()->post('neirong'), 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => Request::instance()->post('fabushijian'), 'post_type' => 1, 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
+            $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
+            $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
+            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => Request::instance()->post('fabushijian'), 'post_type' => 1, 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
             Db::name('posts')->insert($data);
         }
         //获取模板目录
@@ -568,6 +713,7 @@ class Index extends Common
             $dir[$key] = $tmpdir;
         }
         $this->assign('dir', $dir);
+        $this->switchEditor();
         $this->assign('backstageMenu', 'yemian');
         $this->assign('option', 'newpage');
         return $this->view();
@@ -576,6 +722,7 @@ class Index extends Common
     public function allpage()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         $data = Db::view('posts','id,post_date,post_title,template')
             ->view('users','user_login','users.id=posts.post_author')
             ->where('post_type','=',1)
@@ -590,6 +737,7 @@ class Index extends Common
     //删除页面
     public function removePage()
     {
+        $this->checkPermissions(3);
         Db::name('posts')
             ->where('id',Request::instance()->post('id'))
             ->delete();
@@ -598,6 +746,7 @@ class Index extends Common
     //批量删除页面
     public function removeAllPage()
     {
+        $this->checkPermissions(3);
         if(Request::instance()->post('cz') == 'pshanchu')
         {
             Db::name('posts')
@@ -610,6 +759,7 @@ class Index extends Common
     public function editpage()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->has('postId','post'))
         {
             //验证输入内容
@@ -631,7 +781,9 @@ class Index extends Common
                 $this->error($validate->getError());//验证错误输出
                 return false;
             }
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars(Request::instance()->post('guanjianci')), 'post_content' => Request::instance()->post('neirong'), 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
+            $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
+            $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
+            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
             Db::name('posts')
                 ->where('id', Request::instance()->post('postId'))
                 ->update($data);
@@ -647,6 +799,7 @@ class Index extends Common
             $wzid = Request::instance()->get('art');
         }
         $data = Db::name('posts')->where('id',$wzid)->find();
+        $data['post_content'] = str_replace('<img class="img-responsive"','<img',$data['post_content']);
         $this->assign('data', $data);
         //获取模板目录
         $template = Db::name('options')
@@ -661,6 +814,7 @@ class Index extends Common
             $dir[$key] = $tmpdir;
         }
         $this->assign('dir', $dir);
+        $this->switchEditor();
         $this->assign('backstageMenu', 'yemian');
         $this->assign('option', 'allpage');
         return $this->view();
@@ -669,6 +823,7 @@ class Index extends Common
     public function searchpage()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         $start = '2000-01-01 01:01:01';
         $end = date("Y-m-d H:i:s");
         $key = '';
@@ -713,6 +868,7 @@ class Index extends Common
     public function pageSettings()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
             $pageSettings = Db::name('options')
@@ -750,6 +906,7 @@ class Index extends Common
     public function addSlideshow()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
             //验证输入内容
@@ -784,6 +941,7 @@ class Index extends Common
     public function modifyslide()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
             //验证输入内容
@@ -832,6 +990,7 @@ class Index extends Common
     public function slideshow()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         //排序
         if(Request::instance()->has('paixu','post'))
         {
@@ -855,6 +1014,7 @@ class Index extends Common
     //删除幻灯片
     public function removeSlide()
     {
+        $this->checkPermissions(3);
         $slide = Db::name('slide')
             ->where('slide_id', Request::instance()->post('id'))
             ->field('slide_pic')
@@ -862,7 +1022,7 @@ class Index extends Common
         $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
         //删除原图
         $yfile = str_replace($yuming['option_value'],'',$slide['slide_pic']);
-        if(!empty($yfile)){
+        if(!empty($yfile) && $this->isLegalPicture($slide['slide_pic'])){
             $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
             $yfile = str_replace("/", DS, $yfile);
             @unlink(APP_PATH . '..'. DS . $yfile);
@@ -875,6 +1035,7 @@ class Index extends Common
     //隐藏启用幻灯片
     public function yincang_qiyong()
     {
+        $this->checkPermissions(3);
         $zt = Request::instance()->post('zt');
         if($zt == 1)
         {
@@ -893,6 +1054,7 @@ class Index extends Common
     public function addLinks()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
             //验证输入内容
@@ -930,6 +1092,7 @@ class Index extends Common
     public function links()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         //排序
         if(Request::instance()->has('paixu','post'))
         {
@@ -954,6 +1117,7 @@ class Index extends Common
     public function modifylink()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
             //验证输入内容
@@ -1004,6 +1168,7 @@ class Index extends Common
     //隐藏启用友情链接
     public function link_yincang_qiyong()
     {
+        $this->checkPermissions(3);
         $zt = Request::instance()->post('zt');
         if($zt == 1)
         {
@@ -1021,6 +1186,7 @@ class Index extends Common
     //删除友情链接
     public function removeLink()
     {
+        $this->checkPermissions(3);
         $slide = Db::name('links')
             ->where('link_id', Request::instance()->post('id'))
             ->field('link_image')
@@ -1028,7 +1194,7 @@ class Index extends Common
         $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
         //删除原图
         $yfile = str_replace($yuming['option_value'],'',$slide['link_image']);
-        if(!empty($yfile)){
+        if(!empty($yfile) && $this->isLegalPicture($slide['link_image'])){
             $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
             $yfile = str_replace("/", DS, $yfile);
             @unlink(APP_PATH . '..'. DS . $yfile);
@@ -1042,15 +1208,42 @@ class Index extends Common
     public function general()
     {
         $this->checkUser();
-        $data = Db::name('users')->where('user_type',7)->paginate(10);
+        $this->checkPermissions(3);
+        $data = Db::name('users')->where('user_type',7)->order('last_login_time desc')->paginate(10);
         $this->assign('data', $data);
         $this->assign('backstageMenu', 'yonghu');
         $this->assign('option', 'general');
         return $this->view();
     }
+    //查找用户
+    public function searchuser()
+    {
+        $this->checkUser();
+        $this->checkPermissions(3);
+        $data = [];
+        if(Request::instance()->has('user','get'))
+        {
+            $user = Request::instance()->get('user');
+            $user = trim($user);
+            $data = Db::name('users')
+                ->where('user_type',7)
+                ->where('user_login|user_nicename','like','%'.$user.'%')
+                ->order('last_login_time desc')
+                ->paginate(10,false,[
+                    'query' => [
+                        'user' => urlencode($user)
+                    ]
+                ]);
+        }
+        $this->assign('data', $data);
+        $this->assign('backstageMenu', 'yonghu');
+        $this->assign('option', 'general');
+        return $this->view('general');
+    }
     //拉黑用户,启用用户
     public function lahei_qiyong()
     {
+        $this->checkPermissions(3);
         $zt = Request::instance()->post('zt');
         if($zt == 1)
         {
@@ -1069,6 +1262,7 @@ class Index extends Common
     public function addmanageuser()
     {
         $this->checkUser();
+        $this->checkPermissions(1);
         if(Request::instance()->has('yonghuming','post'))
         {
             //验证输入内容
@@ -1101,6 +1295,11 @@ class Index extends Common
                 $this->error(Lang::get('Confirm the password must be the same as the password'));//验证错误输出
                 return false;
             }
+            if(!Session::has($this->session_prefix.'addmanageuser_checkCode') || Request::instance()->post('checkCode') != Session::get($this->session_prefix.'addmanageuser_checkCode'))
+            {
+                $this->error(Lang::get('Your permission is insufficient'));//验证错误输出
+                return false;
+            }
             $user = Db::name('users')->where('user_login',Request::instance()->post('yonghuming'))->find();
             if(!empty($user))
             {
@@ -1110,6 +1309,9 @@ class Index extends Common
             $data = ['user_login' => htmlspecialchars(Request::instance()->post('yonghuming')), 'user_pass' => md5(Request::instance()->post('pwd')), 'user_nicename' => htmlspecialchars(Request::instance()->post('yonghuming')), 'create_time' => date("Y-m-d H:i:s"), 'user_type' => Request::instance()->post('juese')];
             Db::name('users')->insert($data);
         }
+        $checkCode = rand(1, 99999).time();
+        Session::set($this->session_prefix.'addmanageuser_checkCode',$checkCode);
+        $this->assign('checkCode', $checkCode);
         $this->assign('backstageMenu', 'yonghu');
         $this->assign('option', 'addmanageuser');
         return $this->view();
@@ -1118,6 +1320,7 @@ class Index extends Common
     public function manageuser()
     {
         $this->checkUser();
+        $this->checkPermissions(1);
         $data = Db::name('users')->where('user_type','between','2,6')->order('id desc')->paginate(10);
         $this->assign('data', $data);
         $this->assign('backstageMenu', 'yonghu');
@@ -1128,6 +1331,7 @@ class Index extends Common
     public function modifymanage()
     {
         $this->checkUser();
+        $this->checkPermissions(1);
         if(Request::instance()->has('uid','post'))
         {
             Db::name('users')
@@ -1150,10 +1354,29 @@ class Index extends Common
         $this->assign('option', 'manageuser');
         return $this->view();
     }
+    //拉黑后台用户,启用后台用户
+    public function lahei_qiyong_bu()
+    {
+        $this->checkPermissions(1);
+        $zt = Request::instance()->post('zt');
+        if($zt == 1)
+        {
+            $zt = 0;
+        }
+        else
+        {
+            $zt = 1;
+        }
+        Db::name('users')
+            ->where('id', Request::instance()->post('id'))
+            ->update(['user_status' => $zt]);
+        return true;
+    }
     //添加菜单分类
     public function category()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->has('fenleiming','post'))
         {
             //验证输入内容
@@ -1194,6 +1417,7 @@ class Index extends Common
     public function managemc()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         $data = Db::name('nav_cat')->select();
         $this->assign('data', $data);
         $this->assign('backstageMenu', 'caidan');
@@ -1204,6 +1428,7 @@ class Index extends Common
     public function modifycategory()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->has('navcid','post'))
         {
             //验证输入内容
@@ -1257,6 +1482,7 @@ class Index extends Common
     //删除菜单分类
     public function removemanagemc()
     {
+        $this->checkPermissions(3);
         Db::name('nav_cat')
             ->where('navcid',Request::instance()->post('id'))
             ->delete();
@@ -1266,6 +1492,7 @@ class Index extends Common
     public function addmenu()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->has('caidanming','post'))
         {
             //验证输入内容
@@ -1285,16 +1512,16 @@ class Index extends Common
                 return false;
             }
             $lianjie = '';
-            $tmp = trim(Request::instance()->post('zidingyi'));
+            $tmp = $this->filterJavascript(trim(Request::instance()->post('zidingyi')));
             if($tmp != '')
             {
-                $lianjie = substr($tmp,0,4)=='http' ? $tmp : 'http://'.$tmp;
+                $lianjie = (substr($tmp,0,4)=='http' || substr($tmp,0,5)=='https' || $this->doNothing($tmp)) ? $tmp : 'http://'.$tmp;
             }
             else
             {
                 $lianjie = Request::instance()->post('lianjie');
             }
-            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => Request::instance()->post('tubiao'), 'status' => Request::instance()->post('zhuangtai')];
+            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => $this->filterJavascript(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
             Db::name('nav')->insert($data);
         }
         //添加子菜单时用
@@ -1324,6 +1551,7 @@ class Index extends Common
     //添加菜单时改变父级
     public function changeParent()
     {
+        $this->checkPermissions(3);
         //获取菜单
         $caidan = Db::name('nav')->where('cid', Request::instance()->post('id'))->where('status', 1)->field('id,parent_id,label')->order('listorder')->select();
         echo '<option value="0">'.Lang::get('As a first-level menu').'</option>';
@@ -1331,7 +1559,6 @@ class Index extends Common
         {
             $caidan = Tree::makeTreeForHtml($caidan);
             foreach($caidan as $key => $val){
-                //$caidan[$key]['level'] = str_repeat('&#12288;',$val['level']);
                 if($val['id'] == Request::instance()->post('fj'))
                 {
                     echo '<option value="'.$val['id'].'" selected>'.str_repeat('&#12288;',$val['level']);
@@ -1356,6 +1583,7 @@ class Index extends Common
     public function modifymenu()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->has('caidanId','post'))
         {
             //验证输入内容
@@ -1375,16 +1603,16 @@ class Index extends Common
                 return false;
             }
             $lianjie = '';
-            $tmp = trim(Request::instance()->post('zidingyi'));
+            $tmp = $this->filterJavascript(trim(Request::instance()->post('zidingyi')));
             if($tmp != '')
             {
-                $lianjie = substr($tmp,0,4)=='http' ? $tmp : 'http://'.$tmp;
+                $lianjie = (substr($tmp,0,4)=='http' || substr($tmp,0,5)=='https' || $this->doNothing($tmp)) ? $tmp : 'http://'.$tmp;
             }
             else
             {
                 $lianjie = Request::instance()->post('lianjie');
             }
-            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => Request::instance()->post('tubiao'), 'status' => Request::instance()->post('zhuangtai')];
+            $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => $this->filterJavascript(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
             Db::name('nav')
                 ->where('id', Request::instance()->post('caidanId'))
                 ->update($data);
@@ -1394,7 +1622,7 @@ class Index extends Common
             ->where('id', Request::instance()->get('c'))
             ->find();
         $zidingyi = '';
-        if(substr($caidanxiang['href'],0,4) == 'http')
+        if(substr($caidanxiang['href'],0,4) == 'http' || $this->doNothing($caidanxiang['href']))
         {
             $zidingyi = $caidanxiang['href'];
         }
@@ -1439,6 +1667,7 @@ class Index extends Common
     public function managemenu()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         //排序
         if(Request::instance()->has('paixu','post'))
         {
@@ -1501,6 +1730,7 @@ class Index extends Common
     public function web()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         if(Request::instance()->has('title','post'))
         {
             //验证输入内容
@@ -1545,6 +1775,46 @@ class Index extends Common
                 $rewrite = 1;
             }
             $spare['rewrite'] = $rewrite;
+            $notAllowLogin = 0;
+            if(Request::instance()->has('notAllowLogin','post') && Request::instance()->post('notAllowLogin') == 'on')
+            {
+                $notAllowLogin = 1;
+            }
+            $spare['notAllowLogin'] = $notAllowLogin;
+            $closeSlide = 0;
+            if(Request::instance()->has('closeSlide','post') && Request::instance()->post('closeSlide') == 'on')
+            {
+                $closeSlide = 1;
+            }
+            $spare['closeSlide'] = $closeSlide;
+            $datu = 0;
+            if(Request::instance()->has('datu','post') && Request::instance()->post('datu') == 'on')
+            {
+                $datu = 1;
+            }
+            $spare['datu'] = $datu;
+            $everyPageShows = 10;
+            if(Request::instance()->has('everyPageShows','post'))
+            {
+                $everyPageShows = intval(Request::instance()->post('everyPageShows'));
+                if($everyPageShows < 1)
+                {
+                    $everyPageShows = 10;
+                }
+            }
+            $spare['everyPageShows'] = $everyPageShows;
+            $ico = '';
+            if(Request::instance()->has('ico','post'))
+            {
+                $ico = Request::instance()->post('ico');
+            }
+            $spare['ico'] = $ico;
+            $tFormat = 'Y-m-d H:i:s';
+            if(Request::instance()->has('timeFormat','post'))
+            {
+                $tFormat = Request::instance()->post('timeFormat');
+            }
+            $spare['timeFormat'] = $tFormat;
             $spare = serialize($spare);
             Db::name('options')
                 ->where('option_name', 'title')
@@ -1645,14 +1915,102 @@ class Index extends Common
             $data['rewrite'] = 1;
         }
         $this->assign('data', $data);
+        $now = time();
+        $timeFormat = [];
+        $timeFormat[] = [
+            'val' => 'Y-m-d H:i:s',
+            'show' => date('Y-m-d H:i:s',$now)
+        ];
+        $timeFormat[] = [
+            'val' => 'Y年m月d日 H'.Lang::get('点').'i分s秒',
+            'show' => date('Y年m月d日 H'.Lang::get('点').'i分s秒',$now)
+        ];
+        $timeFormat[] = [
+            'val' => 'Y年m月d日 H:i:s',
+            'show' => date('Y年m月d日 H:i:s',$now)
+        ];
+        $timeFormat[] = [
+            'val' => 'Y/m/d H:i:s',
+            'show' => date('Y/m/d H:i:s',$now)
+        ];
+        $timeFormat[] = [
+            'val' => 'Y.m.d H:i:s',
+            'show' => date('Y.m.d H:i:s',$now)
+        ];
+        $timeFormat[] = [
+            'val' => 'M d Y h:i:s A',
+            'show' => date('M d Y h:i:s A',$now)
+        ];
+        $timeFormat[] = [
+            'val' => 'F d Y h:i:s A',
+            'show' => date('F d Y h:i:s A',$now)
+        ];
+        $this->assign('timeFormat', $timeFormat);
         $this->assign('backstageMenu', 'xitong');
         $this->assign('option', 'web');
+        return $this->view();
+    }
+    //主题
+    public function themes()
+    {
+        $this->checkUser();
+        $this->checkPermissions(3);
+        if(Request::instance()->has('themeName','post'))
+        {
+            Db::name('options')
+                ->where('option_name', 'template')
+                ->update(['option_value' => Request::instance()->post('themeName')]);
+            Cache::clear();
+        }
+        $dqzhuti = Db::name('options')->where('option_name','template')->field('option_value')->find();
+        $dqzhuti = $dqzhuti['option_value'];
+        $themes = [];
+        $domain = $this->host();
+        $dir = glob(APP_PATH.'../public/*',GLOB_ONLYDIR);
+        foreach($dir as $key => $val)
+        {
+            $tmpdir = basename($val);
+            if($tmpdir != 'common')
+            {
+                $url = $domain.'public/common/images/screenshot.jpg';
+                $path = APP_PATH.'../public/'.$tmpdir.'/screenshot.jpg';
+                if(is_file($path))
+                {
+                    $url = $domain.'public/'.$tmpdir.'/screenshot.jpg';
+                }
+                $dq = 0;
+                if($dqzhuti == $tmpdir)
+                {
+                    $dq = 1;
+                }
+                if($dq == 1)
+                {
+                    array_unshift($themes,[
+                        'name' => $tmpdir,
+                        'url' => $url,
+                        'open' => $dq
+                    ]);
+                }
+                else
+                {
+                    array_push($themes,[
+                        'name' => $tmpdir,
+                        'url' => $url,
+                        'open' => $dq
+                    ]);
+                }
+            }
+        }
+        $this->assign('themes', $themes);
+        $this->assign('backstageMenu', 'xitong');
+        $this->assign('option', 'themes');
         return $this->view();
     }
     //个人信息
     public function personal()
     {
         $this->checkUser();
+        $this->checkPermissions(6);
         if(Request::instance()->has('user_nicename','post'))
         {
             //验证输入内容
@@ -1681,19 +2039,25 @@ class Index extends Common
             if(Request::instance()->post('avatar') != $avatar['avatar'])
             {
                 $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
-                if(!empty($yfile)){
+                if(!empty($yfile) && $this->isLegalPicture(Request::instance()->post('avatar'))){
                     $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
                     $yfile = str_replace("/", DS, $yfile);
                     @unlink(APP_PATH . '..'. DS . $yfile);
                 }
             }
+            $ava = Request::instance()->post('avatar');
+            if($this->isLegalPicture($ava) == false)
+            {
+                $ava = '';
+            }
+            $xingbie = Request::instance()->post('sex');
             $pdata = [
                 'user_nicename' => htmlspecialchars(Request::instance()->post('user_nicename')),
-                'sex' => Request::instance()->post('sex'),
+                'sex' => intval($xingbie),
                 'birthday' => htmlspecialchars(Request::instance()->post('birthday')),
                 'user_url' => htmlspecialchars(Request::instance()->post('user_url')),
                 'signature' => htmlspecialchars(Request::instance()->post('signature')),
-                'avatar' => Request::instance()->post('avatar')
+                'avatar' => $ava
             ];
             Db::name('users')
                 ->where('id', Session::get($this->session_prefix.'user_id'))
@@ -1711,6 +2075,7 @@ class Index extends Common
     //个人头像上传
     public function uploadhead()
     {
+        $this->checkPermissions(6);
         $file = request()->file('file');
         $validate = [
             'ext' => 'jpg,png,gif,jpeg'
@@ -1723,11 +2088,13 @@ class Index extends Common
         else{
             echo $file->getError();
         }
+        exit();
     }
     //修改密码
     public function change()
     {
         $this->checkUser();
+        $this->checkPermissions(6);
         if(Request::instance()->has('oldPassword','post'))
         {
             //验证输入内容
@@ -1781,6 +2148,7 @@ class Index extends Common
     //获取版本
     public function version()
     {
+        $this->checkPermissions(6);
         $versionCache = Cache::get('latestVersion');
         $version = Config::get('version');
         $version_number = trim(substr(trim($version['number']),1));
@@ -1791,15 +2159,8 @@ class Index extends Common
         }
         if($versionCache == false || version_compare($version_number, $versionCache_number) >= 0)
         {
-            $ch = curl_init();
-            $url = 'http://www.'.$version['official'].'/_version/?dm='.urlencode($_SERVER['HTTP_HOST'].Url::build('/'));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727;http://www.baidu.com)');
-            curl_setopt($ch , CURLOPT_URL , $url);
-            $res = curl_exec($ch);
-            curl_close($ch);
-            if(substr($res,0,1) == 'V')
+            $res = $this->getVersion($version['official']);
+            if(strtoupper(substr($res,0,1)) == 'V')
             {
                 Cache::set('latestVersion',$res,43200);
                 return $res;
@@ -1815,6 +2176,7 @@ class Index extends Common
     public function clearcache()
     {
         $this->checkUser();
+        $this->checkPermissions(5);
         if(Request::instance()->has('clearcache','post'))
         {
             Cache::clear();
@@ -1827,6 +2189,7 @@ class Index extends Common
     public function plugin()
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         //获取已经开启插件
         $plugins = Db::name('options')->where('option_name','plugins')->field('option_value')->find();
         if(!empty($plugins))
@@ -1879,13 +2242,23 @@ class Index extends Common
             {
                 $pluginUri = trim($matches[3]);
             }
+            $quanxian = 3;
+            if(preg_match("/(权限|權限|Jurisdiction)\s*(：|:)(.*)/i", $pluginStr ,$matches))
+            {
+                $quanxian = intval(trim($matches[3]));
+                if($quanxian == 0)
+                {
+                    $quanxian = 1;
+                }
+            }
             $data[] = [
                 'plugin' => $pluginName,
                 'name' => Lang::get($pName),
                 'description' => Lang::get($pluginDesc),
                 'author' => $pluginAuth,
                 'version' => $pluginVers,
-                'pluginUrl' => $pluginUri
+                'pluginUrl' => $pluginUri,
+                'jurisdiction' => $quanxian
             ];
         }
         $dataArr = [];
@@ -1899,6 +2272,10 @@ class Index extends Common
             else
             {
                 $data[$key]['open'] = 0;
+            }
+            if(Session::has($this->session_prefix.'user_type') && Session::get($this->session_prefix.'user_type') > $val['jurisdiction'])
+            {
+                unset($data[$key]);
             }
         }
         $this->assign('data', $data);
@@ -1917,6 +2294,7 @@ class Index extends Common
     //插件开关
     public function pluginkaiguan()
     {
+        $this->checkPermissions(3);
         $norecord = false;
         $plugins = Db::name('options')->where('option_name','plugins')->field('option_value')->find();
         if(!empty($plugins))
@@ -1963,6 +2341,7 @@ class Index extends Common
     public function plugins($plugin)
     {
         $this->checkUser();
+        $this->checkPermissions(3);
         Hook::add('settings','app\\plugins\\'.$plugin.'\\'.ucfirst($plugin));
         Hook::add('settings_post','app\\plugins\\'.$plugin.'\\'.ucfirst($plugin));
         $params = [];
@@ -2011,6 +2390,7 @@ class Index extends Common
     //Logo上传
     public function uploadLogo()
     {
+        $this->checkPermissions(3);
         $file = request()->file('file');
         $validate = [
             'ext' => 'jpg,png,gif,jpeg'
@@ -2023,10 +2403,30 @@ class Index extends Common
         else{
             echo $file->getError();
         }
+        exit();
+    }
+    //ico上传
+    public function uploadIco()
+    {
+        $this->checkPermissions(3);
+        $file = request()->file('file');
+        $validate = [
+            'ext' => 'ico'
+        ];
+        $file->validate($validate);
+        $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
+        if($info){
+            echo $info->getSaveName();
+        }
+        else{
+            echo $file->getError();
+        }
+        exit();
     }
     //图片上传
     public function upload()
     {
+        $this->checkPermissions(6);
         $file = request()->file('file');
         $validate = [
             'ext' => 'jpg,png,gif,jpeg'
@@ -2038,18 +2438,26 @@ class Index extends Common
             $image = \think\Image::open(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             $width = $image->width();
             $height = $image->height();
-            if($width > 300 || $height > 300)
+            $options_spare = $this->optionsSpare();
+            if(!isset($options_spare['datu']) || $options_spare['datu'] != 1)
             {
-                @$image->thumb(300, 300)->save(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
+                $larger = str_replace('.','_larger.',$info->getSaveName());
+                @$image->thumb(800, ($height * 800 / $width),\think\Image::THUMB_FIXED)->save(ROOT_PATH . 'data' . DS . 'uploads' . DS . $larger);
+            }
+            if($width > 350 || $height > 350)
+            {
+                @$image->thumb(350, 350)->save(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             }
             echo $info->getSaveName();
         }else{
             echo $file->getError();
         }
+        exit();
     }
     //友情链接图标上传
     public function uploadLinks()
     {
+        $this->checkPermissions(3);
         $file = request()->file('file');
         $validate = [
             'ext' => 'jpg,png,gif,jpeg'
@@ -2065,16 +2473,17 @@ class Index extends Common
             {
                 @$image->thumb(100, 50, \think\Image::THUMB_FIXED)->save(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             }
-            // 输出 20160820/42a79759f284b767dfcb2a0197904287.jpg
             echo $info->getSaveName();
         }else{
             // 上传失败获取错误信息
             echo $file->getError();
         }
+        exit();
     }
     //上传幻灯片
     public function uploadSlideshow()
     {
+        $this->checkPermissions(3);
         $file = request()->file('file');
         $validate = [
             'ext' => 'jpg,png,gif,jpeg'
@@ -2093,6 +2502,7 @@ class Index extends Common
             // 上传失败获取错误信息
             echo $file->getError();
         }
+        exit();
     }
     //获取分类数组
     private function getfenlei($fields = 'id,term_name,parent_id', $replace = '&nbsp;&nbsp;&nbsp;')
@@ -2122,9 +2532,77 @@ class Index extends Common
         }
         $this->assign('domain', $domain);
         $version = Config::get('version');
-        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
+        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
         $this->assign('executionTime', Debug::getRangeTime('begin','end',4).'s');
         $view = $this->fetch($template);
         return $view;
+    }
+    private function domain()
+    {
+        $domain = Cache::get('domain');
+        if($domain == false)
+        {
+            $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+            $domain = $domain['option_value'];
+            Cache::set('domain',$domain,3600);
+        }
+        $root = '';
+        $dm = Url::build('/');
+        if(strpos($dm,'/index.php') !== false)
+        {
+            $root = 'index.php/';
+        }
+        return $domain.$root;
+    }
+    private function host()
+    {
+        $domain = Cache::get('domain');
+        if($domain == false)
+        {
+            $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+            $domain = $domain['option_value'];
+            Cache::set('domain',$domain,3600);
+        }
+        return $domain;
+    }
+    private function switchEditor()
+    {
+        Hook::add('switch_editor',$this->plugins);
+        $editorParams = [
+            'editor_css' => '',
+            'editor_js' => '',
+            'editor' => '',
+            'js' => ''
+        ];
+        Hook::listen('switch_editor',$editorParams);
+        if(!empty($editorParams['editor_css']))
+        {
+            $this->assign('editor_css', $editorParams['editor_css']);
+        }
+        if(!empty($editorParams['editor_js']))
+        {
+            $this->assign('editor_js', $editorParams['editor_js']);
+        }
+        if(!empty($editorParams['editor']))
+        {
+            $this->assign('editor', $editorParams['editor']);
+        }
+        if(!empty($editorParams['js']))
+        {
+            $this->assign('js', $editorParams['js']);
+        }
+    }
+    private function writeAlias($id)
+    {
+        Hook::add('write_alias',$this->plugins);
+        $aliasParams = [
+            'id' => $id,
+            'view' => ''
+        ];
+        Hook::listen('write_alias',$aliasParams);
+        if(!empty($aliasParams['view']))
+        {
+            $this->assign('write_alias', $aliasParams['view']);
+        }
     }
 }

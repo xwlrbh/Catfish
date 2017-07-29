@@ -6,14 +6,16 @@
  */
 namespace app\common;
 
+use think\Controller;
 use app\admin\controller\Tree;
 use think\Db;
 use think\Config;
 use think\Cache;
 use think\Session;
 use think\Url;
+use think\Validate;
 
-class Plugin
+class Plugin extends Controller
 {
     protected function get($key)
     {
@@ -56,7 +58,7 @@ class Plugin
     public function run(&$params)
     {
     }
-    protected function domain()
+    protected function domain($check_pseudo_static = false)
     {
         $domain = Cache::get('domain');
         if($domain == false)
@@ -64,6 +66,16 @@ class Plugin
             $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
             $domain = $domain['option_value'];
             Cache::set('domain',$domain,3600);
+        }
+        if($check_pseudo_static == true)
+        {
+            $root = '';
+            $dm = Url::build('/');
+            if(strpos($dm,'/index.php') !== false)
+            {
+                $root = 'index.php/';
+            }
+            $domain = $domain . $root;
         }
         return $domain;
     }
@@ -88,7 +100,6 @@ class Plugin
                     @$image->thumb($width, $height)->save(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
                 }
             }
-            // 输出 20160820/42a79759f284b767dfcb2a0197904287.jpg
             echo $info->getSaveName();
         }else{
             // 上传失败获取错误信息
@@ -112,16 +123,68 @@ class Plugin
             return [];
         }
     }
+    protected function subcategory($subcategoryName = '', $category = [], $self = true)
+    {
+        if(empty($subcategoryName))
+        {
+            return $category;
+        }
+        $delstart = true;
+        $level = '';
+        foreach((array)$category as $key => $val)
+        {
+            if($val['term_name'] != $subcategoryName && $delstart == true)
+            {
+                unset($category[$key]);
+                continue;
+            }
+            if($val['term_name'] == $subcategoryName && $delstart == true)
+            {
+                $delstart = false;
+                $level = $val['level'];
+                if($self == false)
+                {
+                    unset($category[$key]);
+                }
+                continue;
+            }
+            if($delstart == false && strlen($val['level']) > strlen($level))
+            {
+                continue;
+            }
+            if($delstart == false && strlen($val['level']) <= strlen($level))
+            {
+                $delstart = true;
+                $level = '';
+                if($val['term_name'] != $subcategoryName)
+                {
+                    unset($category[$key]);
+                    continue;
+                }
+                else
+                {
+                    $delstart = false;
+                    $level = $val['level'];
+                    if($self == false)
+                    {
+                        unset($category[$key]);
+                    }
+                    continue;
+                }
+            }
+        }
+        return $category;
+    }
     //获取用户id
     protected function userID()
     {
-        $session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
+        $session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
         return Session::get($session_prefix.'user_id');
     }
     //获取用户名
     protected function user()
     {
-        $session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
+        $session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
         return Session::get($session_prefix.'user');
     }
     protected function prefix()
@@ -161,6 +224,21 @@ class Plugin
             $params[$label] = $data;
         }
     }
+    protected function addTop(&$params,$label,$data)
+    {
+        if(isset($params[$label]))
+        {
+            $params[$label] = $data . $params[$label];
+        }
+        else
+        {
+            $params[$label] = $data;
+        }
+    }
+    protected function addArray(&$params,$label,$array)
+    {
+        $params[$label][$array['name']] = $array;
+    }
     protected function import($path)
     {
         $path = str_replace('\\','/',$path);
@@ -184,6 +262,12 @@ class Plugin
             {
                 return '<style type="text/css"> ' . $content . ' </style>';
             }
+            elseif(in_array($pathinfo['extension'],['jpeg','jpg','png','gif']))
+            {
+                $domain = $this->domain();
+                $domain = substr($domain,-1,1) == '/' ? substr($domain,0,strlen($domain)-1) : $domain;
+                return $domain . Url::build('/multimedia') . '?path='.urlencode($pluginName.'/'.$path).'&ext='.$pathinfo['extension'].'&media=image';
+            }
             else
             {
                 return '';
@@ -193,5 +277,137 @@ class Plugin
         {
             return '';
         }
+    }
+    protected function siteName()
+    {
+        $siteName = Cache::get('plugin_siteName');
+        if($siteName == false)
+        {
+            $siteName = Db::name('options')->where('option_name','title')->field('option_value')->find();
+            $siteName = $siteName['option_value'];
+            Cache::set('plugin_siteName',$siteName,3600);
+        }
+        return $siteName;
+    }
+    protected function binding($view,$name,&$params,$title = '')
+    {
+        if(isset($params['name']) && $params['name'] == $name)
+        {
+            $params['view'] = $view;
+            if(!empty($title))
+            {
+                $params['title'] = $title;
+            }
+        }
+    }
+    protected function delfile($url)
+    {
+        $url = str_replace('\\','/',$url);
+        $weizhi = strripos($url,'data/');
+        if($weizhi === false)
+        {
+            return false;
+        }
+        else
+        {
+            $path = substr($url,$weizhi);
+            if(is_file(APP_PATH.'../'.$path))
+            {
+                if(@unlink(APP_PATH.'../'.$path))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+    protected function verify($rule, $msg = [])
+    {
+        $validate = new Validate($rule, $msg);
+        return $validate;
+    }
+    protected function uhref($label,$isTop = false)
+    {
+        if($isTop == true)
+        {
+            return Url::build('/user/Index/plugint/name/'.$label);
+        }
+        else
+        {
+            return Url::build('/user/Index/plugin/name/'.$label);
+        }
+    }
+    protected function bindUser($userInfo)
+    {
+        $re = Db::name('users')->where('user_login',$userInfo['uname'])->field('id')->find();
+        if(empty($re))
+        {
+            $eml = '';
+            if(isset($userInfo['email']))
+            {
+                $eml = $userInfo['email'];
+            }
+            $pwd = '';
+            if(isset($userInfo['password']))
+            {
+                $pwd = $userInfo['password'];
+            }
+            $data = [
+                'user_login' => $userInfo['uname'],
+                'user_pass' => md5($pwd),
+                'user_nicename' => $userInfo['uname'],
+                'user_email' => $eml,
+                'last_login_ip' => get_client_ip(0,true),
+                'create_time' => date("Y-m-d H:i:s"),
+                'user_type' => 7
+            ];
+            $reid = Db::name('users')->insertGetId($data);
+            return $reid;
+        }
+        else
+        {
+            return $re['id'];
+        }
+    }
+    protected function thirdPartyLogin($userInfo)
+    {
+        try{
+            Db::name('users')
+                ->where('id', $userInfo['uid'])
+                ->update([
+                    'last_login_ip' => get_client_ip(0,true),
+                    'last_login_time' => date("Y-m-d H:i:s")
+                ]);
+        }catch(\Exception $e)
+        {
+            return false;
+        }
+        $session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
+        Session::set($session_prefix.'user_id',$userInfo['uid']);
+        Session::set($session_prefix.'user',$userInfo['uname']);
+        Session::set($session_prefix.'user_type',7);
+        return true;
+    }
+    protected function recurseCopy($src,$dst){
+        $dir=opendir($src);
+        @mkdir($dst);
+        while(false!==($file=readdir($dir))){
+            if(($file!='.' )&&($file!='..')){
+                if(is_dir($src.'/'.$file)){
+                    $this->recurseCopy($src.'/'.$file,$dst.'/'.$file);
+                }
+                else{
+                    copy($src.'/'.$file,$dst.'/'.$file);
+                }
+            }
+        }
+        closedir($dir);
     }
 }

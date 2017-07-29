@@ -33,12 +33,14 @@
     <div>
         <p>
             <label>{:lang('Batch operation')}：</label>
+            {if condition="$authority eq 'all'"}
             <button type="button" id="shenhe" class="btn btn-primary btn-sm">{:lang('Approve')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
             <button type="button" id="weishenhe" class="btn btn-primary btn-sm">{:lang('Unapprove')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
             <button type="button" id="zhiding" class="btn btn-primary btn-sm">{:lang('Top')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
             <button type="button" id="weizhiding" class="btn btn-primary btn-sm">{:lang('Cancel top')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
             <button type="button" id="tuijian" class="btn btn-primary btn-sm">{:lang('Recommend')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
             <button type="button" id="weituijian" class="btn btn-primary btn-sm">{:lang('Cancel recommended')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
+            {/if}
             <button type="button" id="pshanchu" class="btn btn-primary btn-sm">{:lang('Delete')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
         </p>
     </div>

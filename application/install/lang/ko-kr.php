@@ -75,5 +75,6 @@ return [
     'Database information error' => '데이터베이스 정보 오류',
     'Another Catfish CMS site' => '또 하나의 Catfish (메기) CMS 사이트',
     'Catfish CMS' => 'Catfish (메기) CMS',
-    'Installation completed' => '설치 완료'
+    'Installation completed' => '설치 완료',
+    'If you use an existing database, replace it with the actual database name' => '기존 데이터베이스를 사용하는 경우 실제 데이터베이스 이름으로 바꾸십시오'
 ];

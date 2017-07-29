@@ -21,12 +21,14 @@
             <div class="form-group">
                 <label>{:lang('Role')}：&nbsp;<b><span class="text-danger">*</span></b></label>
                 <select class="form-control" name="juese">
+                    <option value="6">{:lang('Author')}</option>
                     <option value="5">{:lang('Editor')}</option>
                     <option value="3">{:lang('Administrator')}</option>
                 </select>
             </div>
             <hr>
             <div class="text-center">
+                <input type="hidden" name="checkCode" value="{$checkCode}">
                 <button type="submit" class="btn btn-default">{:lang('Add to')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing.gif" width="16" height="16"></span></button>
             </div>
         </form>

@@ -14,6 +14,7 @@
             <div class="form-group">
                 <label>{:lang('Role')}：&nbsp;<b><span class="text-danger">*</span></b></label>
                 <select class="form-control" name="juese">
+                    <option value="6"{if condition="$data.user_type eq 6"} selected{/if}>{:lang('Author')}</option>
                     <option value="5"{if condition="$data.user_type eq 5"} selected{/if}>{:lang('Editor')}</option>
                     <option value="3"{if condition="$data.user_type eq 3"} selected{/if}>{:lang('Administrator')}</option>
                 </select>

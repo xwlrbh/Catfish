@@ -21,7 +21,7 @@ $.fn.uploadify = function(opts){
 		onUploadError:null, //上传失败的动作
 		onInit:null,//初始化时的动作
 		onCancel:null//删除掉某个文件后的回调函数，可传入参数file
-	}
+	};
 		
 	var option = $.extend(defaults,opts);
 	
@@ -34,7 +34,7 @@ $.fn.uploadify = function(opts){
 			size = (Math.round(size * 100 / 1024) / 100).toString() + 'KB';
 		}
 		return size;
-	}
+	};
 	//根据文件序号获取文件
 	var getFile = function(index,files){
 		for(var i=0;i<files.length;i++){	   
@@ -43,7 +43,7 @@ $.fn.uploadify = function(opts){
 			}
 		}
 		return false;
-	}
+	};
 	
 	//将输入的文件类型字符串转化为数组,原格式为*.jpg;*.png
 	var getFileTypes = function(str){
@@ -53,7 +53,7 @@ $.fn.uploadify = function(opts){
 			result.push(arr1[i].toLowerCase().split(".").pop());
 		}
 		return result;
-	}
+	};
 	
 	this.each(function(){
 		var _this = $(this);
@@ -186,7 +186,7 @@ $.fn.uploadify = function(opts){
 					  if (file.index == index) {
 						  this.fileFilter.splice(i,1);
 						  _this.find('#fileupload_'+instanceNumber+'_'+index).fadeOut();
-						  option.onCancel&&option.onCancel(file);	
+						  option.onCancel&&option.onCancel(file);
 						  break;
 					  }
 			  }
@@ -232,7 +232,7 @@ $.fn.uploadify = function(opts){
 					  }
 				  };
 	  
-	  			option.onUploadStart&&option.onUploadStart();	
+	  			option.onUploadStart&&option.onUploadStart();
 				  // 开始上传
 				  xhr.open(option.method, this.url, true);
 				  xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -262,7 +262,7 @@ $.fn.uploadify = function(opts){
 			  _this.find('.uploadify-button').on('click',function(){
 				  _this.find('.selectbtn').trigger('click');
 				});
-			  
+
 			  option.onInit&&option.onInit();
 		  }
   	};

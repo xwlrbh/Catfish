@@ -75,5 +75,6 @@ return [
     'Database information error' => '數據庫信息錯誤',
     'Another Catfish CMS site' => '又一個Catfish(鯰魚) CMS站點',
     'Catfish CMS' => 'Catfish(鯰魚) CMS',
-    'Installation completed' => '安裝完畢'
+    'Installation completed' => '安裝完畢',
+    'If you use an existing database, replace it with the actual database name' => '如果使用已經存在的數據庫，請換成實際使用的數據庫名'
 ];

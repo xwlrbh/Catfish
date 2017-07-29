@@ -17,14 +17,21 @@ use think\Cache;
 use think\Db;
 use think\Url;
 use think\Lang;
+use think\Config;
+use think\Hook;
 
 class Index extends Controller
 {
     protected $session_prefix;
+    private $lang;
+    protected $params = [];
+    protected $plugins = [];
     public function _initialize()
     {
-        $this->session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
-        Lang::detect();
+        $this->session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
+        $this->lang = Lang::detect();
+        $this->lang = $this->filterLanguages($this->lang);
+        Lang::load(APP_PATH . 'login/lang/'.$this->lang.'.php');
     }
     public function index()
     {
@@ -117,6 +124,23 @@ class Index extends Controller
         {
             $data = Db::name('options')->where('option_name','captcha')->field('option_value')->find();
             $this->assign('yanzheng', $data['option_value']);
+            $this->getPlugins();
+            Hook::add('login_background',$this->plugins);
+            Hook::listen('login_background',$this->params);
+            if(isset($this->params['login_background']))
+            {
+                $this->assign('login_background', $this->params['login_background']);
+            }
+            Hook::add('login_annex',$this->plugins);
+            Hook::listen('login_annex',$this->params);
+            if(isset($this->params['login_annex']))
+            {
+                $this->assign('login_annex', $this->params['login_annex']);
+            }
+            $param = '';
+            Hook::add('login_annex_post',$this->plugins);
+            Hook::listen('login_annex_post',$param);
+            $this->options();
             $this->domain();
             $view = $this->fetch();
             return $view;
@@ -170,6 +194,12 @@ class Index extends Controller
     //注册
     public function register()
     {
+        $options_spare = $this->optionsSpare();
+        if(isset($options_spare['notAllowLogin']) && $options_spare['notAllowLogin'] == 1)
+        {
+            $this->redirect(Url::build('/index'));
+            exit();
+        }
         if(Request::instance()->has('user','post'))
         {
             //验证输入内容
@@ -239,6 +269,14 @@ class Index extends Controller
             $users->save();
             $this->success(Lang::get('User registration is successful'), Url::build('/login'));
         }
+        $this->options();
+        $this->getPlugins();
+        Hook::add('registration_background',$this->plugins);
+        Hook::listen('registration_background',$this->params);
+        if(isset($this->params['registration_background']))
+        {
+            $this->assign('registration_background', $this->params['registration_background']);
+        }
         $this->domain();
         $view = $this->fetch();
         return $view;
@@ -252,5 +290,123 @@ class Index extends Controller
             Cache::set('domain',$domain,3600);
         }
         $this->assign('domain', $domain);
+    }
+    private function filterLanguages($parameter)
+    {
+        $param = strtolower($parameter);
+        if($param == 'zh')
+        {
+            Lang::range('zh-cn');
+            return 'zh-cn';
+        }
+        else if(stripos($param,'zh') === false)
+        {
+            $paramsub = substr($param,0,2);
+            switch($paramsub)
+            {
+                case 'de':
+                    Lang::range('de-de');
+                    return 'de-de';
+                    break;
+                case 'fr':
+                    Lang::range('fr-fr');
+                    return 'fr-fr';
+                    break;
+                case 'ja':
+                    Lang::range('ja-jp');
+                    return 'ja-jp';
+                    break;
+                case 'ko':
+                    Lang::range('ko-kr');
+                    return 'ko-kr';
+                    break;
+                case 'ru':
+                    Lang::range('ru-ru');
+                    return 'ru-ru';
+                    break;
+                default:
+                    return $param;
+            }
+        }
+        else
+        {
+            return $param;
+        }
+    }
+    protected function optionsSpare()
+    {
+        $options_spare = Cache::get('options_spare');
+        if($options_spare == false)
+        {
+            $options_spare = Db::name('options')->where('option_name','spare')->field('option_value')->find();
+            $options_spare = $options_spare['option_value'];
+            if(!empty($options_spare))
+            {
+                $options_spare = unserialize($options_spare);
+            }
+            Cache::set('options_spare',$options_spare,3600);
+        }
+        return $options_spare;
+    }
+    private function options()
+    {
+        $data_options = Cache::get('options');
+        if($data_options == false)
+        {
+            $data_options = Db::name('options')->where('autoload',1)->field('option_name,option_value')->select();
+            Cache::set('options',$data_options,3600);
+        }
+        $version = Config::get('version');
+        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
+        foreach($data_options as $key => $val)
+        {
+            if($val['option_name'] == 'copyright' || $val['option_name'] == 'statistics')
+            {
+                $this->assign($val['option_name'], unserialize($val['option_value']));
+            }
+            else if($val['option_name'] == 'pageSettings')
+            {
+                ;
+            }
+            else
+            {
+                $this->assign($val['option_name'], $val['option_value']);
+            }
+        }
+    }
+    private function getPlugins()
+    {
+        $plugins = Cache::get('plugins');
+        if($plugins == false)
+        {
+            $plugins = Db::name('options')->where('option_name','plugins')->field('option_value')->find();
+            if(!empty($plugins))
+            {
+                $plugins = unserialize($plugins['option_value']);
+            }
+            else
+            {
+                $plugins = [];
+            }
+            Cache::set('plugins',$plugins,3600);
+        }
+        if(!empty($plugins))
+        {
+            foreach($plugins as $key => $val)
+            {
+                $pluginFile = APP_PATH.'plugins/'.$val.'/'.ucfirst($val).'.php';
+                if(is_file($pluginFile))
+                {
+                    $plugins[$key] = 'app\\plugins\\'.$val.'\\'.ucfirst($val);
+                    //加载插件语言包
+                    Lang::load(APP_PATH . 'plugins/'.$val.'/lang/'.$this->lang.'.php');
+                }
+                else
+                {
+                    unset($plugins[$key]);
+                }
+            }
+            $this->plugins = $plugins;
+        }
     }
 }

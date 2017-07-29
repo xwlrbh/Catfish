@@ -1,5 +1,9 @@
 {include file="index/header" /}
+{notempty name="editor_css"}
+{$editor_css}
+{else /}
 <link href="{$domain}public/common/umeditor/themes/default/css/umeditor.min.css" type="text/css" rel="stylesheet">
+{/notempty}
 <link href="{$domain}public/common/uploadify/uploadify.css" type="text/css" rel="stylesheet">
 <link href="{$domain}public/common/datetimepicker/css/bootstrap-datetimepicker.min.css" type="text/css" rel="stylesheet">
 <div class="row bg-info text-center">
@@ -7,7 +11,7 @@
 </div><br>
 <div class="container-fluid">
     <div class="row" style="min-height: 800px;">
-        <form method="post" action="">
+        <form method="post" action="" name="writeForm">
             <div class="col-md-9">
                 <h4>{:lang('With')}&nbsp;<b><span class="text-danger">*</span></b>&nbsp;{:lang('are required')}</h4>
                 <div class="form-group">
@@ -24,7 +28,11 @@
                 </div>
                 <div class="form-group">
                     <label>{:lang('Details')}：</label>
+                    {notempty name="editor"}
+                    {$editor}
+                    {else /}
                     <script type="text/plain" id="editor" style="width:100%;height:360px;"></script>
+                    {/notempty}
                     <textarea class="form-control hidden" rows="3" id="zhengwen" name="neirong"></textarea>
                 </div>
                 <div class="form-group">
@@ -116,10 +124,19 @@
 </div>
 <div class="hidden" id="webroot">{$domain}</div>
 <div class="hidden" id="buttonText">{:lang('Select Image')}</div>
+{notempty name="editor_js"}
+{$editor_js}
+{else /}
 <script type="text/javascript" charset="utf-8" src="{$domain}public/common/umeditor/umeditor.config.js"></script>
 <script type="text/javascript" charset="utf-8" src="{$domain}public/common/umeditor/umeditor.min.js"></script>
 <script type="text/javascript" src="{$domain}public/common/umeditor/lang/zh-cn/zh-cn.js"></script>
+{/notempty}
 <script type="text/javascript" src="{$domain}public/common/uploadify/jquery.uploadify.js"></script>
 <script type="text/javascript" src="{$domain}public/common/datetimepicker/js/bootstrap-datetimepicker.min.js" charset="UTF-8"></script>
+{notempty name="js"}
+{$js}
+{else /}
+<script src="{$domain}public/common/js/newpageEditor.js"></script>
+{/notempty}
 <script src="{$domain}public/common/js/newpage.js"></script>
 {include file="index/footer" /}

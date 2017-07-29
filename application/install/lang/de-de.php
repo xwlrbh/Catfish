@@ -75,5 +75,6 @@ return [
     'Database information error' => 'Datenbank - Informationen Fehler',
     'Another Catfish CMS site' => 'Ein weiterer Catfish CMS Website',
     'Catfish CMS' => 'Catfish CMS',
-    'Installation completed' => 'Installation abgeschlossen'
+    'Installation completed' => 'Installation abgeschlossen',
+    'If you use an existing database, replace it with the actual database name' => 'Wenn Sie eine vorhandene Datenbank verwenden, ersetzen Sie sie durch den aktuellen Datenbanknamen'
 ];
