@@ -35,10 +35,8 @@ class Index extends Controller
     }
     public function index()
     {
-        //验证登录
         if(Request::instance()->has('user','post'))
         {
-            //验证输入内容
             if(Request::instance()->has('captcha','post'))
             {
                 $rule = [
@@ -76,29 +74,27 @@ class Index extends Controller
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
-            //判断正确
             $users = new Users();
             $user = $users->where('user_login', htmlspecialchars(Request::instance()->post('user')))
                 ->find();
             if(empty($user))
             {
-                $this->error(Lang::get('Username error'));//错误输出
+                $this->error(Lang::get('Username error'));
                 return false;
             }
             if($user['user_pass'] != md5(Request::instance()->post('pwd')))
             {
-                $this->error(Lang::get('Password error'));//错误输出
+                $this->error(Lang::get('Password error'));
                 return false;
             }
             if($user['user_status'] == 0)
             {
-                $this->error(Lang::get('Account has been disabled, please contact the administrator'));//错误输出
+                $this->error(Lang::get('Account has been disabled, please contact the administrator'));
                 return false;
             }
-            //登录成功
             $user->save([
                 'last_login_ip' => get_client_ip(0,true),
                 'last_login_time' => date("Y-m-d H:i:s")
@@ -119,7 +115,6 @@ class Index extends Controller
                 Cookie::set($this->session_prefix.'user_p',md5($cookie_user_p.$user['user_pass']),604800);
             }
         }
-        //显示登录页
         if(!Session::has($this->session_prefix.'user_id'))
         {
             $data = Db::name('options')->where('option_name','captcha')->field('option_value')->find();
@@ -154,7 +149,6 @@ class Index extends Controller
             $this->redirect(Url::build('/user'));
         }
     }
-    //ajax登录
     public function denglu()
     {
         if(Request::instance()->post('user') == '')
@@ -165,7 +159,6 @@ class Index extends Controller
         {
             return Lang::get('Password must be filled in');
         }
-        //判断正确
         $users = new Users();
         $user = $users->where('user_login', htmlspecialchars(Request::instance()->post('user')))
             ->find();
@@ -181,7 +174,6 @@ class Index extends Controller
         {
             return Lang::get('Account has been disabled, please contact the administrator');
         }
-        //登录成功
         $user->save([
             'last_login_ip' => get_client_ip(0,true),
             'last_login_time' => date("Y-m-d H:i:s")
@@ -191,7 +183,6 @@ class Index extends Controller
         Session::set($this->session_prefix.'user_type',$user['user_type']);
         return 'ok';
     }
-    //注册
     public function register()
     {
         $options_spare = $this->optionsSpare();
@@ -202,7 +193,6 @@ class Index extends Controller
         }
         if(Request::instance()->has('user','post'))
         {
-            //验证输入内容
             $rule = [
                 'user' => 'require',
                 'pwd' => 'require',
@@ -225,15 +215,14 @@ class Index extends Controller
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             if(Request::instance()->post('pwd') != Request::instance()->post('repeat'))
             {
-                $this->error(Lang::get('Confirm the password must be the same as the password'));//验证错误输出
+                $this->error(Lang::get('Confirm the password must be the same as the password'));
                 return false;
             }
-            //过滤用户名
             $guolv = Options::get(['option_name' => 'filter']);
             $jinyg = $guolv->option_value;
             if(!empty($jinyg))
@@ -244,7 +233,7 @@ class Index extends Controller
                 {
                     if(strpos(Request::instance()->post('user'),$val) !== false)
                     {
-                        $this->error(Lang::get('Please use a different username'));//验证错误输出
+                        $this->error(Lang::get('Please use a different username'));
                         return false;
                     }
                 }
@@ -254,7 +243,7 @@ class Index extends Controller
                 ->find();
             if(!empty($user))
             {
-                $this->error(Lang::get('User name has been registered'));//验证错误输出
+                $this->error(Lang::get('User name has been registered'));
                 return false;
             }
             $users->data([
@@ -398,7 +387,6 @@ class Index extends Controller
                 if(is_file($pluginFile))
                 {
                     $plugins[$key] = 'app\\plugins\\'.$val.'\\'.ucfirst($val);
-                    //加载插件语言包
                     Lang::load(APP_PATH . 'plugins/'.$val.'/lang/'.$this->lang.'.php');
                 }
                 else

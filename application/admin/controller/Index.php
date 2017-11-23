@@ -21,7 +21,6 @@ use think\Lang;
 
 class Index extends Common
 {
-    //显示后台首页
     public function index()
     {
         $this->checkUser();
@@ -35,14 +34,12 @@ class Index extends Common
         $this->assign('option', '');
         return $this->view();
     }
-    //添加分类
     public function addclassify()
     {
         $this->checkUser();
         $this->checkPermissions(5);
         if(Request::instance()->has('fenleim','post'))
         {
-            //验证输入内容
             $rule = [
                 'fenleim' => 'require',
                 'shangji' => 'require'
@@ -58,13 +55,13 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $data = ['term_name' => htmlspecialchars(Request::instance()->post('fenleim')), 'description' => htmlspecialchars(Request::instance()->post('miaoshu')), 'parent_id' => Request::instance()->post('shangji')];
             Db::name('terms')->insert($data);
         }
-        $fufenlei = 0;//父分类
+        $fufenlei = 0;
         if(Request::instance()->has('c','get'))
         {
             $fufenlei = Request::instance()->get('c');
@@ -75,20 +72,16 @@ class Index extends Common
         $this->assign('fenlei', $this->getfenlei());
         return $this->view();
     }
-    //分类管理
     public function classify()
     {
         $this->checkUser();
         $this->checkPermissions(5);
         if(Request::instance()->has('d','get'))
         {
-            //删除对应分类
             Db::name('terms')->where('id',Request::instance()->get('d'))->delete();
-            //提交父节点
             Db::name('terms')
                 ->where('parent_id', Request::instance()->get('d'))
                 ->update(['parent_id' => Request::instance()->get('f')]);
-            //删除对应文章
             Db::name('term_relationships')->where('term_id',Request::instance()->get('d'))->delete();
         }
         $this->assign('data', $this->getfenlei('id,term_name,description,parent_id','&#12288;'));
@@ -96,14 +89,12 @@ class Index extends Common
         $this->assign('option', 'classify');
         return $this->view();
     }
-    //修改分类
     public function modifyclassify()
     {
         $this->checkUser();
         $this->checkPermissions(5);
         if(Request::instance()->has('cid','post'))
         {
-            //验证输入内容
             $rule = [
                 'fenleim' => 'require',
                 'shangji' => 'require'
@@ -119,7 +110,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $data = ['term_name' => htmlspecialchars(Request::instance()->post('fenleim')), 'description' => htmlspecialchars(Request::instance()->post('miaoshu')), 'parent_id' => Request::instance()->post('shangji')];
@@ -134,14 +125,12 @@ class Index extends Common
         $this->assign('fenlei', $this->getfenlei());
         return $this->view();
     }
-    //写文章
     public function write()
     {
         $this->checkUser();
         $this->checkPermissions(6);
         if(Request::instance()->has('biaoti','post'))
         {
-            //验证输入内容
             $rule = [
                 'biaoti' => 'require',
                 'neirong' => 'require'
@@ -157,7 +146,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $biaoti = Request::instance()->post('biaoti');
@@ -227,7 +216,6 @@ class Index extends Common
         $this->assign('fenlei', $this->getfenlei());
         return $this->view();
     }
-    //所有文章
     public function articles()
     {
         $this->checkUser();
@@ -259,7 +247,6 @@ class Index extends Common
         $this->assign('fenlei', $this->getfenlei());
         return $this->view();
     }
-    //评论管理
     public function comments()
     {
         $this->checkUser();
@@ -273,7 +260,6 @@ class Index extends Common
         $this->assign('option', 'comments');
         return $this->view();
     }
-    //审核评论
     public function shenhepinglun()
     {
         $this->checkPermissions(5);
@@ -291,7 +277,6 @@ class Index extends Common
             ->update(['status' => $zt]);
         return true;
     }
-    //删除评论
     public function removeComment()
     {
         $this->checkPermissions(5);
@@ -307,7 +292,6 @@ class Index extends Common
             ->setDec('comment_count');
         return true;
     }
-    //批量审核评论
     public function commentbatch()
     {
         $this->checkPermissions(5);
@@ -325,7 +309,6 @@ class Index extends Common
             ->update(['status' => $zhi]);
         return true;
     }
-    //留言管理
     public function messages()
     {
         $this->checkUser();
@@ -336,14 +319,12 @@ class Index extends Common
         $this->assign('option', 'messages');
         return $this->view();
     }
-    //删除留言
     public function removeMessage()
     {
         $this->checkPermissions(5);
         Db::name('guestbook')->where('id',Request::instance()->post('id'))->delete();
         return true;
     }
-    //回收站
     public function recycle()
     {
         $this->checkUser();
@@ -372,7 +353,6 @@ class Index extends Common
         $this->assign('option', 'recycle');
         return $this->view();
     }
-    //从回收站删除
     public function removeArticle()
     {
         $this->checkPermissions(6);
@@ -381,7 +361,6 @@ class Index extends Common
         Db::name('comments')->where('post_id',Request::instance()->post('id'))->delete();
         return true;
     }
-    //从回收站还原
     public function reductionArticle()
     {
         $this->checkPermissions(6);
@@ -390,7 +369,6 @@ class Index extends Common
             ->update(['status' => 1]);
         return true;
     }
-    //回收站批量操作
     public function recycleBatch()
     {
         $this->checkPermissions(6);
@@ -408,7 +386,6 @@ class Index extends Common
         }
         return true;
     }
-    //文章搜索
     public function search()
     {
         $this->checkUser();
@@ -439,7 +416,6 @@ class Index extends Common
             $start = $end;
             $end = $tmp;
         }
-        //查询
         if($fenlei != 0)
         {
             if($this->permissions < 6)
@@ -534,7 +510,6 @@ class Index extends Common
         $this->assign('fenlei', $this->getfenlei());
         return $this->view('articles');
     }
-    //文章放入回收站
     public function recycleArticle()
     {
         $this->checkPermissions(6);
@@ -543,14 +518,12 @@ class Index extends Common
             ->update(['status' => 0]);
         return true;
     }
-    //修改文章
     public function rewrite()
     {
         $this->checkUser();
         $this->checkPermissions(6);
         if(Request::instance()->has('postId','post'))
         {
-            //验证输入内容
             $rule = [
                 'biaoti' => 'require',
                 'neirong' => 'require'
@@ -566,7 +539,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
@@ -575,9 +548,7 @@ class Index extends Common
             Db::name('posts')
                 ->where('id', Request::instance()->post('postId'))
                 ->update($data);
-            //删除原分类
             Db::name('term_relationships')->where('object_id',Request::instance()->post('postId'))->delete();
-            //新建分类
             if(isset($_POST['fenlei']) && is_array($_POST['fenlei']))
             {
                 $data = [];
@@ -593,10 +564,8 @@ class Index extends Common
             ];
             Hook::listen('rewrite_post',$params);
         }
-        //查找分类
         $classify = Db::name('term_relationships')->field('term_id')->where('object_id',Request::instance()->get('art'))->select();
-        $fenlei =$this->getfenlei();//获取完整分类
-        //已选分类
+        $fenlei =$this->getfenlei();
         foreach($fenlei as $key => $val){
             $fenlei[$key]['classify'] = 0;
             foreach($classify as $cval){
@@ -606,7 +575,6 @@ class Index extends Common
                 }
             }
         }
-        //选取文章
         $wzid = 0;
         if(Request::instance()->has('postId','post'))
         {
@@ -626,7 +594,6 @@ class Index extends Common
         $this->assign('fenlei', $fenlei);
         return $this->view();
     }
-    //批量修改文章
     public function modify()
     {
         $this->checkPermissions(6);
@@ -669,14 +636,12 @@ class Index extends Common
         }
         return true;
     }
-    //新建页面
     public function newpage()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->has('biaoti','post'))
         {
-            //验证输入内容
             $rule = [
                 'biaoti' => 'require',
                 'template' => 'require'
@@ -692,7 +657,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
@@ -700,12 +665,10 @@ class Index extends Common
             $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => Request::instance()->post('fabushijian'), 'post_type' => 1, 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
             Db::name('posts')->insert($data);
         }
-        //获取模板目录
         $template = Db::name('options')
             ->where('option_name','template')
             ->field('option_value')
             ->find();
-        //获取现存模板
         $dir = glob(APP_PATH.'../public/'.$template['option_value'].'/page/*.html');
         foreach($dir as $key => $val)
         {
@@ -718,7 +681,6 @@ class Index extends Common
         $this->assign('option', 'newpage');
         return $this->view();
     }
-    //所有页面
     public function allpage()
     {
         $this->checkUser();
@@ -734,7 +696,6 @@ class Index extends Common
         $this->assign('option', 'allpage');
         return $this->view();
     }
-    //删除页面
     public function removePage()
     {
         $this->checkPermissions(3);
@@ -743,7 +704,6 @@ class Index extends Common
             ->delete();
         return true;
     }
-    //批量删除页面
     public function removeAllPage()
     {
         $this->checkPermissions(3);
@@ -755,14 +715,12 @@ class Index extends Common
         }
         return true;
     }
-    //修改页面
     public function editpage()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->has('postId','post'))
         {
-            //验证输入内容
             $rule = [
                 'biaoti' => 'require',
                 'template' => 'require'
@@ -778,7 +736,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
@@ -788,7 +746,6 @@ class Index extends Common
                 ->where('id', Request::instance()->post('postId'))
                 ->update($data);
         }
-        //选取页面
         $wzid = 0;
         if(Request::instance()->has('postId','post'))
         {
@@ -801,12 +758,10 @@ class Index extends Common
         $data = Db::name('posts')->where('id',$wzid)->find();
         $data['post_content'] = str_replace('<img class="img-responsive"','<img',$data['post_content']);
         $this->assign('data', $data);
-        //获取模板目录
         $template = Db::name('options')
             ->where('option_name','template')
             ->field('option_value')
             ->find();
-        //获取现存模板
         $dir = glob(APP_PATH.'../public/'.$template['option_value'].'/page/*.html');
         foreach($dir as $key => $val)
         {
@@ -819,7 +774,6 @@ class Index extends Common
         $this->assign('option', 'allpage');
         return $this->view();
     }
-    //页面搜索
     public function searchpage()
     {
         $this->checkUser();
@@ -864,7 +818,6 @@ class Index extends Common
         $this->assign('option', 'allpage');
         return $this->view('allpage');
     }
-    //页面设置
     public function pageSettings()
     {
         $this->checkUser();
@@ -902,14 +855,12 @@ class Index extends Common
         $this->assign('option', 'pageSettings');
         return $this->view();
     }
-    //添加幻灯片
     public function addSlideshow()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
-            //验证输入内容
             $rule = [
                 'slideshow' => 'require'
             ];
@@ -922,13 +873,12 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $data = ['slide_name' => htmlspecialchars(Request::instance()->post('mingcheng')), 'slide_pic' => Request::instance()->post('slideshow'), 'slide_url' => htmlspecialchars(Request::instance()->post('lianjie')), 'slide_des' => htmlspecialchars(Request::instance()->post('miaoshu'))];
             Db::name('slide')->insert($data);
         }
-        //获取幻灯片宽和高
         $slideshowWidth = Db::name('options')->where('option_name','slideshowWidth')->field('option_value')->find();
         $slideshowHeight = Db::name('options')->where('option_name','slideshowHeight')->field('option_value')->find();
         $this->assign('slideshowWidth', $slideshowWidth['option_value']);
@@ -937,14 +887,12 @@ class Index extends Common
         $this->assign('option', 'addSlideshow');
         return $this->view();
     }
-    //修改幻灯片
     public function modifyslide()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
-            //验证输入内容
             $rule = [
                 'slideshow' => 'require'
             ];
@@ -957,7 +905,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $data = ['slide_name' => htmlspecialchars(Request::instance()->post('mingcheng')), 'slide_pic' => Request::instance()->post('slideshow'), 'slide_url' => htmlspecialchars(Request::instance()->post('lianjie')), 'slide_des' => htmlspecialchars(Request::instance()->post('miaoshu'))];
@@ -965,7 +913,6 @@ class Index extends Common
                 ->where('slide_id', Request::instance()->post('slideId'))
                 ->update($data);
         }
-        //选取幻灯片
         $wzid = 0;
         if(Request::instance()->has('slideId','post'))
         {
@@ -977,7 +924,6 @@ class Index extends Common
         }
         $data = Db::name('slide')->where('slide_id',$wzid)->find();
         $this->assign('data', $data);
-        //获取幻灯片宽和高
         $slideshowWidth = Db::name('options')->where('option_name','slideshowWidth')->field('option_value')->find();
         $slideshowHeight = Db::name('options')->where('option_name','slideshowHeight')->field('option_value')->find();
         $this->assign('slideshowWidth', $slideshowWidth['option_value']);
@@ -986,15 +932,13 @@ class Index extends Common
         $this->assign('option', 'slideshow');
         return $this->view();
     }
-    //管理幻灯片
     public function slideshow()
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        //排序
         if(Request::instance()->has('paixu','post'))
         {
-            $paixu = Request::instance()->post();//获取所有post内容
+            $paixu = Request::instance()->post();
             foreach($paixu as $key => $val)
             {
                 if($val != 'paixu')
@@ -1011,7 +955,6 @@ class Index extends Common
         $this->assign('option', 'slideshow');
         return $this->view();
     }
-    //删除幻灯片
     public function removeSlide()
     {
         $this->checkPermissions(3);
@@ -1020,7 +963,6 @@ class Index extends Common
             ->field('slide_pic')
             ->find();
         $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-        //删除原图
         $yfile = str_replace($yuming['option_value'],'',$slide['slide_pic']);
         if(!empty($yfile) && $this->isLegalPicture($slide['slide_pic'])){
             $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
@@ -1032,7 +974,6 @@ class Index extends Common
             ->delete();
         return true;
     }
-    //隐藏启用幻灯片
     public function yincang_qiyong()
     {
         $this->checkPermissions(3);
@@ -1050,14 +991,12 @@ class Index extends Common
             ->update(['slide_status' => $zt]);
         return true;
     }
-    //添加友情链接
     public function addLinks()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
-            //验证输入内容
             $rule = [
                 'mingcheng' => 'require',
                 'dizhi' => 'require'
@@ -1073,7 +1012,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $weizhi = 0;
@@ -1088,15 +1027,13 @@ class Index extends Common
         $this->assign('option', 'addLinks');
         return $this->view();
     }
-    //管理友情链接
     public function links()
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        //排序
         if(Request::instance()->has('paixu','post'))
         {
-            $paixu = Request::instance()->post();//获取所有post内容
+            $paixu = Request::instance()->post();
             foreach($paixu as $key => $val)
             {
                 if($val != 'paixu')
@@ -1113,14 +1050,12 @@ class Index extends Common
         $this->assign('option', 'links');
         return $this->view();
     }
-    //修改友情链接
     public function modifylink()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->isPost())
         {
-            //验证输入内容
             $rule = [
                 'mingcheng' => 'require',
                 'dizhi' => 'require'
@@ -1136,7 +1071,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $weizhi = 0;
@@ -1149,7 +1084,6 @@ class Index extends Common
                 ->where('link_id', Request::instance()->post('linkId'))
                 ->update($data);
         }
-        //获取友情链接
         $wzid = 0;
         if(Request::instance()->has('linkId','post'))
         {
@@ -1165,7 +1099,6 @@ class Index extends Common
         $this->assign('option', 'links');
         return $this->view();
     }
-    //隐藏启用友情链接
     public function link_yincang_qiyong()
     {
         $this->checkPermissions(3);
@@ -1183,7 +1116,6 @@ class Index extends Common
             ->update(['link_status' => $zt]);
         return true;
     }
-    //删除友情链接
     public function removeLink()
     {
         $this->checkPermissions(3);
@@ -1192,7 +1124,6 @@ class Index extends Common
             ->field('link_image')
             ->find();
         $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-        //删除原图
         $yfile = str_replace($yuming['option_value'],'',$slide['link_image']);
         if(!empty($yfile) && $this->isLegalPicture($slide['link_image'])){
             $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
@@ -1204,7 +1135,6 @@ class Index extends Common
             ->delete();
         return true;
     }
-    //普通用户
     public function general()
     {
         $this->checkUser();
@@ -1215,7 +1145,6 @@ class Index extends Common
         $this->assign('option', 'general');
         return $this->view();
     }
-    //查找用户
     public function searchuser()
     {
         $this->checkUser();
@@ -1240,7 +1169,6 @@ class Index extends Common
         $this->assign('option', 'general');
         return $this->view('general');
     }
-    //拉黑用户,启用用户
     public function lahei_qiyong()
     {
         $this->checkPermissions(3);
@@ -1258,14 +1186,12 @@ class Index extends Common
             ->update(['user_status' => $zt]);
         return true;
     }
-    //添加后台用户
     public function addmanageuser()
     {
         $this->checkUser();
         $this->checkPermissions(1);
         if(Request::instance()->has('yonghuming','post'))
         {
-            //验证输入内容
             $rule = [
                 'yonghuming' => 'require',
                 'pwd' => 'require',
@@ -1287,23 +1213,23 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             if(Request::instance()->post('pwd') != Request::instance()->post('repeat'))
             {
-                $this->error(Lang::get('Confirm the password must be the same as the password'));//验证错误输出
+                $this->error(Lang::get('Confirm the password must be the same as the password'));
                 return false;
             }
             if(!Session::has($this->session_prefix.'addmanageuser_checkCode') || Request::instance()->post('checkCode') != Session::get($this->session_prefix.'addmanageuser_checkCode'))
             {
-                $this->error(Lang::get('Your permission is insufficient'));//验证错误输出
+                $this->error(Lang::get('Your permission is insufficient'));
                 return false;
             }
             $user = Db::name('users')->where('user_login',Request::instance()->post('yonghuming'))->find();
             if(!empty($user))
             {
-                $this->error(Lang::get('Username already exists'));//验证错误输出
+                $this->error(Lang::get('Username already exists'));
                 return false;
             }
             $data = ['user_login' => htmlspecialchars(Request::instance()->post('yonghuming')), 'user_pass' => md5(Request::instance()->post('pwd')), 'user_nicename' => htmlspecialchars(Request::instance()->post('yonghuming')), 'create_time' => date("Y-m-d H:i:s"), 'user_type' => Request::instance()->post('juese')];
@@ -1316,7 +1242,6 @@ class Index extends Common
         $this->assign('option', 'addmanageuser');
         return $this->view();
     }
-    //管理后台用户
     public function manageuser()
     {
         $this->checkUser();
@@ -1327,7 +1252,6 @@ class Index extends Common
         $this->assign('option', 'manageuser');
         return $this->view();
     }
-    //修改后台用户
     public function modifymanage()
     {
         $this->checkUser();
@@ -1338,7 +1262,6 @@ class Index extends Common
                 ->where('id', Request::instance()->post('uid'))
                 ->update(['user_type' => Request::instance()->post('juese')]);
         }
-        //选取菜单分类
         $wzid = 0;
         if(Request::instance()->has('uid','post'))
         {
@@ -1354,7 +1277,6 @@ class Index extends Common
         $this->assign('option', 'manageuser');
         return $this->view();
     }
-    //拉黑后台用户,启用后台用户
     public function lahei_qiyong_bu()
     {
         $this->checkPermissions(1);
@@ -1372,14 +1294,12 @@ class Index extends Common
             ->update(['user_status' => $zt]);
         return true;
     }
-    //添加菜单分类
     public function category()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->has('fenleiming','post'))
         {
-            //验证输入内容
             $rule = [
                 'fenleiming' => 'require'
             ];
@@ -1392,7 +1312,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $active = 0;
@@ -1413,7 +1333,6 @@ class Index extends Common
         $this->assign('option', 'category');
         return $this->view();
     }
-    //管理菜单分类
     public function managemc()
     {
         $this->checkUser();
@@ -1424,14 +1343,12 @@ class Index extends Common
         $this->assign('option', 'managemc');
         return $this->view();
     }
-    //修改菜单分类
     public function modifycategory()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->has('navcid','post'))
         {
-            //验证输入内容
             $rule = [
                 'fenleiming' => 'require'
             ];
@@ -1444,7 +1361,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $active = 0;
@@ -1463,7 +1380,6 @@ class Index extends Common
                     ->update(['active' => 0]);
             }
         }
-        //选取菜单分类
         $wzid = 0;
         if(Request::instance()->has('navcid','post'))
         {
@@ -1479,7 +1395,6 @@ class Index extends Common
         $this->assign('option', 'managemc');
         return $this->view();
     }
-    //删除菜单分类
     public function removemanagemc()
     {
         $this->checkPermissions(3);
@@ -1488,14 +1403,12 @@ class Index extends Common
             ->delete();
         return true;
     }
-    //添加菜单
     public function addmenu()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->has('caidanming','post'))
         {
-            //验证输入内容
             $rule = [
                 'caidanming' => 'require'
             ];
@@ -1508,7 +1421,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $lianjie = '';
@@ -1524,8 +1437,7 @@ class Index extends Common
             $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => $this->filterJavascript(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
             Db::name('nav')->insert($data);
         }
-        //添加子菜单时用
-        $cid = 0;//菜单分类
+        $cid = 0;
         if(Request::instance()->has('cid','get'))
         {
             $cid = Request::instance()->get('cid');
@@ -1537,8 +1449,7 @@ class Index extends Common
             $cid = $nav['navcid'];
         }
         $this->addModifyMenu($cid);
-        //添加子菜单时用
-        $fj = 0;//父级
+        $fj = 0;
         if(Request::instance()->has('c','get'))
         {
             $fj = Request::instance()->get('c');
@@ -1548,11 +1459,9 @@ class Index extends Common
         $this->assign('option', 'addmenu');
         return $this->view();
     }
-    //添加菜单时改变父级
     public function changeParent()
     {
         $this->checkPermissions(3);
-        //获取菜单
         $caidan = Db::name('nav')->where('cid', Request::instance()->post('id'))->where('status', 1)->field('id,parent_id,label')->order('listorder')->select();
         echo '<option value="0">'.Lang::get('As a first-level menu').'</option>';
         if(is_array($caidan) && count($caidan) > 0)
@@ -1579,14 +1488,12 @@ class Index extends Common
         }
         exit;
     }
-    //修改菜单
     public function modifymenu()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->has('caidanId','post'))
         {
-            //验证输入内容
             $rule = [
                 'caidanming' => 'require'
             ];
@@ -1599,7 +1506,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $lianjie = '';
@@ -1617,7 +1524,6 @@ class Index extends Common
                 ->where('id', Request::instance()->post('caidanId'))
                 ->update($data);
         }
-        //获取菜单项数据
         $caidanxiang = Db::name('nav')
             ->where('id', Request::instance()->get('c'))
             ->find();
@@ -1626,21 +1532,18 @@ class Index extends Common
         {
             $zidingyi = $caidanxiang['href'];
         }
-        $this->assign('zidingyi', $zidingyi);//自定义项
+        $this->assign('zidingyi', $zidingyi);
         $caidanxiang['icon'] = str_replace('"','&#34;',$caidanxiang['icon']);
-        $this->assign('cdxiang', $caidanxiang);//菜单项
+        $this->assign('cdxiang', $caidanxiang);
         $this->addModifyMenu($caidanxiang['cid']);
         $this->assign('backstageMenu', 'caidan');
         $this->assign('option', 'managemenu');
         return $this->view();
     }
-    //用于添加和修改菜单
     private function addModifyMenu($cid)
     {
-        //获取菜单分类
         $cdfenlei = Db::name('nav_cat')->field('navcid,nav_name')->order('active desc')->select();
         $this->assign('cdfenlei', $cdfenlei);
-        //获取菜单
         $caidan = Db::name('nav')->where('status', 1)->where('cid', $cid)->field('id,parent_id,label')->order('listorder')->select();
         if(is_array($caidan) && count($caidan) > 0)
         {
@@ -1650,7 +1553,6 @@ class Index extends Common
             }
         }
         $this->assign('caidan', $caidan);
-        //获取页面
         $yemian = Db::name('posts')->where('post_type', '1')->where('status', '1')->field('id,post_title,parent_id')->select();
         if(is_array($yemian) && count($yemian) > 0)
         {
@@ -1660,18 +1562,15 @@ class Index extends Common
             }
         }
         $this->assign('yemian', $yemian);
-        //获取文章分类
         $this->assign('fenlei', $this->getfenlei());
     }
-    //管理菜单
     public function managemenu()
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        //排序
         if(Request::instance()->has('paixu','post'))
         {
-            $paixu = Request::instance()->post();//获取所有post内容
+            $paixu = Request::instance()->post();
             foreach($paixu as $key => $val)
             {
                 if($val != 'paixu')
@@ -1682,33 +1581,26 @@ class Index extends Common
                 }
             }
         }
-        //删除菜单
         if(Request::instance()->has('d','get'))
         {
-            //删除对应菜单
             Db::name('nav')->where('id',Request::instance()->get('d'))->delete();
-            //提交父节点
             Db::name('nav')
                 ->where('parent_id', Request::instance()->get('d'))
                 ->update(['parent_id' => Request::instance()->get('f')]);
         }
-        //获取菜单分类
         $cdfenlei = Db::name('nav_cat')->field('navcid,nav_name')->order('active desc')->select();
         $this->assign('cdfenlei', $cdfenlei);
         $cid = 0;
         if(Request::instance()->has('caidanfenlei','post'))
         {
-            //当前菜单
             $cid = Request::instance()->post('caidanfenlei');
         }
         elseif(Request::instance()->has('cid','get'))
         {
-            //当前菜单
             $cid = Request::instance()->get('cid');
         }
         else
         {
-            //查找主菜单
             $nav = Db::name('nav_cat')->field('navcid')->order('active desc')->limit(1)->select();
             $cid = $nav[0]['navcid'];
         }
@@ -1726,14 +1618,12 @@ class Index extends Common
         $this->assign('option', 'managemenu');
         return $this->view();
     }
-    //网站信息
     public function web()
     {
         $this->checkUser();
         $this->checkPermissions(3);
         if(Request::instance()->has('title','post'))
         {
-            //验证输入内容
             $rule = [
                 'email' => 'email',
                 'domain' => 'require'
@@ -1749,7 +1639,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $pinglun = 0;
@@ -1815,6 +1705,18 @@ class Index extends Common
                 $tFormat = Request::instance()->post('timeFormat');
             }
             $spare['timeFormat'] = $tFormat;
+            $guanbi = 0;
+            if(Request::instance()->has('guanbi','post') && Request::instance()->post('guanbi') == 'on')
+            {
+                $guanbi = 1;
+            }
+            $spare['guanbi'] = $guanbi;
+            $closeSitemap = 0;
+            if(Request::instance()->has('closeSitemap','post') && Request::instance()->post('closeSitemap') == 'on')
+            {
+                $closeSitemap = 1;
+            }
+            $spare['closeSitemap'] = $closeSitemap;
             $spare = serialize($spare);
             Db::name('options')
                 ->where('option_name', 'title')
@@ -1869,7 +1771,6 @@ class Index extends Common
                 ->update(['option_value' => $spare]);
             Cache::clear();
         }
-        //获取现存模板
         $dir = glob(APP_PATH.'../public/*',GLOB_ONLYDIR);
         foreach($dir as $key => $val)
         {
@@ -1884,7 +1785,6 @@ class Index extends Common
             }
         }
         $this->assign('dir', $dir);
-        //获取站点信息
         $siteInfo = Db::name('options')
             ->where('option_id','<','21')
             ->field('option_name,option_value')->select();
@@ -1950,7 +1850,6 @@ class Index extends Common
         $this->assign('option', 'web');
         return $this->view();
     }
-    //主题
     public function themes()
     {
         $this->checkUser();
@@ -2006,14 +1905,12 @@ class Index extends Common
         $this->assign('option', 'themes');
         return $this->view();
     }
-    //个人信息
     public function personal()
     {
         $this->checkUser();
         $this->checkPermissions(6);
         if(Request::instance()->has('user_nicename','post'))
         {
-            //验证输入内容
             $rule = [
                 'email' => 'require|email'
             ];
@@ -2027,7 +1924,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             $avatar = Db::name('users')
@@ -2035,7 +1932,6 @@ class Index extends Common
                 ->field('avatar')
                 ->find();
             $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-            //删除原图
             if(Request::instance()->post('avatar') != $avatar['avatar'])
             {
                 $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
@@ -2072,7 +1968,6 @@ class Index extends Common
         $this->assign('option', 'personal');
         return $this->view();
     }
-    //个人头像上传
     public function uploadhead()
     {
         $this->checkPermissions(6);
@@ -2090,14 +1985,12 @@ class Index extends Common
         }
         exit();
     }
-    //修改密码
     public function change()
     {
         $this->checkUser();
         $this->checkPermissions(6);
         if(Request::instance()->has('oldPassword','post'))
         {
-            //验证输入内容
             $rule = [
                 'oldPassword' => 'require',
                 'newPassword' => 'require|min:8',
@@ -2117,12 +2010,12 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             if(Request::instance()->post('newPassword') != Request::instance()->post('repeat'))
             {
-                $this->error(Lang::get('Confirm that the new password and the new password do not match'));//验证错误输出
+                $this->error(Lang::get('Confirm that the new password and the new password do not match'));
                 return false;
             }
             $data = Db::name('users')
@@ -2131,7 +2024,7 @@ class Index extends Common
                 ->find();
             if($data['user_pass'] != md5(Request::instance()->post('oldPassword')))
             {
-                $this->error(Lang::get('The original password is wrong'));//验证错误输出
+                $this->error(Lang::get('The original password is wrong'));
                 return false;
             }
             else
@@ -2145,7 +2038,6 @@ class Index extends Common
         $this->assign('option', 'change');
         return $this->view();
     }
-    //获取版本
     public function version()
     {
         $this->checkPermissions(6);
@@ -2172,7 +2064,6 @@ class Index extends Common
         }
         return Lang::get('Did not find the latest version information');
     }
-    //删除缓存
     public function clearcache()
     {
         $this->checkUser();
@@ -2185,12 +2076,10 @@ class Index extends Common
         $this->assign('option', 'clearcache');
         return $this->view();
     }
-    //插件
     public function plugin()
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        //获取已经开启插件
         $plugins = Db::name('options')->where('option_name','plugins')->field('option_value')->find();
         if(!empty($plugins))
         {
@@ -2200,7 +2089,6 @@ class Index extends Common
         {
             $plugins = [];
         }
-        //获取已有插件
         $data = [];
         $dir = glob(APP_PATH.'plugins/*',GLOB_ONLYDIR);
         foreach($dir as $key => $val)
@@ -2279,7 +2167,6 @@ class Index extends Common
             }
         }
         $this->assign('data', $data);
-        //清理冗余插件
         $intArr=array_intersect($plugins,$dataArr);
         if(count($intArr) < count($plugins))
         {
@@ -2291,7 +2178,6 @@ class Index extends Common
         $this->assign('option', 'plugin');
         return $this->view();
     }
-    //插件开关
     public function pluginkaiguan()
     {
         $this->checkPermissions(3);
@@ -2333,11 +2219,10 @@ class Index extends Common
                 ->where('option_name','plugins')
                 ->update(['option_value' => serialize($plugins)]);
         }
-        Cache::rm('plugins');//前台
-        Cache::rm('pluginslist');//后台
+        Cache::rm('plugins');
+        Cache::rm('pluginslist');
         return true;
     }
-    //自定义插件
     public function plugins($plugin)
     {
         $this->checkUser();
@@ -2351,7 +2236,6 @@ class Index extends Common
         }
         Hook::listen('settings',$params);
         $nofile = false;
-        //获取插件名
         $readme = APP_PATH.'plugins/'.$plugin.'/readme.txt';
         if(!is_file($readme))
         {
@@ -2387,7 +2271,6 @@ class Index extends Common
         $this->assign('option', $plugin);
         return $this->view();
     }
-    //Logo上传
     public function uploadLogo()
     {
         $this->checkPermissions(3);
@@ -2405,7 +2288,6 @@ class Index extends Common
         }
         exit();
     }
-    //ico上传
     public function uploadIco()
     {
         $this->checkPermissions(3);
@@ -2423,7 +2305,6 @@ class Index extends Common
         }
         exit();
     }
-    //图片上传
     public function upload()
     {
         $this->checkPermissions(6);
@@ -2434,7 +2315,6 @@ class Index extends Common
         $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
-            //生成缩略图
             $image = \think\Image::open(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             $width = $image->width();
             $height = $image->height();
@@ -2454,7 +2334,6 @@ class Index extends Common
         }
         exit();
     }
-    //友情链接图标上传
     public function uploadLinks()
     {
         $this->checkPermissions(3);
@@ -2465,7 +2344,6 @@ class Index extends Common
         $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
-            //生成图标
             $image = \think\Image::open(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             $width = $image->width();
             $height = $image->height();
@@ -2475,12 +2353,10 @@ class Index extends Common
             }
             echo $info->getSaveName();
         }else{
-            // 上传失败获取错误信息
             echo $file->getError();
         }
         exit();
     }
-    //上传幻灯片
     public function uploadSlideshow()
     {
         $this->checkPermissions(3);
@@ -2491,20 +2367,16 @@ class Index extends Common
         $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
-            //生成幻灯片
             $slideshowWidth = Db::name('options')->where('option_name','slideshowWidth')->field('option_value')->find();
             $slideshowHeight = Db::name('options')->where('option_name','slideshowHeight')->field('option_value')->find();
             $image = \think\Image::open(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             @$image->thumb($slideshowWidth['option_value'],$slideshowHeight['option_value'],\think\Image::THUMB_FIXED)->save(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
-            // 输出 20160820/42a79759f284b767dfcb2a0197904287.jpg
             echo $info->getSaveName();
         }else{
-            // 上传失败获取错误信息
             echo $file->getError();
         }
         exit();
     }
-    //获取分类数组
     private function getfenlei($fields = 'id,term_name,parent_id', $replace = '&nbsp;&nbsp;&nbsp;')
     {
         $data = Db::name('terms')->field($fields)->select();

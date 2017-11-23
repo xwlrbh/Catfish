@@ -314,7 +314,15 @@ class App
                 $request->module($module);
                 $config = self::init($module);
             } else {
-                throw new HttpException(404, 'module not exists:' . $module);
+                if(is_file(APP_PATH.'../public/common/html/404/index.html'))
+                {
+                    header('Location: ' . Url::build('/lost'));
+                    exit();
+                }
+                else
+                {
+                    throw new HttpException(404, 'module not exists:' . $module);
+                }
             }
         } else {
             // 单一模块部署

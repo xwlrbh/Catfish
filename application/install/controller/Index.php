@@ -72,7 +72,7 @@ class Index extends Controller
         }
         $lujing = ltrim(str_replace('/index.php','',Url::build('/')),'/');
         $folders = array(
-            '',//根目录
+            '',
             'data',
             'data/uploads',
             'application',
@@ -186,7 +186,7 @@ class Index extends Controller
         $validate = new Validate($rule, $msg);
         if(!$validate->check($data))
         {
-            $this->error($validate->getError());//验证错误输出
+            $this->error($validate->getError());
         }
         elseif($data['pwd'] !== $data['repwd'])
         {
@@ -284,29 +284,18 @@ class Index extends Controller
     {
         try{
             Db::connect([
-                // 数据库类型
                 'type' => 'mysql',
-                // 数据库连接DSN配置
                 'dsn' => '',
-                // 服务器地址
                 'hostname' => Request::instance()->post('host'),
-                // 数据库名
                 'database' => Request::instance()->post('name'),
-                // 数据库用户名
                 'username' => Request::instance()->post('user'),
-                // 数据库密码
                 'password' => Request::instance()->post('password'),
-                // 数据库连接端口
                 'hostport' => Request::instance()->post('port'),
-                // 数据库连接参数
                 'params' => [],
-                // 数据库编码默认采用utf8
                 'charset' => 'utf8',
-                // 数据库表前缀
                 'prefix' => Request::instance()->post('prefix')
             ])->execute($exStr);
         }catch(\Exception $e){
-            //echo $e->getMessage();
             return false;
         }
         return true;

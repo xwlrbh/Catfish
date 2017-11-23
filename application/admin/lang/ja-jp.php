@@ -329,5 +329,11 @@ return [
     'Your access rights are insufficient' => 'あなたの訪問権限が不足している',
     'Notice' => 'お知らせ',
     'Paging' => '複数ページ',
-    'Your permission is insufficient' => 'あなたは十分な権限を持っています'
+    'Your permission is insufficient' => 'あなたは十分な権限を持っています',
+    'Whether to close the site' => 'サイトを閉鎖するかどうか',
+    'Close the site' => '閉じるサイト',
+    'When you need website maintenance, you can use to close the site' => 'あなたがウェブサイトのメンテナンスが必要な場合は、サイトをシャットダウンするために使用することができます',
+    'Whether to close the site map' => 'サイトマップを閉じるかどうか',
+    'Close the site map' => '閉じるサイトマップ',
+    'The site map is turned on by default, where you can turn off the site map' => 'サイトマップは、サイトマップを閉じることができ、デフォルトで有効になっています'
 ];

@@ -329,5 +329,11 @@ return [
     'Your access rights are insufficient' => '액세스 권한이 충분하지 않습니다.',
     'Notice' => '통지',
     'Paging' => '여러 페이지',
-    'Your permission is insufficient' => '당신은 충분한 권한이'
+    'Your permission is insufficient' => '당신은 충분한 권한이',
+    'Whether to close the site' => '사이트를 종료할지 여부',
+    'Close the site' => '닫기 사이트',
+    'When you need website maintenance, you can use to close the site' => '당신이 웹 사이트 유지 보수를 필요로 할 때, 사이트를 종료 할 수 있습니다',
+    'Whether to close the site map' => '사이트 맵을 종료할지 여부',
+    'Close the site map' => '닫기 사이트 맵',
+    'The site map is turned on by default, where you can turn off the site map' => '사이트 맵은 사용자가 사이트 맵을 닫을 수 있습니다 기본적으로 활성화되어 있습니다'
 ];

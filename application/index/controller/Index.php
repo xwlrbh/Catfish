@@ -72,18 +72,16 @@ class Index extends Common
         {
             $this->assign('plugin_name', $param);
         }
-        //获取幻灯片
         $this->slide();
-        //获取友情链接
         $data_links = Cache::get('links');
         if($data_links == false)
         {
             $data_links = Db::name('links')->where('link_location',1)->where('link_status',1)->field('link_url,link_name,link_image,link_target')->order('listorder')->select();
             Cache::set('links',$data_links,3600);
         }
-        $this->assign('links', $data_links);//输出友情链接
-        $template = $this->receive('index');//主题目录
-        $this->assign('pageUrl', $this->getpage());//确定是哪个页面
+        $this->assign('links', $data_links);
+        $template = $this->receive('index');
+        $this->assign('pageUrl', $this->getpage());
         if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/index.html'))
         {
             $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/mobile/index.html');
@@ -151,7 +149,6 @@ class Index extends Common
             ];
             Hook::add('order_article',$this->plugins);
             Hook::listen('order_article',$order);
-            //显示文章列表
             $page = 1;
             if(Request::instance()->has('page','get'))
             {
@@ -194,8 +191,8 @@ class Index extends Common
             $this->assign('fenlei', $data);
             $this->assign('pages', $pages);
             $this->assign('daohang1', Lang::get('Article list'));
-            $template = $this->receive();//主题目录
-            $this->assign('pageUrl', $this->getpage());//确定是哪个页面
+            $template = $this->receive();
+            $this->assign('pageUrl', $this->getpage());
             $param = [
                 'type' => '',
                 'template' => ''
@@ -226,11 +223,9 @@ class Index extends Common
                 Hook::add('alias_article',$this->plugins);
                 Hook::listen('alias_article',$id);
             }
-            //点击加一
             Db::name('posts')
                 ->where('id', $id)
                 ->setInc('post_hits');
-            //文章内容
             $noArticle = false;
             $data = Db::view('posts','id,post_keywords as guanjianzi,post_source as laiyuan,post_content as zhengwen,post_title as biaoti,post_excerpt as zhaiyao,comment_status,post_modified as fabushijian,post_type,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
                 ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
@@ -424,7 +419,6 @@ class Index extends Common
             $param = '';
             Hook::add('view_post',$this->plugins);
             Hook::listen('view_post',$param);
-            //前后内容
             $previous = Db::name('posts')->where('id','<',$id)->where('post_type',$post_type)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_title as biaoti')->order('id desc')->find();
             if(!empty($previous))
             {
@@ -451,7 +445,6 @@ class Index extends Common
             $this->assign('next', $next);
             if(isset($data['comment_status']) && $data['comment_status'] == 1)
             {
-                //评论内容
                 $pinglun = Db::view('comments','id,createtime as shijian,content as neirong')
                     ->view('users','user_login,user_nicename as nicheng,user_email as email,user_url as url,avatar as touxiang,signature as qianming','users.id=comments.uid')
                     ->where('comments.post_id','=',$id)
@@ -468,7 +461,7 @@ class Index extends Common
             {
                 $yunxupinglun = 1;
             }
-            $this->assign('yunxupinglun', $yunxupinglun);//是否允许评论
+            $this->assign('yunxupinglun', $yunxupinglun);
             $template = $this->receive();
             $guanjianzi = '';
             if(isset($data['guanjianzi']))
@@ -482,7 +475,7 @@ class Index extends Common
                 $zhaiyao = $data['zhaiyao'];
             }
             $this->assign('description', $zhaiyao);
-            $this->assign('pageUrl', $this->getpage());//确定是哪个页面
+            $this->assign('pageUrl', $this->getpage());
             $templateFile = 'article';
             $param = [
                 'type' => '',
@@ -545,7 +538,6 @@ class Index extends Common
             return $htmls;
         }
     }
-    //评论
     public function pinglun()
     {
         $beipinglunren = Db::name('posts')->where('id',Request::instance()->post('id'))->field('post_author')->find();
@@ -557,7 +549,6 @@ class Index extends Common
             {
                 $plzt = 0;
             }
-            //添加评论
             $data = [
                 'post_id' => Request::instance()->post('id'),
                 'url' => 'index/Index/article/id/'.Request::instance()->post('id'),
@@ -568,7 +559,6 @@ class Index extends Common
                 'status' => $plzt
             ];
             Db::name('comments')->insert($data);
-            //修改评论信息
             Db::name('posts')
                 ->where('id', Request::instance()->post('id'))
                 ->update([
@@ -580,16 +570,13 @@ class Index extends Common
             Hook::listen('comment_post',$param);
         }
     }
-    //点赞
     public function zan()
     {
-        //赞加一
         Db::name('posts')
             ->where('id', Request::instance()->post('id'))
             ->setInc('post_like');
         return false;
     }
-    //收藏
     public function shoucang()
     {
         $data = Db::name('user_favorites')->where('uid',Session::get($this->session_prefix.'user_id'))->where('object_id',Request::instance()->post('id'))->field('id')->find();
@@ -654,7 +641,6 @@ class Index extends Common
             Hook::add('alias_category',$this->plugins);
             Hook::listen('alias_category',$id);
         }
-        //文章分类
         $fenleiming = Db::name('terms')->where('id',$id)->field('id,term_name')->find();
         $fenleiming['lang'] = $this->lang;
         Hook::add('filter_categoryName',$this->plugins);
@@ -692,7 +678,7 @@ class Index extends Common
         {
             $flm = $fenleiming['term_name'];
         }
-        $this->assign('daohang1', $flm);//获取分类名
+        $this->assign('daohang1', $flm);
         $page = 1;
         if(Request::instance()->has('page','get'))
         {
@@ -728,8 +714,8 @@ class Index extends Common
         unset($data['pluginName']);
         $this->assign('fenlei', $data);
         $this->assign('pages', $pages);
-        $template = $this->receive();//主题目录
-        $this->assign('pageUrl', $this->getpage());//确定是哪个页面
+        $template = $this->receive();
+        $this->assign('pageUrl', $this->getpage());
         $param = [
             'type' => $categoryType,
             'template' => ''
@@ -753,7 +739,6 @@ class Index extends Common
             Hook::add('alias_page',$this->plugins);
             Hook::listen('alias_page',$id);
         }
-        //页面
         $data = Db::name('posts')
             ->where('id',$id)
             ->field('id,post_keywords as guanjianzi,post_content as zhengwen,post_title as biaoti,post_excerpt as zhaiyao,thumbnail as suolvetu,template')
@@ -813,7 +798,7 @@ class Index extends Common
         $param = '';
         Hook::add('view_post',$this->plugins);
         Hook::listen('view_post',$param);
-        $template = $this->receive('page');//主题目录
+        $template = $this->receive('page');
         $this->assign('keyword', $data['guanjianzi']);
         $this->assign('description', $data['zhaiyao']);
         $this->assign('pageUrl', $this->getpage());
@@ -871,7 +856,6 @@ class Index extends Common
         $param = '';
         Hook::add('view_post',$this->plugins);
         Hook::listen('view_post',$param);
-        //搜索
         $type = '0,2,3,4,5,6,7,8';
         if(Request::instance()->has('type','get'))
         {
@@ -971,8 +955,8 @@ class Index extends Common
         $this->assign('fenlei', $data);
         $this->assign('pages', $pages);
         $this->assign('daohang1', Lang::get('Search'));
-        $template = $this->receive();//主题目录
-        $this->assign('pageUrl', $this->getpage());//确定是哪个页面
+        $template = $this->receive();
+        $this->assign('pageUrl', $this->getpage());
         $param = [
             'type' => '',
             'template' => ''
@@ -998,8 +982,6 @@ class Index extends Common
     }
     public function liuyan()
     {
-        //留言
-        //验证输入内容
         $rule = [
             'neirong' => 'require',
             'youxiang' => 'email'
@@ -1015,7 +997,7 @@ class Index extends Common
         $validate = new Validate($rule, $msg);
         if(!$validate->check($data))
         {
-            echo $validate->getError();//验证错误输出
+            echo $validate->getError();
             exit;
         }
         $data = [
@@ -1047,6 +1029,10 @@ class Index extends Common
     }
     public function sitemap()
     {
+        if(isset($this->options_spare['closeSitemap']) && $this->options_spare['closeSitemap'] == 1)
+        {
+            return $this->lost();
+        }
         $domain = Cache::get('domain');
         if($domain == false)
         {
@@ -1087,5 +1073,28 @@ class Index extends Common
         file_put_contents(APP_PATH . '../sitemap.xml',$str);
         header("Content-type: text/xml");
         echo $str;
+    }
+    public function _empty()
+    {
+        return $this->lost();
+    }
+    public function lost()
+    {
+        header("HTTP/1.1 404 Not Found");
+        header("Status: 404 Not Found");
+        $template = $this->receive();
+        if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/404.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/mobile/404.html');
+        }
+        elseif(is_file(APP_PATH.'../public/'.$template.'/404.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/404.html');
+        }
+        else
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/common/html/404/index.html');
+        }
+        return $htmls;
     }
 }

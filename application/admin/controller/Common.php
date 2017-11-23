@@ -97,12 +97,10 @@ class Common extends Controller
         $this->permissions = Session::get($this->session_prefix.'user_type');
         $this->assign('permissions', Session::get($this->session_prefix.'user_type'));
     }
-    //获取登录用户名
     protected function getUser()
     {
         return Session::get($this->session_prefix.'user');
     }
-    //判断登录状态
     protected function checkUser()
     {
         Debug::remark('begin');
@@ -130,7 +128,6 @@ class Common extends Controller
         }
         $this->assign('user', $this->getUser());
     }
-    //退出
     public function quit()
     {
         if(Session::has($this->session_prefix.'addmanageuser_checkCode'))

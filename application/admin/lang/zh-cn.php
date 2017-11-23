@@ -329,5 +329,11 @@ return [
     'Your access rights are insufficient' => '您的访问权限不足',
     'Notice' => '通知',
     'Paging' => '分页',
-    'Your permission is insufficient' => '您的权限不足'
+    'Your permission is insufficient' => '您的权限不足',
+    'Whether to close the site' => '是否关闭站点',
+    'Close the site' => '关闭站点',
+    'When you need website maintenance, you can use to close the site' => '当您需要网站维护时，可以用来关闭站点',
+    'Whether to close the site map' => '是否关闭网站地图',
+    'Close the site map' => '关闭网站地图',
+    'The site map is turned on by default, where you can turn off the site map' => '默认开启网站地图，您可以在这里关闭网站地图'
 ];

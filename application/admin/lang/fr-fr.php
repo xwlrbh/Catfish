@@ -329,5 +329,11 @@ return [
     'Your access rights are insufficient' => 'Vos droits d\'accès sont insuffisants',
     'Notice' => 'Notification',
     'Paging' => 'plusieurs pages',
-    'Your permission is insufficient' => 'Vous disposez des autorisations insuffisantes'
+    'Your permission is insufficient' => 'Vous disposez des autorisations insuffisantes',
+    'Whether to close the site' => 'Que ce soit pour fermer le site',
+    'Close the site' => 'site Fermer',
+    'When you need website maintenance, you can use to close the site' => 'Lorsque vous avez besoin d\'entretien du site, il peut être utilisé pour fermer le site',
+    'Whether to close the site map' => 'Que ce soit pour fermer le plan du site',
+    'Close the site map' => 'Fermer la carte du site',
+    'The site map is turned on by default, where you can turn off the site map' => 'Plan du site est activé par défaut, vous pouvez fermer le plan du site'
 ];

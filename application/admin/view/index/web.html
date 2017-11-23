@@ -115,6 +115,24 @@
                 <p class="help-block">{:lang('Enable short address need to open rewrite, check before you make sure your web environment to run a rewrite')}</p>
             </div>
             <div class="form-group">
+                <label>{:lang('Whether to close the site map')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="closeSitemap"{notempty name="data.closeSitemap"}{if condition="$data.closeSitemap eq 1"} checked{/if}{/notempty}> {:lang('Close the site map')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('The site map is turned on by default, where you can turn off the site map')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Whether to close the site')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="guanbi"{notempty name="data.guanbi"}{if condition="$data.guanbi eq 1"} checked{/if}{/notempty}> {:lang('Close the site')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('When you need website maintenance, you can use to close the site')}</p>
+            </div>
+            <div class="form-group">
                 <label>{:lang('Site logo')}：</label>
                 <div id="upload"></div>
                 <div style="width: 200px;">

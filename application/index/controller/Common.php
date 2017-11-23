@@ -102,10 +102,14 @@ class Common extends Controller
             Cache::set('template',$template,3600);
         }
         Lang::load(APP_PATH . '../public/'.$template['option_value'].'/lang/'.$this->lang.'.php');
+        if(isset($this->options_spare['guanbi']) && $this->options_spare['guanbi'] == 1)
+        {
+            $this->closeWeb();
+            exit();
+        }
     }
     protected function login()
     {
-        //获取登录状态\
         $login = '';
         if(Session::has($this->session_prefix.'user'))
         {
@@ -113,7 +117,6 @@ class Common extends Controller
         }
         return $login;
     }
-    //进入用户中心
     public function userCenter()
     {
         if(Session::get($this->session_prefix.'user_type') >= 7)
@@ -125,7 +128,6 @@ class Common extends Controller
             $this->redirect(Url::build('/admin'));
         }
     }
-    //退出
     public function quit()
     {
         Session::delete($this->session_prefix.'user_id');
@@ -210,7 +212,6 @@ class Common extends Controller
         {
             $this->assign('ico', $this->options_spare['ico']);
         }
-        //获取菜单
         $menu = Cache::get('menu');
         if($menu == false)
         {
@@ -234,7 +235,6 @@ class Common extends Controller
         Hook::listen('filter_menu',$menu);
         unset($menu['lang']);
         $this->assign('menu', $menu);
-        //获取混合内容
         $page = 1;
         if(Request::instance()->has('page','get'))
         {
@@ -342,7 +342,6 @@ class Common extends Controller
         unset($hunhe['page']);
         unset($hunhe['source']);
         $this->assign('hunhe', $hunhe);
-        //获取图文内容
         $tuwen = Cache::get('tuwen');
         if($tuwen == false)
         {
@@ -402,7 +401,6 @@ class Common extends Controller
         Hook::listen('filter_tuwen',$tuwen);
         unset($tuwen['lang']);
         $this->assign('tuwen', $tuwen);
-        //获取推荐
         $tuijian = Cache::get('tuijian');
         if($tuijian == false)
         {
@@ -424,7 +422,6 @@ class Common extends Controller
         Hook::listen('filter_tuijian',$tuijian);
         unset($tuijian['lang']);
         $this->assign('tuijian', $tuijian);
-        //获取最新
         $zuixin = Cache::get('zuixin');
         if($zuixin == false)
         {
@@ -445,9 +442,7 @@ class Common extends Controller
         Hook::listen('filter_zuixin',$zuixin);
         unset($zuixin['lang']);
         $this->assign('zuixin', $zuixin);
-        //获取登录状态
         $this->assign('login', $this->login());
-        //侦听
         Hook::add('top',$this->plugins);
         Hook::add('mid',$this->plugins);
         Hook::add('bottom',$this->plugins);
@@ -531,6 +526,7 @@ class Common extends Controller
         Hook::add('url_common',$this->plugins);
         Hook::listen('url_common',$url);
         $this->assign('url', $url);
+        Lang::load(APP_PATH . '../public/common/html/404/lang/'.$this->lang.'.php');
         return $template;
     }
     private function checkUrl($params)
@@ -687,7 +683,7 @@ class Common extends Controller
             $data_slide = Db::name('slide')->where('slide_status',1)->order('listorder')->select();
             Cache::set('slide',$data_slide,3600);
         }
-        $this->assign('slide', $data_slide);//输出幻灯片
+        $this->assign('slide', $data_slide);
         if(isset($this->options_spare['closeSlide']) && $this->options_spare['closeSlide'] == 1)
         {
             $this->assign('closeSlide', 1);
@@ -740,5 +736,23 @@ class Common extends Controller
     protected function filterJs($str)
     {
         return preg_replace(['/<script[\s\S]*?<\/script>/i','/<style[\s\S]*?<\/style>/i'],'',$str);
+    }
+    private function closeWeb()
+    {
+        Lang::load(APP_PATH . '../public/common/html/close/lang/'.$this->lang.'.php');
+        $template = $this->receive();
+        if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/close.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/mobile/close.html');
+        }
+        elseif(is_file(APP_PATH.'../public/'.$template.'/close.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/close.html');
+        }
+        else
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/common/html/close/index.html');
+        }
+        echo $htmls;
     }
 }

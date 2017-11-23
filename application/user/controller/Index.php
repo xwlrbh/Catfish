@@ -25,7 +25,6 @@ class Index extends Common
         $view = $this->fetch();
         return $view;
     }
-    //修改资料
     public function ziliao()
     {
         $this->checkUser();
@@ -42,13 +41,11 @@ class Index extends Common
         $view = $this->fetch();
         return $view;
     }
-    //修改密码
     public function gaimima()
     {
         $this->checkUser();
         if(Request::instance()->isPost())
         {
-            //验证输入内容
             $rule = [
                 'yuanmima' => 'require',
                 'xinmima' => 'require',
@@ -67,18 +64,18 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             if(Request::instance()->post('xinmima') != Request::instance()->post('cfxinmima'))
             {
-                $this->error(Lang::get('Confirm the password must be the same as the password'));//验证错误输出
+                $this->error(Lang::get('Confirm the password must be the same as the password'));
                 return false;
             }
             $pwd = Db::name('users')->where('id',Session::get($this->session_prefix.'user_id'))->field('user_pass')->find();
             if(md5(Request::instance()->post('yuanmima')) != $pwd['user_pass'])
             {
-                $this->error(Lang::get('The original password is wrong'));//验证错误输出
+                $this->error(Lang::get('The original password is wrong'));
                 return false;
             }
             $data = ['user_pass' => md5(Request::instance()->post('xinmima'))];
@@ -91,13 +88,11 @@ class Index extends Common
         $view = $this->fetch();
         return $view;
     }
-    //编辑头像
     public function touxiang()
     {
         $this->checkUser();
         if(Request::instance()->isPost())
         {
-            //验证输入内容
             $rule = [
                 'avatar' => 'require'
             ];
@@ -110,7 +105,7 @@ class Index extends Common
             $validate = new Validate($rule, $msg);
             if(!$validate->check($data))
             {
-                $this->error($validate->getError());//验证错误输出
+                $this->error($validate->getError());
                 return false;
             }
             if($this->isLegalPicture(Request::instance()->post('avatar')))
@@ -120,7 +115,6 @@ class Index extends Common
                     ->field('avatar')
                     ->find();
                 $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-                //删除原图
                 if(Request::instance()->post('avatar') != $avatar['avatar'] && $this->isLegalPicture($avatar['avatar']))
                 {
                     $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
@@ -141,7 +135,6 @@ class Index extends Common
         $view = $this->fetch();
         return $view;
     }
-    //上传头像
     public function uploadhead()
     {
         $file = request()->file('file');
@@ -151,7 +144,6 @@ class Index extends Common
         $file->validate($validate);
         $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
         if($info){
-            //生成缩略图
             $image = \think\Image::open(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             $width = $image->width();
             $height = $image->height();
@@ -165,7 +157,6 @@ class Index extends Common
             echo $file->getError();
         }
     }
-    //我的收藏
     public function shoucang()
     {
         $this->checkUser();
@@ -176,13 +167,11 @@ class Index extends Common
         $view = $this->fetch();
         return $view;
     }
-    //删除收藏
     public function removeshoucang()
     {
         Db::name('user_favorites')->where('id',Request::instance()->post('id'))->where('uid',Session::get($this->session_prefix.'user_id'))->delete();
         return true;
     }
-    //我的评论
     public function pinglun()
     {
         $this->checkUser();
@@ -196,7 +185,6 @@ class Index extends Common
         $view = $this->fetch();
         return $view;
     }
-    //删除评论
     public function removepinglun()
     {
         Db::name('comments')->where('id',Request::instance()->post('id'))->where('uid',Session::get($this->session_prefix.'user_id'))->delete();
@@ -265,5 +253,28 @@ class Index extends Common
         $this->assign('isTop', '1');
         $view = $this->fetch(APP_PATH.'user/view/index/plugin.html');
         return $view;
+    }
+    public function _empty()
+    {
+        return $this->lost();
+    }
+    public function lost()
+    {
+        header("HTTP/1.1 404 Not Found");
+        header("Status: 404 Not Found");
+        $template = $this->receive();
+        if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/404.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/mobile/404.html');
+        }
+        elseif(is_file(APP_PATH.'../public/'.$template.'/404.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/404.html');
+        }
+        else
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/common/html/404/index.html');
+        }
+        return $htmls;
     }
 }

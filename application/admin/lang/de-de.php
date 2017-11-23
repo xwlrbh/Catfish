@@ -329,5 +329,11 @@ return [
     'Your access rights are insufficient' => 'Ihre Zugriffsrechte sind unzureichend',
     'Notice' => 'Bekanntmachung',
     'Paging' => 'mehrere Seiten',
-    'Your permission is insufficient' => 'Sie haben nicht genügend Berechtigungen'
+    'Your permission is insufficient' => 'Sie haben nicht genügend Berechtigungen',
+    'Whether to close the site' => 'Ob die Seite schließen',
+    'Close the site' => 'Close-Site',
+    'When you need website maintenance, you can use to close the site' => 'Wenn Sie die Pflege der Website benötigen, kann es verwendet werden, um die Website zu schließen',
+    'Whether to close the site map' => 'Ob die Sitemap schließen',
+    'Close the site map' => 'Close Site Map',
+    'The site map is turned on by default, where you can turn off the site map' => 'Site Map ist standardmäßig aktiviert, in dem Sie den Site-Map schließen können'
 ];

@@ -24,14 +24,20 @@ class Common extends Controller
     protected $lang;
     protected $params = [];
     protected $plugins = [];
+    protected $options_spare;
     public function _initialize()
     {
         $this->session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
+        $this->options_spare = $this->optionsSpare();
         $this->lang = Lang::detect();
         $this->lang = $this->filterLanguages($this->lang);
         Lang::load(APP_PATH . 'user/lang/'.$this->lang.'.php');
+        if(isset($this->options_spare['guanbi']) && $this->options_spare['guanbi'] == 1)
+        {
+            $this->closeWeb();
+            exit();
+        }
     }
-    //判断登录状态
     protected function checkUser()
     {
         if(!Session::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user'))
@@ -58,14 +64,12 @@ class Common extends Controller
         }
         $this->assign('login', $this->getUser());
     }
-    //获取登录用户名
     protected function getUser()
     {
         return Session::get($this->session_prefix.'user');
     }
     protected function receive()
     {
-        //获取配置
         $data_options = Cache::get('options');
         if($data_options == false)
         {
@@ -89,7 +93,6 @@ class Common extends Controller
                 $this->assign($val['option_name'], $val['option_value']);
             }
         }
-        //获取菜单
         $menu = Cache::get('menu');
         if($menu == false)
         {
@@ -109,7 +112,6 @@ class Common extends Controller
             Cache::set('menu',$menu,3600);
         }
         $this->assign('menu', $menu);
-        //获取当前用户
         $user = Db::name('users')->where('id',Session::get($this->session_prefix.'user_id'))->find();
         $this->assign('user', $user);
         $domain = Cache::get('domain');
@@ -140,6 +142,7 @@ class Common extends Controller
         {
             $this->assign('user_menu_top', $this->params['user_menu_top']);
         }
+        Lang::load(APP_PATH . '../public/common/html/404/lang/'.$this->lang.'.php');
     }
     private function filterLanguages($parameter)
     {
@@ -207,7 +210,6 @@ class Common extends Controller
                 if(is_file($pluginFile))
                 {
                     $plugins[$key] = 'app\\plugins\\'.$val.'\\'.ucfirst($val);
-                    //加载插件语言包
                     Lang::load(APP_PATH . 'plugins/'.$val.'/lang/'.$this->lang.'.php');
                 }
                 else
@@ -265,5 +267,41 @@ class Common extends Controller
             }
         }
         return false;
+    }
+    protected function optionsSpare()
+    {
+        $options_spare = Cache::get('options_spare');
+        if($options_spare == false)
+        {
+            $options_spare = Db::name('options')->where('option_name','spare')->field('option_value')->find();
+            $options_spare = $options_spare['option_value'];
+            if(!empty($options_spare))
+            {
+                $options_spare = unserialize($options_spare);
+            }
+            Cache::set('options_spare',$options_spare,3600);
+        }
+        return $options_spare;
+    }
+    private function closeWeb()
+    {
+        Session::delete($this->session_prefix.'user_id');
+        Session::delete($this->session_prefix.'user');
+        Session::delete($this->session_prefix.'user_type');
+        Lang::load(APP_PATH . '../public/common/html/close/lang/'.$this->lang.'.php');
+        $template = $this->receive();
+        if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/close.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/mobile/close.html');
+        }
+        elseif(is_file(APP_PATH.'../public/'.$template.'/close.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/close.html');
+        }
+        else
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/common/html/close/index.html');
+        }
+        echo $htmls;
     }
 }

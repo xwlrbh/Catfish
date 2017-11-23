@@ -329,5 +329,11 @@ return [
     'Your access rights are insufficient' => 'Недостаточно прав доступа',
     'Notice' => 'Уведомление',
     'Paging' => 'Верстка',
-    'Your permission is insufficient' => 'У вас недостаточно прав'
+    'Your permission is insufficient' => 'У вас недостаточно прав',
+    'Whether to close the site' => 'Независимо от того, чтобы закрыть сайт',
+    'Close the site' => 'Закрыть сайт',
+    'When you need website maintenance, you can use to close the site' => 'При необходимости технического обслуживания веб-сайта, он может быть использован, чтобы закрыть сайт',
+    'Whether to close the site map' => 'Независимо от того, чтобы закрыть карту сайта',
+    'Close the site map' => 'Закрыть Карта сайта',
+    'The site map is turned on by default, where you can turn off the site map' => 'Карта сайта включена по умолчанию, где вы можете закрыть карту сайта'
 ];

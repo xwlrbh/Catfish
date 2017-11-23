@@ -51,3 +51,4 @@ Route::rule(['article','article/:id'],'index/Index/article');
 Route::rule(['category','category/:id'],'index/Index/category');
 Route::rule(['search','search/:word'],'index/Index/search');
 Route::rule('sitemap','index/Index/sitemap');
+Route::rule('lost','index/Index/lost');
