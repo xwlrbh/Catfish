@@ -58,6 +58,18 @@
                                 <td>{:lang('Not limited')}</td>
                             </tr>
                             <tr>
+                                <td>curl</td>
+                                <td>{:lang('Open')}</td>
+                                <td>{$data.curl}</td>
+                                <td>{:lang('Open')}</td>
+                            </tr>
+                            <tr>
+                                <td>ZipArchive</td>
+                                <td>{:lang('Open')}</td>
+                                <td>{$data.ZipArchive}</td>
+                                <td>{:lang('Open')}</td>
+                            </tr>
+                            <tr>
                                 <td>session</td>
                                 <td>{:lang('Open')}</td>
                                 <td>{$data.session}</td>
@@ -105,7 +117,11 @@
                 <br>
                 <div class="row text-center">
                     <a href="step1"><button type="button" class="btn btn-primary">{:lang('Re-test')}</button></a>&nbsp;&nbsp;
+                    {if condition="$error neq 0"}
+                    <button type="button" class="btn btn-primary" disabled="disabled">{:lang('Next step')}</button>
+                    {else /}
                     <a href="step2"><button type="button" class="btn btn-primary">{:lang('Next step')}</button></a>
+                    {/if}
                 </div>
             </div>
         </div>

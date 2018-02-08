@@ -7,46 +7,30 @@
     <meta name="author" content="">
     <link rel="icon" href="{notempty name="ico"}{$ico}{else /}{$domain}public/common/images/favicon.ico{/notempty}">
     <title>{$title} | {$subtitle}</title>
-    <!-- Bootstrap core CSS -->
-    <link href="{$domain}public/common/html/404/css/bootstrap.css" rel="stylesheet">
-    <!-- FONT AWESOME CSS -->
-    <link href="{$domain}public/common/html/404/css/font-awesome.min.css" rel="stylesheet" />
-    <!-- custom CSS here -->
+    <link rel="stylesheet" href="{$domain}public/common/css/bootstrap.min.css">
     <link href="{$domain}public/common/html/404/css/style.css" rel="stylesheet" />
 </head>
 <body>
-    
-   
-    <div class="container">
-      
-          <div class="row pad-top text-center">
-                 <div class="col-md-6 col-md-offset-3 text-center">
-                  <h2>  {:lang('You visit the page out to play!')} </h2>
-                   <h5> {:lang('The page does not exist, please click the link at the bottom of the page to return')}</h5>
-              <span id="error-link"></span>
-                     <h2>! {:lang('Access error')} !</h2>
-                 </div>
-          </div>
-
-            <div class="row text-center">
-                 <div class="col-md-8 col-md-offset-2">
-                     
-                     <h3> <i  class="fa fa-lightbulb-o fa-5x"></i> </h3>
-               <a href="{$domain}" class="btn btn-primary">{:lang('Return to the home page')}</a><br><br>
-                 </div>
-            </div>
-
+<div class="container">
+    <div class="row pad-top text-center">
+        <div class="col-md-6 col-md-offset-3 text-center">
+            <h2>  {:lang('You visit the page out to play!')} </h2>
+            <h5> {:lang('The page does not exist, please click the link at the bottom of the page to return')}</h5>
+            <span id="error-link"></span>
+            <h2>! {:lang('Access error')} !</h2>
+        </div>
     </div>
-    <!-- /.container -->
-  
-  
-    <!--Core JavaScript file  -->
-    <script src="{$domain}public/common/html/404/js/jquery-1.10.2.js"></script>
-    <!--bootstrap JavaScript file  -->
-    <script src="{$domain}public/common/html/404/js/bootstrap.js"></script>
-     <!--Count Number JavaScript file  -->
-    <script src="{$domain}public/common/html/404/js/countUp.js"></script>
-       <!--Custom JavaScript file  -->
-    <script src="{$domain}public/common/html/404/js/custom.js"></script>
+    <div class="row text-center">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="bigfont">
+                <span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
+            </div>
+            <a href="{$domain}" class="btn btn-primary">{:lang('Return to the home page')}</a><br><br>
+        </div>
+    </div>
+</div>
+<script src="{$domain}public/common/js/jquery.min.js"></script>
+<script src="{$domain}public/common/html/404/js/countUp.js"></script>
+<script src="{$domain}public/common/html/404/js/custom.js"></script>
 </body>
 </html>

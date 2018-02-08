@@ -30,7 +30,7 @@
         {notempty name="zxpinglun"}
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">{:lang('Latest comment')}&nbsp;<small>[<a href="{:Url('comments')}">{:lang('All comments')}</a>]</small></h3>
+                <h3 class="panel-title">{:lang('Latest comment')}{if condition="$permissions < 6"}&nbsp;<small>[<a href="{:Url('comments')}">{:lang('All comments')}</a>]</small>{/if}</h3>
             </div>
             <div class="panel-body">
                 {volist name="zxpinglun" id="vo"}
@@ -39,10 +39,11 @@
             </div>
         </div>
         {/notempty}
+        {if condition="$permissions < 5"}
         {notempty name="zxliuyan"}
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">{:lang('Latest message')}&nbsp;<small>[<a href="{:Url('messages')}">{:lang('All messages')}</a>]</small></h3>
+                <h3 class="panel-title">{:lang('Latest message')}{if condition="$permissions < 6"}&nbsp;<small>[<a href="{:Url('messages')}">{:lang('All messages')}</a>]</small>{/if}</h3>
             </div>
             <div class="panel-body">
                 {volist name="zxliuyan" id="vo"}
@@ -51,6 +52,7 @@
             </div>
         </div>
         {/notempty}
+        {/if}
     </div>
 </div><br>
 <script src="{$domain}public/common/js/index.js"></script>

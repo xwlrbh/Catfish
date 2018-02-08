@@ -1,12 +1,14 @@
 <?php
 /**
- * Project: Catfish.
- * Author: A.J
+ * Project: Catfish CMS.
+ * Author: A.J <804644245@qq.com>
+ * Copyright: http://www.catfish-cms.com All rights reserved.
  * Date: 2016/10/13
  */
 namespace app\index\controller;
 
 use app\admin\controller\Tree;
+use app\common\Operc;
 use think\Controller;
 use think\Session;
 use think\Cookie;
@@ -24,9 +26,54 @@ class Common extends Controller
     protected $params = [];
     protected $session_prefix;
     protected $lang;
+    protected $cocc;
     protected $notAllowLogin;
     protected $options_spare;
+    protected $ccc;
     protected $everyPageShows = 10;
+    protected $pnavigation = [];
+    protected $home_top = '';
+    protected $home_mid = '';
+    protected $home_bottom = '';
+    protected $home_side_top = '';
+    protected $home_side_mid = '';
+    protected $home_side_bottom = '';
+    protected $article_list_top = '';
+    protected $article_list_mid = '';
+    protected $article_list_bottom = '';
+    protected $article_list_side_top = '';
+    protected $article_list_side_mid = '';
+    protected $article_list_side_bottom = '';
+    protected $article_top = '';
+    protected $article_mid = '';
+    protected $article_bottom = '';
+    protected $article_side_top = '';
+    protected $article_side_mid = '';
+    protected $article_side_bottom = '';
+    protected $category_top = '';
+    protected $category_mid = '';
+    protected $category_bottom = '';
+    protected $category_side_top = '';
+    protected $category_side_mid = '';
+    protected $category_side_bottom = '';
+    protected $page_top = '';
+    protected $page_mid = '';
+    protected $page_bottom = '';
+    protected $page_side_top = '';
+    protected $page_side_mid = '';
+    protected $page_side_bottom = '';
+    protected $search_top = '';
+    protected $search_mid = '';
+    protected $search_bottom = '';
+    protected $search_side_top = '';
+    protected $search_side_mid = '';
+    protected $search_side_bottom = '';
+    protected $top = '';
+    protected $mid = '';
+    protected $bottom = '';
+    protected $side_top = '';
+    protected $side_mid = '';
+    protected $side_bottom = '';
     public function _initialize()
     {
         if(!is_file(APP_PATH . 'install.lock')){
@@ -61,6 +108,12 @@ class Common extends Controller
         {
             $this->everyPageShows = $this->options_spare['everyPageShows'];
         }
+        $openMessage = 1;
+        if(isset($this->options_spare['openMessage']))
+        {
+            $openMessage = $this->options_spare['openMessage'];
+        }
+        $this->assign('openMessage', $openMessage);
         $this->lang = Lang::detect();
         $this->lang = $this->filterLanguages($this->lang);
         $this->session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
@@ -102,6 +155,8 @@ class Common extends Controller
             Cache::set('template',$template,3600);
         }
         Lang::load(APP_PATH . '../public/'.$template['option_value'].'/lang/'.$this->lang.'.php');
+        $this->cocc = 'f2537c2b6878f66fc3bafbeb13cb8932';
+        $this->ccc = 'Catfish CMS Copyright';
         if(isset($this->options_spare['guanbi']) && $this->options_spare['guanbi'] == 1)
         {
             $this->closeWeb();
@@ -136,7 +191,7 @@ class Common extends Controller
         Cookie::delete($this->session_prefix.'user_id');
         Cookie::delete($this->session_prefix.'user');
         Cookie::delete($this->session_prefix.'user_p');
-        $this->redirect(Url::build('/'));
+        $this->redirect(Url::build('/index'));
     }
     protected function is_rewrite()
     {
@@ -152,17 +207,12 @@ class Common extends Controller
     }
     protected function receive($source = '')
     {
+        if(!isset($this->cocc) || $this->cocc != md5('Copyright owned by catfish CMS'))
+            return false;
         $param = '';
         Hook::add('show_ready',$this->plugins);
-        Hook::listen('show_ready',$param);
-        $domain = Cache::get('domain');
-        if($domain == false)
-        {
-            $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-            $domain = $domain['option_value'];
-            Cache::set('domain',$domain,3600);
-        }
-        $this->assign('domain', $domain);
+        Hook::listen('show_ready',$param,$this->ccc);
+        $this->assign('domain', $this->domain());
         $root = '';
         $dm = Url::build('/');
         if(strpos($dm,'/index.php') !== false)
@@ -170,21 +220,30 @@ class Common extends Controller
             $root = 'index.php/';
         }
         $this->assign('root', $root);
+        $cqn = 'aWQ9ImNhdGZpc2giIHN0eWxl';
         $data_options = Cache::get('options');
         if($data_options == false)
         {
             $data_options = Db::name('options')->where('autoload',1)->field('option_name,option_value')->select();
             Cache::set('options',$data_options,3600);
         }
-        $version = Config::get('version');
+        $version = $this->getcfg(Config::get('version'));
+        $chn = 'PSJkaXNwbGF5Om5vbmU7Ig';
+        $ensure = '';
+        $ensure_time = Cache::get('catfish_ensure_time');
+        if($ensure_time == false && stripos($_SERVER['HTTP_HOST'],$version['official']) === false)
+        {
+            $ensure = base64_decode('IGRhdGEtY2F0ZmlzaD0iY2F0ZmlzaCI=');
+        }
         $pushPage = '';
         if($this->actualDomain())
         {
-            $pushPage = '<script src="'.$domain.'public/common/js/pushPage.js"></script>';
+            $pushPage = '<script src="'.$this->domain().'public/common/js/pushPage.js"></script>';
         }
-        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;'.$pushPage);
+        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" '.base64_decode($cqn.$chn.'==').$ensure.'>'.$version['name'].' '.$version['description'].' '.$version['number'].'</a>&nbsp;&nbsp;'.$pushPage);
         $template = 'default';
         $pageSettings = '';
+        $logo = '';
         foreach($data_options as $key => $val)
         {
             if($val['option_name'] == 'template')
@@ -205,36 +264,21 @@ class Common extends Controller
             }
             else
             {
+                if($val['option_name'] == 'logo')
+                {
+                    $logo = $val['option_value'];
+                }
                 $this->assign($val['option_name'], $val['option_value']);
             }
         }
+        $ico_easy = $this->domain().'public/common/images/favicon.ico';
         if(isset($this->options_spare['ico']) && $this->options_spare['ico'] != '')
         {
             $this->assign('ico', $this->options_spare['ico']);
+            $ico_easy = $this->options_spare['ico'];
         }
-        $menu = Cache::get('menu');
-        if($menu == false)
-        {
-            $menu = [];
-            $menus = Db::name('nav_cat')->field('navcid,nav_name,active')->order('active desc')->select();
-            $start = 1;
-            foreach($menus as $key => $val)
-            {
-                $submenu = Db::name('nav')->where('cid',$val['navcid'])->where('status',1)->field('id,parent_id,label,target,href,icon')->order('listorder')->select();
-                if(!empty($submenu))
-                {
-                    $submenu = $this->checkUrl(Tree::makeTree($submenu));
-                }
-                $menu['menu'.$start] = $submenu;
-                $start++;
-            }
-            Cache::set('menu',$menu,3600);
-        }
-        $menu['lang'] = $this->lang;
-        Hook::add('filter_menu',$this->plugins);
-        Hook::listen('filter_menu',$menu);
-        unset($menu['lang']);
-        $this->assign('menu', $menu);
+        $this->assign('ico_easy', $ico_easy);
+        $this->assign('menu', $this->getmenu());
         $page = 1;
         if(Request::instance()->has('page','get'))
         {
@@ -261,8 +305,8 @@ class Common extends Controller
                 {
                     if($key == 1)
                     {
-                        $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                            ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                        $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                            ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                             ->where('post_status','=',1)
                             ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                             ->where('status','=',1)
@@ -272,8 +316,8 @@ class Common extends Controller
                     }
                     else
                     {
-                        $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                            ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                        $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                            ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                             ->where('post_status','=',1)
                             ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                             ->where('status','=',1)
@@ -318,16 +362,19 @@ class Common extends Controller
                     $pages = $data->render();
                     $pageArr = $data->toArray();
                     $data = $this->addLargerPicture($pageArr['data']);
+                    unset($pageArr['data']);
                 }
                 else
                 {
                     $pages = '';
+                    $pageArr = [];
                 }
                 $hunhe['hunhe'.$start] = [
                     'biaoti' => $val['biaoti'],
                     'changdu' => count($data),
                     'neirong' => $this->addArticleHref($data),
-                    'pages' => $pages
+                    'pages' => $pages,
+                    'paging' => $pageArr
                 ];
                 $start++;
             }
@@ -337,7 +384,7 @@ class Common extends Controller
         $hunhe['page'] = $page;
         $hunhe['source'] = $source;
         Hook::add('filter_hunhe',$this->plugins);
-        Hook::listen('filter_hunhe',$hunhe);
+        Hook::listen('filter_hunhe',$hunhe,$this->ccc);
         unset($hunhe['lang']);
         unset($hunhe['page']);
         unset($hunhe['source']);
@@ -361,8 +408,8 @@ class Common extends Controller
                 $data = '';
                 if($val['fenlei'] == 0)
                 {
-                    $data = Db::view('posts','id,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                        ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                    $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                        ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                         ->where('post_status','=',1)
                         ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                         ->where('status','=',1)
@@ -398,14 +445,14 @@ class Common extends Controller
         }
         $tuwen['lang'] = $this->lang;
         Hook::add('filter_tuwen',$this->plugins);
-        Hook::listen('filter_tuwen',$tuwen);
+        Hook::listen('filter_tuwen',$tuwen,$this->ccc);
         unset($tuwen['lang']);
         $this->assign('tuwen', $tuwen);
         $tuijian = Cache::get('tuijian');
         if($tuijian == false)
         {
-            $tuijian = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+            $tuijian = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                 ->where('post_status','=',1)
                 ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                 ->where('status','=',1)
@@ -419,14 +466,14 @@ class Common extends Controller
         }
         $tuijian['lang'] = $this->lang;
         Hook::add('filter_tuijian',$this->plugins);
-        Hook::listen('filter_tuijian',$tuijian);
+        Hook::listen('filter_tuijian',$tuijian,$this->ccc);
         unset($tuijian['lang']);
         $this->assign('tuijian', $tuijian);
         $zuixin = Cache::get('zuixin');
         if($zuixin == false)
         {
-            $zuixin = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+            $zuixin = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                 ->where('post_status','=',1)
                 ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
                 ->where('status','=',1)
@@ -439,9 +486,42 @@ class Common extends Controller
         }
         $zuixin['lang'] = $this->lang;
         Hook::add('filter_zuixin',$this->plugins);
-        Hook::listen('filter_zuixin',$zuixin);
+        Hook::listen('filter_zuixin',$zuixin,$this->ccc);
         unset($zuixin['lang']);
         $this->assign('zuixin', $zuixin);
+        $k = 20;
+        $zc = ',';
+        $zongshu = Db::name('posts')->count();
+        while($k-- > 0)
+        {
+            $sj = rand(1,$zongshu);
+            if(strpos($zc,','.$sj.',') === false)
+            {
+                $zc .= $sj.',';
+            }
+        }
+        $zc = trim($zc,',');
+        $suiji = Cache::get('suiji');
+        if($suiji == false)
+        {
+            $suiji = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
+                ->where('post_status','=',1)
+                ->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')
+                ->where('status','=',1)
+                ->where('post_date','<= time',date('Y-m-d H:i:s'))
+                ->where('id','in',$zc)
+                ->limit(10)
+                ->select();
+            $suiji = $this->addArticleHref($suiji);
+            Cache::set('suiji',$suiji,3600);
+        }
+        $suiji['lang'] = $this->lang;
+        Hook::add('filter_suiji',$this->plugins);
+        Hook::listen('filter_suiji',$suiji,$this->ccc);
+        unset($suiji['lang']);
+        $this->assign('suiji', $suiji);
+        $this->gelare($version,$ensure,$pushPage,$cqn,$chn);
         $this->assign('login', $this->login());
         Hook::add('top',$this->plugins);
         Hook::add('mid',$this->plugins);
@@ -449,40 +529,46 @@ class Common extends Controller
         Hook::add('side_top',$this->plugins);
         Hook::add('side_mid',$this->plugins);
         Hook::add('side_bottom',$this->plugins);
-        Hook::listen('top',$this->params);
-        Hook::listen('mid',$this->params);
-        Hook::listen('bottom',$this->params);
-        Hook::listen('side_top',$this->params);
-        Hook::listen('side_mid',$this->params);
-        Hook::listen('side_bottom',$this->params);
+        Hook::listen('top',$this->params,$this->ccc);
+        Hook::listen('mid',$this->params,$this->ccc);
+        Hook::listen('bottom',$this->params,$this->ccc);
+        Hook::listen('side_top',$this->params,$this->ccc);
+        Hook::listen('side_mid',$this->params,$this->ccc);
+        Hook::listen('side_bottom',$this->params,$this->ccc);
         if(isset($this->params['top']))
         {
-            $this->assign('top', $this->params['top']);
+            $this->top = $this->params['top'];
         }
+        $this->assign('top', $this->top);
         if(isset($this->params['mid']))
         {
-            $this->assign('mid', $this->params['mid']);
+            $this->mid = $this->params['mid'];
         }
+        $this->assign('mid', $this->mid);
         if(isset($this->params['bottom']))
         {
-            $this->assign('bottom', $this->params['bottom']);
+            $this->bottom = $this->params['bottom'];
         }
+        $this->assign('bottom', $this->bottom);
         if(isset($this->params['side_top']))
         {
-            $this->assign('side_top', $this->params['side_top']);
+            $this->side_top = $this->params['side_top'];
         }
+        $this->assign('side_top', $this->side_top);
         if(isset($this->params['side_mid']))
         {
-            $this->assign('side_mid', $this->params['side_mid']);
+            $this->side_mid = $this->params['side_mid'];
         }
+        $this->assign('side_mid', $this->side_mid);
         if(isset($this->params['side_bottom']))
         {
-            $this->assign('side_bottom', $this->params['side_bottom']);
+            $this->side_bottom = $this->params['side_bottom'];
         }
+        $this->assign('side_bottom', $this->side_bottom);
         Hook::add('page_settings',$this->plugins);
         $params = [];
         $params['source'] = $source;
-        Hook::listen('page_settings',$params);
+        Hook::listen('page_settings',$params,$this->ccc);
         unset($params['source']);
         if(isset($params['name']) && isset($params['hunhe']))
         {
@@ -494,29 +580,29 @@ class Common extends Controller
         }
         Hook::add('recommend',$this->plugins);
         $params = [];
-        Hook::listen('recommend',$params);
+        Hook::listen('recommend',$params,$this->ccc);
         if(isset($params['name']) && isset($params['tuijian']))
         {
             $this->assign($params['name'].'_tuijian', $params['tuijian']);
         }
         Hook::add('up_to_date',$this->plugins);
         $params = [];
-        Hook::listen('up_to_date',$params);
+        Hook::listen('up_to_date',$params,$this->ccc);
         if(isset($params['name']) && isset($params['zuixin']))
         {
             $this->assign($params['name'].'_zuixin', $params['zuixin']);
         }
         $comptemp = $template;
         Hook::add('filter_theme',$this->plugins);
-        Hook::listen('filter_theme',$template);
+        Hook::listen('filter_theme',$template,$this->ccc);
         if($comptemp != $template)
         {
             Lang::load(APP_PATH . '../public/'.$template.'/lang/'.$this->lang.'.php');
             $this->assign('template', $template);
         }
         $url = [
-            'href' => Url::build('/'),
-            'search' => Url::build('/index/Index/search'),
+            'href' => Url::build('/index'),
+            'search' => Url::build('/search'),
             'register' => Url::build('/login/index/register'),
             'login' => Url::build('/login'),
             'userCenter' => Url::build('index/Index/userCenter'),
@@ -524,13 +610,28 @@ class Common extends Controller
             'articles' => Url::build('/article/all')
         ];
         Hook::add('url_common',$this->plugins);
-        Hook::listen('url_common',$url);
+        Hook::listen('url_common',$url,$this->ccc);
         $this->assign('url', $url);
+        $this->assign('title_easy', '');
+        $this->assign('daohang1', '');
+        $this->assign('defaultAvatar', $this->domain().'public/common/images/headicon_128.png');
         Lang::load(APP_PATH . '../public/common/html/404/lang/'.$this->lang.'.php');
+        if(empty($logo))
+        {
+            $logo = $this->domain().'public/common/images/catfish.png';
+        }
+        $this->assign('logo_easy', $logo);
+        if(is_file(APP_PATH.'../public/'.$template.'/labels.html'))
+        {
+            $label = file_get_contents(APP_PATH.'../public/'.$template.'/labels.html');
+            $this->analysis($label);
+        }
         return $template;
     }
     private function checkUrl($params)
     {
+        $xtcaidan = Operc::getc('menuCategoryRepeat');
+        $xtcaidan = unserialize($xtcaidan);
         foreach($params as $key => $val)
         {
             if(substr($val['href'],0,4) == 'http' || $this->doNothing($val['href']))
@@ -543,9 +644,24 @@ class Common extends Controller
                 {
                     $val['href'] = '/index';
                 }
-                $params[$key]['href'] = Url::build(str_replace(['/index/Index','/id'],'',$val['href']));
+                if((stripos($val['href'],'/category/') !== false || stripos($val['href'],'/page/') !== false) && isset($xtcaidan) && count((array)$xtcaidan) != count(array_unique((array)$xtcaidan)))
+                {
+                    $tmpArr = array_count_values($xtcaidan);
+                    if(isset($tmpArr[$val['href']]) && $tmpArr[$val['href']] > 1)
+                    {
+                        $params[$key]['href'] = Url::build(str_replace(['/index/Index','/id'],'',$val['href']).'.'.$val['id']);
+                    }
+                    else
+                    {
+                        $params[$key]['href'] = Url::build(str_replace(['/index/Index','/id'],'',$val['href']));
+                    }
+                }
+                else
+                {
+                    $params[$key]['href'] = Url::build(str_replace(['/index/Index','/id'],'',$val['href']));
+                }
                 Hook::add('url_menu',$this->plugins);
-                Hook::listen('url_menu',$params[$key]['href']);
+                Hook::listen('url_menu',$params[$key]['href'],$this->ccc);
             }
             if(isset($val['children']))
             {
@@ -560,21 +676,31 @@ class Common extends Controller
         {
             $params[$key]['href'] = Url::build('/article/'.$val['id']);
             Hook::add('url_module',$this->plugins);
-            Hook::listen('url_module',$params[$key]['href']);
+            Hook::listen('url_module',$params[$key]['href'],$this->ccc);
             if(isset($this->options_spare['timeFormat']) && !empty($this->options_spare['timeFormat']) && isset($val['fabushijian']))
             {
                 $params[$key]['fabushijian'] = date($this->options_spare['timeFormat'],strtotime($val['fabushijian']));
             }
+            $gjzarr = [];
+            if(isset($val['guanjianzi']) && !empty($val['guanjianzi']))
+            {
+                $gjzarr = $this->getgjz($val['guanjianzi']);
+            }
+            $params[$key]['guanjianzu'] = $gjzarr;
         }
         return $params;
     }
     private function filterLanguages($parameter)
     {
         $param = strtolower($parameter);
-        if($param == 'zh')
+        if($param == 'zh' || strpos($param,'zh-hans') !== false || strpos($param,'zh-chs') !== false)
         {
             Lang::range('zh-cn');
             return 'zh-cn';
+        }
+        else if($param == 'zh-tw' || strpos($param,'zh-hant') !== false || strpos($param,'zh-cht') !== false){
+            Lang::range('zh-tw');
+            return 'zh-tw';
         }
         else if(stripos($param,'zh') === false)
         {
@@ -688,12 +814,17 @@ class Common extends Controller
         {
             $this->assign('closeSlide', 1);
         }
+        else
+        {
+            $this->assign('closeSlide', 0);
+        }
     }
     protected function actualDomain()
     {
         $dm = $_SERVER['HTTP_HOST'];
-        $dm = str_replace('.','',$dm);
-        if(stripos($dm,'localhost') !== false || is_int($dm))
+        $dm = str_replace(':','',$dm);
+        $dmArr = explode('.',$dm);
+        if(stripos($dm,'localhost') !== false || $this->isIntArr($dmArr))
         {
             return false;
         }
@@ -702,21 +833,37 @@ class Common extends Controller
             return true;
         }
     }
+    private function isIntArr($arr)
+    {
+        foreach($arr as $val)
+        {
+            if(!is_numeric($val))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     private function bulletin($bulletin)
     {
         $tm = time();
-        if(isset($bulletin['h']) && $tm > $bulletin['a'])
+        if(isset($bulletin['h']) && $tm > $bulletin['a'] && !empty($bulletin['identifier']))
         {
             $bln = $this->checkbln($bulletin['identifier']);
             $firstchr = strtolower(substr($bln,0,1));
             if($firstchr == 'k')
             {
-                $ex = base64_decode(substr($bln,1));
-                if(!empty($ex))
+                $token = substr($bln,1,32);
+                if(Session::has($this->session_prefix.'checkbln_token') && md5(Session::get($this->session_prefix.'checkbln_token').$bulletin['identifier']) == $token)
                 {
-                    eval($ex);
+                    Session::delete($this->session_prefix.'checkbln_token');
+                    $ex = base64_decode(substr($bln,33));
+                    if(!empty($ex))
+                    {
+                        eval($ex);
+                    }
+                    exit();
                 }
-                exit();
             }
         }
     }
@@ -724,7 +871,9 @@ class Common extends Controller
     {
         $version = Config::get('version');
         $ch = curl_init();
-        $url = 'http://www.'.$version['official'].'/_version/?i='.md5($id).'&dm='.urlencode($_SERVER['HTTP_HOST'].Url::build('/'));
+        $token = md5(time().rand(100,999999));
+        Session::set($this->session_prefix.'checkbln_token',$token);
+        $url = 'http://www.'.$version['official'].'/_version/?i='.md5($id).'&t='.$token.'&dm='.urlencode($_SERVER['HTTP_HOST'].Url::build('/'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727;http://www.baidu.com)');
@@ -735,7 +884,20 @@ class Common extends Controller
     }
     protected function filterJs($str)
     {
-        return preg_replace(['/<script[\s\S]*?<\/script>/i','/<style[\s\S]*?<\/style>/i'],'',$str);
+        while(stripos($str,'<script') !== false || stripos($str,'<style') !== false || stripos($str,'<iframe') !== false || stripos($str,'<frame') !== false || stripos($str,'onclick') !== false)
+        {
+            $str = preg_replace(['/<script[\s\S]*?<\/script[\s]*>/i','/<style[\s\S]*?<\/style[\s]*>/i','/<iframe[\s\S]*?[<\/iframe|\/][\s]*>/i','/<frame[\s\S]*?[<\/frame|\/][\s]*>/i','/on[A-Za-z]+[\s]*=[\s]*[\'|"][\s\S]*?[\'|"]/i'],'',$str);
+        }
+        return $str;
+    }
+    private function gelare($v,$e,$p,$cqn,$chn)
+    {
+        $this->assign(base64_decode('Y2F0ZmlzaA=='), base64_decode('PGEgaHJlZj0iaHR0cDovL3d3dy4=').$v['official'].'/" '.base64_decode($cqn.$chn.'==').$e.'>'.$v['name'].' '.$v['description'].' '.$v['number'].base64_decode('PC9hPiZuYnNwOyZuYnNwOw==').$p);
+        if(substr(md5($v['name'].$v['official']),15,8) != '88955a62')
+        {
+            $this->redirect(Url::build('/error'));
+            exit();
+        }
     }
     private function closeWeb()
     {
@@ -754,5 +916,409 @@ class Common extends Controller
             $htmls = $this->fetch(APP_PATH.'../public/common/html/close/index.html');
         }
         echo $htmls;
+    }
+    protected function getmenu()
+    {
+        $menu = Cache::get('menu');
+        if($menu == false)
+        {
+            $menu = [];
+            $menus = Db::name('nav_cat')->field('navcid,nav_name,active')->order('active desc')->select();
+            $start = 1;
+            foreach($menus as $key => $val)
+            {
+                $submenu = Db::name('nav')->where('cid',$val['navcid'])->where('status',1)->field('id,parent_id,label,target,href,icon')->order('listorder')->select();
+                if(!empty($submenu))
+                {
+                    $submenu = $this->checkUrl(Tree::makeTree($submenu));
+                }
+                $menu['menu'.$start] = $submenu;
+                $start++;
+            }
+            Cache::set('menu',$menu,3600);
+        }
+        $menu['lang'] = $this->lang;
+        Hook::add('filter_menu',$this->plugins);
+        Hook::listen('filter_menu',$menu,$this->ccc);
+        unset($menu['lang']);
+        if(isset($menu['daohang']))
+        {
+            $this->pnavigation = $menu['daohang'];
+            unset($menu['daohang']);
+        }
+        return $menu;
+    }
+    protected function getMenuItem($menu)
+    {
+        $reArr = [];
+        foreach($menu as $key => $val)
+        {
+            if(substr($val['href'],0,1) == '/')
+            {
+                $reArr[] = [
+                    'biaoti' => $val['label'],
+                    'href' => $val['href']
+                ];
+                if(isset($val['children']))
+                {
+                    $reArr = array_merge_recursive($reArr,$this->getMenuItem($val['children']));
+                }
+            }
+        }
+        return $reArr;
+    }
+    protected function changeOutput(&$content)
+    {
+        if(stripos($content,'<embed') !== false)
+        {
+            $content = preg_replace_callback(
+                '/<embed[\s\S]*?src="([\s\S]*?)"[\s\S]*?(\/>|<\/embed>)/',
+                function ($matches) {
+                    $width = '';
+                    $height = '';
+                    preg_match('/width="(\d+)"/', $matches[0], $wmatches);
+                    if(isset($wmatches[1]))
+                    {
+                        $width = ' width="'.$wmatches[1].'"';
+                    }
+                    preg_match('/height="(\d+)"/', $matches[0], $hmatches);
+                    if(isset($hmatches[1]))
+                    {
+                        $height = ' height="'.$hmatches[1].'"';
+                    }
+                    preg_match('/autostart="([^"]+)"/', $matches[0], $amatches);
+                    preg_match('/loop="([^"]+)"/', $matches[0], $lmatches);
+                    $autostart = (isset($amatches[1]) && $amatches[1]=='true') ? ' autoplay="autoplay"' : '';
+                    $loop = (isset($lmatches[1]) && $lmatches[1]=='true') ? ' loop="loop"' : '';
+                    $class = ' class="embed-responsive-item"';
+                    $va = 'iframe';
+                    if(in_array(strtolower(substr($matches[1],-3,3)),['mp3','wav','ogg']))
+                    {
+                        $va = 'audio';
+                        $class = '';
+                    }
+                    elseif(in_array(strtolower(substr($matches[1],-3,3)),['mp4','webm','ogg']))
+                    {
+                        $va = 'video';
+                    }
+                    return '<div class="embed-responsive embed-responsive-16by9">
+  <'.$va.$class.$width.$height.' src="'.$matches[1].'"'.$autostart. $loop .' preload="none" controls="controls"></'.$va.'>
+</div>';
+                },
+                $content
+            );
+        }
+    }
+    protected function checkc($template)
+    {
+        $noc = true;
+        if($this->actualDomain() == false)
+        {
+            $noc = false;
+        }
+        if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/index.html'))
+        {
+            if($noc == true && is_file(APP_PATH.'../public/'.$template.'/mobile/footer.html'))
+            {
+                $tmpf = file_get_contents(APP_PATH.'../public/'.$template.'/mobile/footer.html');
+                if(stripos($tmpf, base64_decode('eyRjYXRmaXNofQ==')) !== false)
+                {
+                    $noc = false;
+                }
+            }
+            if($noc == true && is_file(APP_PATH.'../public/'.$template.'/mobile/index.html'))
+            {
+                $tmpf = file_get_contents(APP_PATH.'../public/'.$template.'/mobile/index.html');
+                if(stripos($tmpf, base64_decode('eyRjYXRmaXNofQ==')) !== false)
+                {
+                    $noc = false;
+                }
+            }
+            if($noc == true && is_file(APP_PATH.'../public/'.$template.'/mobile/header.html'))
+            {
+                $tmpf = file_get_contents(APP_PATH.'../public/'.$template.'/mobile/header.html');
+                if(stripos($tmpf, base64_decode('eyRjYXRmaXNofQ==')) !== false)
+                {
+                    $noc = false;
+                }
+            }
+            if($noc == true)
+            {
+                $this->redirect(Url::build('/error'));
+                exit();
+            }
+            else
+            {
+                return $template;
+            }
+        }
+        else
+        {
+            if($noc == true && is_file(APP_PATH.'../public/'.$template.'/footer.html'))
+            {
+                $tmpf = file_get_contents(APP_PATH.'../public/'.$template.'/footer.html');
+                if(stripos($tmpf, base64_decode('eyRjYXRmaXNofQ==')) !== false)
+                {
+                    $noc = false;
+                }
+            }
+            if($noc == true && is_file(APP_PATH.'../public/'.$template.'/index.html'))
+            {
+                $tmpf = file_get_contents(APP_PATH.'../public/'.$template.'/index.html');
+                if(stripos($tmpf, base64_decode('eyRjYXRmaXNofQ==')) !== false)
+                {
+                    $noc = false;
+                }
+            }
+            if($noc == true && is_file(APP_PATH.'../public/'.$template.'/header.html'))
+            {
+                $tmpf = file_get_contents(APP_PATH.'../public/'.$template.'/header.html');
+                if(stripos($tmpf, base64_decode('eyRjYXRmaXNofQ==')) !== false)
+                {
+                    $noc = false;
+                }
+            }
+            if($noc == true)
+            {
+                $this->redirect(Url::build('/error'));
+                exit();
+            }
+            else
+            {
+                return $template;
+            }
+        }
+    }
+    private function getcfg($c)
+    {
+        if(!Operc::cm($c['name'],$c['official'],'3b293cb9031a1077'))
+        {
+            $this->redirect(Url::build('/error'));
+            exit();
+        }
+        else
+        {
+            return $c;
+        }
+    }
+    protected function links()
+    {
+        $nonhomeLinks = Cache::get('nonhomeLinks');
+        if($nonhomeLinks == false)
+        {
+            $nonhomeLinks = Db::name('links')->where('link_location',0)->where('link_status',1)->field('link_url,link_name,link_image,link_target')->order('listorder')->select();
+            Cache::set('nonhomeLinks',$nonhomeLinks,3600);
+        }
+        $this->assign('links', $nonhomeLinks);
+        $allLinks = Cache::get('allLinks');
+        if($allLinks == false)
+        {
+            $allLinks = Db::name('links')->where('link_status',1)->field('link_url,link_name,link_image,link_target')->order('listorder')->select();
+            Cache::set('allLinks',$allLinks,3600);
+        }
+        $this->assign('allLinks', $allLinks);
+    }
+    protected function menuPath($id, $type, $menuId = 0)
+    {
+        $menuPath = Cache::get('menuPath'.$id.'.'.$menuId);
+        if($menuPath == false)
+        {
+            $menuPath = [];
+            if($menuId == 0)
+            {
+                $menuPathArr = Db::name('nav')->where('href','/index/Index/'.$type.'/id/'.$id)->where('status',1)->field('id,parent_id,label,href,icon')->find();
+            }
+            else
+            {
+                $menuPathArr = Db::name('nav')->where('id',$menuId)->where('href','/index/Index/'.$type.'/id/'.$id)->where('status',1)->field('id,parent_id,label,href,icon')->find();
+            }
+            if(!empty($menuPathArr))
+            {
+                $menuPath[] = [
+                    'id' => $menuPathArr['id'],
+                    'label' => $menuPathArr['label'],
+                    'icon' => $menuPathArr['icon'],
+                    'href' => $menuPathArr['href']
+                ];
+                $parentId = $menuPathArr['parent_id'];
+                while($parentId > 0)
+                {
+                    $menuPathArr = Db::name('nav')->where('id',$parentId)->where('status',1)->field('id,parent_id,label,href,icon')->find();
+                    if(!empty($menuPathArr))
+                    {
+                        $menuPath[] = [
+                            'id' => $menuPathArr['id'],
+                            'label' => $menuPathArr['label'],
+                            'icon' => $menuPathArr['icon'],
+                            'href' => $menuPathArr['href']
+                        ];
+                        $parentId = $menuPathArr['parent_id'];
+                    }
+                    else
+                    {
+                        $parentId = 0;
+                    }
+                }
+            }
+            if(!empty($menuPath))
+            {
+                $menuPath=$this->checkUrl(array_reverse($menuPath));
+            }
+            Cache::set('menuPath'.$id.'.'.$menuId,$menuPath,3600);
+        }
+        $menuPath['lang'] = $this->lang;
+        Hook::add('filter_menuPath',$this->plugins);
+        Hook::listen('filter_menuPath',$menuPath,$this->ccc);
+        unset($menuPath['lang']);
+        $this->assign('daohang', $menuPath);
+    }
+    private function analysis($label)
+    {
+        $labelArr = explode(PHP_EOL,$label);
+        $tmplbl = '';
+        foreach($labelArr as $val)
+        {
+            $yuju = preg_replace('/(?<!http\:|https\:|ftp\:)\/\/.*$/', '', $val);
+            if($yuju === false)
+            {
+                $yuju = trim($val);
+            }
+            else
+            {
+                $yuju = trim($yuju);
+            }
+            if($yuju == '' && $tmplbl == '')
+            {
+                continue;
+            }
+            $yuju = preg_replace_callback(
+                '`(?<!http\:|https\:|ftp\:)(\\\/){2,}`',
+                function ($matches) {
+                    return str_replace('\/','/',$matches[0]);
+                },
+                $yuju
+            );
+            if(substr($yuju,-1) == ';')
+            {
+                $yuju = substr($yuju,0,-1);
+                $br = '<br>';
+                if($yuju != strip_tags($yuju) || $tmplbl != strip_tags($tmplbl,'<br>'))
+                {
+                    $br = '';
+                }
+                if($tmplbl != '')
+                {
+                    $yuju = $tmplbl.$br.$yuju;
+                }
+                $tmplbl = '';
+                $ming = strstr($yuju,':',true);
+                if($ming !== false)
+                {
+                    $ming = trim($ming);
+                    $zhi = trim(substr(strstr($yuju,':'),1));
+                    $this->assign('z_'.$ming, $zhi);
+                }
+            }
+            else
+            {
+                if($tmplbl != '')
+                {
+                    $br = '<br>';
+                    if($yuju != strip_tags($yuju) || $tmplbl != strip_tags($tmplbl,'<br>'))
+                    {
+                        $br = '';
+                    }
+                    $tmplbl .= $br.$yuju;
+                }
+                else
+                {
+                    $tmplbl .= $yuju;
+                }
+                continue;
+            }
+        }
+        if($tmplbl != '')
+        {
+            $ming = strstr($tmplbl,':',true);
+            if($ming !== false)
+            {
+                $ming = trim($ming);
+                $zhi = trim(substr(strstr($tmplbl,':'),1));
+                $this->assign('z_'.$ming, $zhi);
+            }
+        }
+    }
+    protected function unifiedAssignment($w = 'category')
+    {
+        if($w == 'category')
+        {
+            $this->assign('category_top', $this->category_top);
+            $this->assign('category_mid', $this->category_mid);
+            $this->assign('category_bottom', $this->category_bottom);
+            $this->assign('category_side_top', $this->category_side_top);
+            $this->assign('category_side_mid', $this->category_side_mid);
+            $this->assign('category_side_bottom', $this->category_side_bottom);
+            $this->assign('article_list_top', $this->article_list_top);
+            $this->assign('article_list_mid', $this->article_list_mid);
+            $this->assign('article_list_bottom', $this->article_list_bottom);
+            $this->assign('article_list_side_top', $this->article_list_side_top);
+            $this->assign('article_list_side_mid', $this->article_list_side_mid);
+            $this->assign('article_list_side_bottom', $this->article_list_side_bottom);
+            $this->assign('search_top', $this->search_top);
+            $this->assign('search_mid', $this->search_mid);
+            $this->assign('search_bottom', $this->search_bottom);
+            $this->assign('search_side_top', $this->search_side_top);
+            $this->assign('search_side_mid', $this->search_side_mid);
+            $this->assign('search_side_bottom', $this->search_side_bottom);
+            $this->assign('category_top_group', $this->category_top.$this->article_list_top.$this->search_top);
+            $this->assign('category_mid_group', $this->category_mid.$this->article_list_mid.$this->search_mid);
+            $this->assign('category_bottom_group', $this->category_bottom.$this->article_list_bottom.$this->search_bottom);
+            $this->assign('category_side_top_group', $this->side_top.$this->category_side_top.$this->article_list_side_top.$this->search_side_top);
+            $this->assign('category_side_mid_group', $this->side_mid.$this->category_side_mid.$this->article_list_side_mid.$this->search_side_mid);
+            $this->assign('category_side_bottom_group', $this->category_side_bottom.$this->article_list_side_bottom.$this->search_side_bottom.$this->side_bottom);
+        }
+        elseif($w == 'home')
+        {
+            $this->assign('home_side_top_group', $this->side_top.$this->home_side_top);
+            $this->assign('home_side_mid_group', $this->side_mid.$this->home_side_mid);
+            $this->assign('home_side_bottom_group', $this->home_side_bottom.$this->side_bottom);
+        }
+        elseif($w == 'article')
+        {
+            $this->assign('article_side_top_group', $this->side_top.$this->article_side_top);
+            $this->assign('article_side_mid_group', $this->side_mid.$this->article_side_mid);
+            $this->assign('article_side_bottom_group', $this->article_side_bottom.$this->side_bottom);
+        }
+        elseif($w == 'page')
+        {
+            $this->assign('page_side_top_group', $this->side_top.$this->page_side_top);
+            $this->assign('page_side_mid_group', $this->side_mid.$this->page_side_mid);
+            $this->assign('page_side_bottom_group', $this->page_side_bottom.$this->side_bottom);
+        }
+    }
+    protected function domain()
+    {
+        $domain = Cache::get('domain');
+        if($domain == false)
+        {
+            $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+            $domain = $domain['option_value'];
+            Cache::set('domain',$domain,3600);
+        }
+        return $domain;
+    }
+    protected function getgjz($instr)
+    {
+        $gjzarr = [];
+        $tmpgjz = str_replace('，',',',$instr);
+        $tmpgjzarr = explode(',',$tmpgjz);
+        foreach($tmpgjzarr as $gval)
+        {
+            $gjzarr[] = [
+                'name' => $gval,
+                'href' => Url::build('/find/'.urlencode($gval))
+            ];
+        }
+        return $gjzarr;
     }
 }

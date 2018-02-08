@@ -4,28 +4,31 @@
         <div class="col-md-9">
             <ol class="breadcrumb">
                 <li><a href="{$url.href}">首页</a></li>
+                {notempty name="daohang"}
+                {volist name="daohang" id="vo"}
+                <li>{if condition="$vo.icon neq ''"}{$vo.icon} {/if}<a href="{$vo.href}">{$vo.label}</a></li>
+                {/volist}
+                {/notempty}
                 <li class="active">{$page.biaoti|subtext=28}</li>
             </ol>
-            {notempty name="page_top"}{$page_top}{/notempty}
+            {$page_top}
             <div class="page-header">
                 <h1>{$page.biaoti}</h1>
             </div>
             <div>
-                {notempty name="page_mid"}{$page_mid}{/notempty}
+                {$page_mid}
                 {$page.zhengwen}
-                {notempty name="page_bottom"}{$page_bottom}{/notempty}
+                {$page_bottom}
             </div>
         </div>
         <div class="col-md-3">
-            {notempty name="side_top"}{$side_top}{/notempty}
-            {notempty name="page_side_top"}{$page_side_top}{/notempty}
+            {$page_side_top_group}
             <ul class="nav nav-pills nav-stacked" role="tablist">
                 {volist name="hunhe.hunhe2.neirong" id="vo" offset="0" length='6'}
                 <li role="presentation"><a href="{$vo.href}">{$vo.biaoti}</a></li>
                 {/volist}
             </ul>
-            {notempty name="page_side_bottom"}{$page_side_bottom}{/notempty}
-            {notempty name="side_bottom"}{$side_bottom}{/notempty}
+            {$page_side_bottom_group}
         </div>
     </div>
 </div>

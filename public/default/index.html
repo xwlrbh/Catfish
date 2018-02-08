@@ -1,6 +1,6 @@
 {include file="public/default/header.html" /}
-{notempty name="home_top"}{$home_top}{/notempty}
-{empty name="closeSlide"}
+{$home_top}
+{if condition="$closeSlide eq 0"}
 <div class="container">
     <div class="row">
         <div class="col-md-8">
@@ -54,7 +54,7 @@
         </div>
     </div>
 </div>
-{/empty}
+{/if}
 <div class="container">
     <div class="row">
         {volist name="tuwen.tuwen1.neirong" id="vo" offset="0" length='4'}
@@ -72,7 +72,7 @@
         {/volist}
     </div>
 </div>
-{notempty name="home_mid"}{$home_mid}{/notempty}
+{$home_mid}
 <div class="container">
     <div class="row">
         <div class="col-md-8">
@@ -183,7 +183,7 @@
         </div>
     </div>
 </div>
-{notempty name="home_bottom"}{$home_bottom}{/notempty}
+{$home_bottom}
 {notempty name="links"}
 <div class="container">
     <div class="row">

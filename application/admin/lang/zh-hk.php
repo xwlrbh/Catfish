@@ -336,5 +336,19 @@ return [
     'When you need website maintenance, you can use to close the site' => '當您需要網站維護時，可以用來關閉站點',
     'Whether to close the site map' => '是否關閉網站地圖',
     'Close the site map' => '關閉網站地圖',
-    'The site map is turned on by default, where you can turn off the site map' => '默認開啟網站地圖，您可以在這里關閉網站地圖'
+    'The site map is turned on by default, where you can turn off the site map' => '默認開啟網站地圖，您可以在這里關閉網站地圖',
+    'My collection' => '我的收藏',
+    'My comments' => '我的評論',
+    'Collection time' => '收藏時間',
+    'View original' => '查看原文',
+    'Original' => '原文',
+    'Whether to close the message' => '是否關閉留言',
+    'Close the message' => '關閉留言',
+    'Close message requires subject support' => '關閉留言需要主題支持',
+    'Whether to close the comment' => '是否關閉評論',
+    'Close the comment' => '關閉評論',
+    'After closing the comment, setting a comment when writing an article will be invalidated' => '關閉評論後，寫文章時設置評論將失效',
+    'Whether to close RSS' => '是否關閉RSS',
+    'Close RSS' => '關閉RSS',
+    'The default is to open RSS, where you can turn off RSS' => '默認開啟RSS，您可以在這里關閉RSS'
 ];

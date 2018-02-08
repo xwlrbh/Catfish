@@ -5,10 +5,16 @@
         <div class="col-md-8">
             <ol class="breadcrumb">
                 <li><a href="{$url.href}">首页</a></li>
+                {notempty name="daohang"}
+                {volist name="daohang" id="vo"}
+                <li><a href="{$vo.href}">{$vo.label}</a></li>
+                {/volist}
+                {else /}
                 <li class="active"><a href="{$url.articles}">文章</a></li>
+                {/notempty}
                 <li class="active">{$neirong.biaoti|subtext=28}</li>
             </ol>
-            {notempty name="article_top"}{$article_top}{/notempty}
+            {$article_top}
             <div class="panel panel-default">
                 <div class="panel-body">
                     {empty name="neirong"}
@@ -26,11 +32,11 @@
             </div>
             <div class="panel panel-default">
                 {notempty name="neirong"}
-                {notempty name="article_mid"}{$article_mid}{/notempty}
+                {$article_mid}
                 <div class="panel-body">
-                    <h4 style="line-height: 1.5em">{$neirong.zhengwen}</h4>
+                    <h4 style="line-height: 1.5em;word-wrap:break-word">{$neirong.zhengwen}</h4>
                 </div>
-                {notempty name="article_bottom"}{$article_bottom}{/notempty}
+                {$article_bottom}
                 <div class="panel-body text-center"><a name="zpinglun"></a>
                     <input type="hidden" value="{$neirong.id}">
                     <button class="btn btn-primary" type="button" id="zan">
@@ -50,8 +56,9 @@
                         <div class="col-md-6">下一篇：<a href="{$next.href}">{$next.biaoti}</a></div>
                     </div>
                 </div>
+                {$comment_top}
+                {if condition="$closeComment neq 1"}
                 {if condition="$yunxupinglun eq 1"}
-                {notempty name="comment_top"}{$comment_top}{/notempty}
                 <div class="panel-body">
                     <h4>我要评论{empty name="login"} <small>登录后才能发布评论</small>{/empty}</h4>
                     <script type="text/plain" id="editor" style="width:100%;height:160px;"></script>
@@ -68,8 +75,8 @@
                         </button>
                     </div>
                 </div>
-                {notempty name="comment_mid"}{$comment_mid}{/notempty}
                 {/if}
+                {$comment_mid}
                 {notempty name="pinglun"}
                 <div class="panel-body">
                     <h4>网友评论</h4>
@@ -77,7 +84,7 @@
                     <hr>
                     <div class="row">
                         <div class="col-md-2">
-                            <img src="{empty name="vo.touxiang"}{$domain}public/common/images/headicon_128.png{else /}{$vo.touxiang}{/empty}" class="img-circle img-responsive">
+                            <img src="{empty name="vo.touxiang"}{$defaultAvatar}{else /}{$vo.touxiang}{/empty}" class="img-circle img-responsive">
                         </div>
                         <div class="col-md-10">
                             <p class="text-primary">{$vo.nicheng}</p>
@@ -88,13 +95,13 @@
                     {/volist}
                     {$pages}
                 </div>
-                {notempty name="comment_bottom"}{$comment_bottom}{/notempty}
                 {/notempty}
+                {/if}
+                {$comment_bottom}
             </div>
         </div>
         <div class="col-md-4">
-            {notempty name="side_top"}{$side_top}{/notempty}
-            {notempty name="article_side_top"}{$article_side_top}{/notempty}
+            {$article_side_top_group}
             {notempty name="tuijian"}
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -132,8 +139,7 @@
                 </div>
             </div>
             {/notempty}
-            {notempty name="article_side_bottom"}{$article_side_bottom}{/notempty}
-            {notempty name="side_bottom"}{$side_bottom}{/notempty}
+            {$article_side_bottom_group}
         </div>
     </div>
 </div>

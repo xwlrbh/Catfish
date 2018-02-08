@@ -50,7 +50,7 @@ return [
     'Confirm password' => '重复密码',
     'Previous' => '上一步',
     'Installation will be completed, rest for a while now!' => '安装马上完成，休息一会儿吧!',
-    'Congratulations, the installation is complete!' => '恭喜您，安装完成！',
+    'Congratulations! Installation has been completed!' => '恭喜您，安装完成！',
     'Thank you for your support of the Catfish CMS system!' => '感谢您对鲶鱼系统的支持！',
     'Is not still immersed in the installation of happiness, but the installation is over, then you will continue to use the site in the process of happiness, let us start!' => '是不是还沉浸在安装的快乐之中，但安装已经结束啦，接下来您将在使用站点的过程中继续快乐，让我们开始吧!',
     'Enter the home page' => '进入前台',

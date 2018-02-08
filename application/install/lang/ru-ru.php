@@ -50,7 +50,7 @@ return [
     'Confirm password' => 'подтвердить пароль',
     'Previous' => 'предыдущий',
     'Installation will be completed, rest for a while now!' => 'установка  и вскоре будет завершена  ,  отдохнуть  ! ',
-    'Congratulations, the installation is complete!' => 'Поздравляем, установка завершена!',
+    'Congratulations! Installation has been completed!' => 'Поздравляем, установка завершена!',
     'Thank you for your support of the Catfish CMS system!' => 'Благодарим Вас за поддержку системы Сом CMS!',
     'Is not still immersed in the installation of happiness, but the installation is over, then you will continue to use the site in the process of happiness, let us start!' => 'Это  не  также погружается в  установки  счастье  ,  но  установка  закончится  ,  тогда  вы  в  процессе  использования  сайта  будет  продолжать  счастье  , давайте начнем!',
     'Enter the home page' => 'дома',

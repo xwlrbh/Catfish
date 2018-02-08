@@ -81,6 +81,24 @@
                 <p class="help-block">{:lang('Shutting down slides requires theme support')}</p>
             </div>
             <div class="form-group">
+                <label>{:lang('Whether to close the message')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="openMessage"{if condition="$data.openMessage eq 0"} checked{/if}> {:lang('Close the message')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('Close message requires subject support')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Whether to close the comment')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="closeComment"{notempty name="data.closeComment"}{if condition="$data.closeComment eq 1"} checked{/if}{/notempty}> {:lang('Close the comment')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('After closing the comment, setting a comment when writing an article will be invalidated')}</p>
+            </div>
+            <div class="form-group">
                 <label>{:lang('Whether to allow registration')}：</label>
                 <div class="checkbox">
                     <label>
@@ -122,6 +140,15 @@
                     </label>
                 </div>
                 <p class="help-block">{:lang('The site map is turned on by default, where you can turn off the site map')}</p>
+            </div>
+            <div class="form-group">
+                <label>{:lang('Whether to close RSS')}：</label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="closeRSS"{notempty name="data.closeRSS"}{if condition="$data.closeRSS eq 1"} checked{/if}{/notempty}> {:lang('Close RSS')}
+                    </label>
+                </div>
+                <p class="help-block">{:lang('The default is to open RSS, where you can turn off RSS')}</p>
             </div>
             <div class="form-group">
                 <label>{:lang('Whether to close the site')}：</label>
@@ -170,6 +197,7 @@
                 <textarea class="form-control" name="statistics" rows="3">{$data.statistics}</textarea>
             </div>
             <div class="text-center">
+                <input type="hidden" name="verification" value="{$verification}">
                 <button type="submit" class="btn btn-default">{:lang('Save')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing.gif" width="16" height="16"></span></button>
             </div>
         </form>

@@ -4,11 +4,9 @@
         <div class="col-md-8">
             <ol class="breadcrumb">
                 <li><a href="{$url.href}">首页</a></li>
-                <li id="daohang1" class="active">{notempty name="daohang1"}{$daohang1}{/notempty}</li>
+                <li id="daohang1" class="active">{$daohang1}</li>
             </ol>
-            {notempty name="category_top"}{$category_top}{/notempty}
-            {notempty name="article_list_top"}{$article_list_top}{/notempty}
-            {notempty name="search_top"}{$search_top}{/notempty}
+            {$category_top_group}
             {notempty name="sousuo"}
             <div class="panel panel-default">
                 <div class="panel-body">
@@ -34,15 +32,10 @@
             </div>
             {/volist}
             {$pages}
-            {notempty name="category_bottom"}{$category_bottom}{/notempty}
-            {notempty name="article_list_bottom"}{$article_list_bottom}{/notempty}
-            {notempty name="search_bottom"}{$search_bottom}{/notempty}
+            {$category_bottom_group}
         </div>
         <div class="col-md-4">
-            {notempty name="side_top"}{$side_top}{/notempty}
-            {notempty name="category_side_top"}{$category_side_top}{/notempty}
-            {notempty name="article_list_side_top"}{$article_list_side_top}{/notempty}
-            {notempty name="search_side_top"}{$search_side_top}{/notempty}
+            {$category_side_top_group}
             {notempty name="tuijian"}
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -80,10 +73,7 @@
                 </div>
             </div>
             {/notempty}
-            {notempty name="category_side_bottom"}{$category_side_bottom}{/notempty}
-            {notempty name="article_list_side_bottom"}{$article_list_side_bottom}{/notempty}
-            {notempty name="search_side_bottom"}{$search_side_bottom}{/notempty}
-            {notempty name="side_bottom"}{$side_bottom}{/notempty}
+            {$category_side_bottom_group}
         </div>
     </div>
 </div>

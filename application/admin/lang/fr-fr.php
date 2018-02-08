@@ -335,5 +335,19 @@ return [
     'When you need website maintenance, you can use to close the site' => 'Lorsque vous avez besoin d\'entretien du site, il peut être utilisé pour fermer le site',
     'Whether to close the site map' => 'Que ce soit pour fermer le plan du site',
     'Close the site map' => 'Fermer la carte du site',
-    'The site map is turned on by default, where you can turn off the site map' => 'Plan du site est activé par défaut, vous pouvez fermer le plan du site'
+    'The site map is turned on by default, where you can turn off the site map' => 'Plan du site est activé par défaut, vous pouvez fermer le plan du site',
+    'My collection' => 'Ma collection',
+    'My comments' => 'Mes commentaires',
+    'Collection time' => 'Temps de collecte',
+    'View original' => 'Voir le texte original',
+    'Original' => 'Original',
+    'Whether to close the message' => 'Que ce soit pour fermer le message',
+    'Close the message' => 'Ferme le message',
+    'Close message requires subject support' => 'Fermer le message nécessite un support de sujet',
+    'Whether to close the comment' => 'Que ce soit pour fermer le commentaire',
+    'Close the comment' => 'Fermer le commentaire',
+    'After closing the comment, setting a comment when writing an article will be invalidated' => 'Après la fermeture d\'un commentaire, la définition d\'un commentaire lors de la rédaction d\'un article sera invalidée',
+    'Whether to close RSS' => 'Que ce soit pour fermer RSS',
+    'Close RSS' => 'Fermer RSS',
+    'The default is to open RSS, where you can turn off RSS' => 'Par défaut, vous pouvez désactiver RSS ici'
 ];

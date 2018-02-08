@@ -5,7 +5,7 @@ $(document).ready(function(){
     $(".yincang").click(function(){
         var obj = $(this);
         obj.children("span").removeClass("hidden");
-        $.post("shenhepinglun", { id: obj.parent().siblings(":eq(0)").children("input").val(), zt: obj.siblings(":first").val()},
+        $.post("shenhepinglun", { id: obj.parent().siblings(":eq(0)").children("input").val(), zt: obj.siblings(":first").val(), verification: $("#verification").text()},
             function(data){
                 obj.siblings(":first").val(0);
                 obj.parent().prev().html('<h5 class="text-muted">'+$('#meishenhe').text()+'</h5>');
@@ -16,7 +16,7 @@ $(document).ready(function(){
     $(".qiyong").click(function(){
         var obj = $(this);
         obj.children("span").removeClass("hidden");
-        $.post("shenhepinglun", { id: obj.parent().siblings(":eq(0)").children("input").val(), zt: obj.siblings(":first").val()},
+        $.post("shenhepinglun", { id: obj.parent().siblings(":eq(0)").children("input").val(), zt: obj.siblings(":first").val(), verification: $("#verification").text()},
             function(data){
                 obj.siblings(":first").val(1);
                 obj.parent().prev().html('<h5 class="text-success"><span class="glyphicon glyphicon-ok"></span> '+$('#yishenhe').text()+'</h5>');
@@ -31,7 +31,7 @@ $(document).ready(function(){
         cancelButton: $('#quxiao').text(),
         confirm: function(){
             var obj = this.$target;
-            $.post("removeComment", { id: this.$target.parent().siblings(":eq(0)").children("input").val()},
+            $.post("removeComment", { id: this.$target.parent().siblings(":eq(0)").children("input").val(), verification: $("#verification").text()},
                 function(data){
                     obj.parent().parent().remove();
                 });
@@ -68,7 +68,7 @@ $.extend({'caozuo':function(obj,cz){
     });
     if(zcuan != ''){
         obj.children("span").removeClass("hidden");
-        $.post("commentbatch", { zcuan: zcuan, cz: cz},
+        $.post("commentbatch", { zcuan: zcuan, cz: cz, verification: $("#verification").text()},
             function(data){
                 obj.children("span").addClass("hidden");
                 $.each(ind, function(i, value) {

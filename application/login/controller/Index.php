@@ -1,7 +1,8 @@
 <?php
 /**
- * Project: Catfish.
- * Author: A.J
+ * Project: Catfish CMS.
+ * Author: A.J <804644245@qq.com>
+ * Copyright: http://www.catfish-cms.com All rights reserved.
  * Date: 2016/10/1
  */
 namespace app\login\controller;
@@ -24,6 +25,7 @@ class Index extends Controller
 {
     protected $session_prefix;
     private $lang;
+    private $ccc;
     protected $params = [];
     protected $plugins = [];
     public function _initialize()
@@ -32,9 +34,11 @@ class Index extends Controller
         $this->lang = Lang::detect();
         $this->lang = $this->filterLanguages($this->lang);
         Lang::load(APP_PATH . 'login/lang/'.$this->lang.'.php');
+        $this->ccc = 'Catfish CMS Copyright';
     }
     public function index()
     {
+        $captcha = Db::name('options')->where('option_name','captcha')->field('option_value')->find();
         if(Request::instance()->has('user','post'))
         {
             if(Request::instance()->has('captcha','post'))
@@ -56,7 +60,7 @@ class Index extends Controller
                 'user.require' => Lang::get('The user name must be filled in'),
                 'pwd.require' => Lang::get('Password must be filled in')
             ];
-            if(Request::instance()->has('captcha','post'))
+            if($captcha['option_value'] == 1)
             {
                 $data = [
                     'user' => Request::instance()->post('user'),
@@ -77,6 +81,13 @@ class Index extends Controller
                 $this->error($validate->getError());
                 return false;
             }
+            $loginError = Cache::get('loginError_'.$data['user']);
+            if($loginError)
+            {
+                Cache::set('loginError_'.$data['user'],'loginError',5);
+                $this->error(Lang::get('Password error'));
+                return false;
+            }
             $users = new Users();
             $user = $users->where('user_login', htmlspecialchars(Request::instance()->post('user')))
                 ->find();
@@ -87,6 +98,7 @@ class Index extends Controller
             }
             if($user['user_pass'] != md5(Request::instance()->post('pwd')))
             {
+                Cache::set('loginError_'.$data['user'],'loginError',5);
                 $this->error(Lang::get('Password error'));
                 return false;
             }
@@ -117,8 +129,7 @@ class Index extends Controller
         }
         if(!Session::has($this->session_prefix.'user_id'))
         {
-            $data = Db::name('options')->where('option_name','captcha')->field('option_value')->find();
-            $this->assign('yanzheng', $data['option_value']);
+            $this->assign('yanzheng', $captcha['option_value']);
             $this->getPlugins();
             Hook::add('login_background',$this->plugins);
             Hook::listen('login_background',$this->params);
@@ -159,8 +170,15 @@ class Index extends Controller
         {
             return Lang::get('Password must be filled in');
         }
+        $userName = Request::instance()->post('user');
+        $loginError = Cache::get('loginError_'.$userName);
+        if($loginError)
+        {
+            Cache::set('loginError_'.$userName,'loginError',3);
+            return Lang::get('Password error');
+        }
         $users = new Users();
-        $user = $users->where('user_login', htmlspecialchars(Request::instance()->post('user')))
+        $user = $users->where('user_login', htmlspecialchars($userName))
             ->find();
         if(empty($user))
         {
@@ -168,6 +186,7 @@ class Index extends Controller
         }
         if($user['user_pass'] != md5(Request::instance()->post('pwd')))
         {
+            Cache::set('loginError_'.$userName,'loginError',3);
             return Lang::get('Password error');
         }
         if($user['user_status'] == 0)
@@ -283,10 +302,14 @@ class Index extends Controller
     private function filterLanguages($parameter)
     {
         $param = strtolower($parameter);
-        if($param == 'zh')
+        if($param == 'zh' || strpos($param,'zh-hans') !== false || strpos($param,'zh-chs') !== false)
         {
             Lang::range('zh-cn');
             return 'zh-cn';
+        }
+        else if($param == 'zh-tw' || strpos($param,'zh-hant') !== false || strpos($param,'zh-cht') !== false){
+            Lang::range('zh-tw');
+            return 'zh-tw';
         }
         else if(stripos($param,'zh') === false)
         {

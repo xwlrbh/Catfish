@@ -1,13 +1,15 @@
 <?php
 /**
- * Project: Catfish.
- * Author: A.J
+ * Project: Catfish CMS.
+ * Author: A.J <804644245@qq.com>
+ * Copyright: http://www.catfish-cms.com All rights reserved.
  * Date: 2016/10/1
  */
 namespace app\admin\controller;
 
 use app\admin\controller\Common;
 use app\admin\controller\Tree;
+use app\common\Operc;
 use think\Db;
 use think\Request;
 use think\Validate;
@@ -24,7 +26,7 @@ class Index extends Common
     public function index()
     {
         $this->checkUser();
-        $zxwenzhang = Db::name('posts')->where('post_type',0)->field('id,post_title')->order('post_modified desc')->limit(5)->select();
+        $zxwenzhang = Db::name('posts')->where('post_type','in','0,2,3,4,5,6,7,8')->field('id,post_title')->order('post_modified desc')->limit(5)->select();
         $this->assign('zxwenzhang', $zxwenzhang);
         $zxpinglun = Db::name('comments')->field('id,url,content')->order('createtime desc')->limit(5)->select();
         $this->assign('zxpinglun', $zxpinglun);
@@ -38,7 +40,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(5);
-        if(Request::instance()->has('fenleim','post'))
+        if(Request::instance()->has('fenleim','post') && $this->verification())
         {
             $rule = [
                 'fenleim' => 'require',
@@ -76,7 +78,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(5);
-        if(Request::instance()->has('d','get'))
+        if(Request::instance()->has('d','get') && $this->verification(true))
         {
             Db::name('terms')->where('id',Request::instance()->get('d'))->delete();
             Db::name('terms')
@@ -93,7 +95,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(5);
-        if(Request::instance()->has('cid','post'))
+        if(Request::instance()->has('cid','post') && $this->verification())
         {
             $rule = [
                 'fenleim' => 'require',
@@ -129,7 +131,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(6);
-        if(Request::instance()->has('biaoti','post'))
+        if(Request::instance()->has('biaoti','post') && $this->verification())
         {
             $rule = [
                 'biaoti' => 'require',
@@ -159,7 +161,7 @@ class Index extends Common
                 'content' => $neirong,
                 'summary' => ltrim($zhaiyao)
             ];
-            Hook::listen('write',$params);
+            Hook::listen('write',$params,$this->ccc);
             $biaoti = $params['title'];
             $neirong = $params['content'];
             $zhaiyao = $params['summary'];
@@ -188,7 +190,12 @@ class Index extends Common
             {
                 $shenhe = 0;
             }
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_date' => $fabushijian, 'post_content' => $neirong, 'post_title' => htmlspecialchars($biaoti), 'post_excerpt' => htmlspecialchars($zhaiyao), 'post_status' => $shenhe, 'comment_status' => $pinglun, 'post_modified' => $fabushijian, 'post_type' => Request::instance()->post('xingshi'), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => $zhiding, 'recommended' => $tuijian];
+            $suolvetu = Request::instance()->post('suolvetu');
+            if(!$this->isLegalPicture($suolvetu))
+            {
+                $suolvetu = '';
+            }
+            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_date' => $fabushijian, 'post_content' => $neirong, 'post_title' => htmlspecialchars($biaoti), 'post_excerpt' => htmlspecialchars($zhaiyao), 'post_status' => $shenhe, 'comment_status' => $pinglun, 'post_modified' => $fabushijian, 'post_type' => Request::instance()->post('xingshi'), 'thumbnail' => $suolvetu, 'istop' => $zhiding, 'recommended' => $tuijian];
             $id = Db::name('posts')->insertGetId($data);
             if(isset($_POST['fenlei']) && is_array($_POST['fenlei']))
             {
@@ -203,13 +210,17 @@ class Index extends Common
             $params = [
                 'id' => $id
             ];
-            Hook::listen('write_post',$params);
+            Hook::listen('write_post',$params,$this->ccc);
+            Hook::add('write_post_later',$this->plugins);
+            Hook::listen('write_post_later',$params,$this->ccc);
             if(Request::instance()->has('jsfb','post') && Request::instance()->post('jsfb') == 'on')
             {
                 Cache::clear();
+                file_get_contents($this->host());
             }
         }
         $this->writeAlias(0);
+        $this->writeAppend(0);
         $this->switchEditor();
         $this->assign('backstageMenu', 'neirong');
         $this->assign('option', 'write');
@@ -263,50 +274,61 @@ class Index extends Common
     public function shenhepinglun()
     {
         $this->checkPermissions(5);
-        $zt = Request::instance()->post('zt');
-        if($zt == 1)
+        if($this->verification())
         {
-            $zt = 0;
+            $zt = Request::instance()->post('zt');
+            if($zt == 1)
+            {
+                $zt = 0;
+            }
+            else
+            {
+                $zt = 1;
+            }
+            Db::name('comments')
+                ->where('id', Request::instance()->post('id'))
+                ->update(['status' => $zt]);
         }
-        else
-        {
-            $zt = 1;
-        }
-        Db::name('comments')
-            ->where('id', Request::instance()->post('id'))
-            ->update(['status' => $zt]);
         return true;
     }
     public function removeComment()
     {
         $this->checkPermissions(5);
-        $post = Db::name('comments')
-            ->where('id', Request::instance()->post('id'))
-            ->field('post_id')
-            ->find();
-        Db::name('comments')
-            ->where('id',Request::instance()->post('id'))
-            ->delete();
-        Db::name('posts')
-            ->where('id', $post['post_id'])
-            ->setDec('comment_count');
+        if($this->verification())
+        {
+            $post = Db::name('comments')
+                ->where('id', Request::instance()->post('id'))
+                ->field('post_id')
+                ->find();
+            Db::name('comments')
+                ->where('id',Request::instance()->post('id'))
+                ->delete();
+            Db::name('posts')
+                ->where('id', $post['post_id'])
+                ->update([
+                    'comment_count' => ['exp','comment_count-1']
+                ]);
+        }
         return true;
     }
     public function commentbatch()
     {
         $this->checkPermissions(5);
-        $zhi = 0;
-        switch(Request::instance()->post('cz')){
-            case 'shenhe':
-                $zhi = 1;
-                break;
-            case 'weishenhe':
-                $zhi = 0;
-                break;
+        if($this->verification())
+        {
+            $zhi = 0;
+            switch(Request::instance()->post('cz')){
+                case 'shenhe':
+                    $zhi = 1;
+                    break;
+                case 'weishenhe':
+                    $zhi = 0;
+                    break;
+            }
+            Db::name('comments')
+                ->where('id','in',Request::instance()->post('zcuan'))
+                ->update(['status' => $zhi]);
         }
-        Db::name('comments')
-            ->where('id','in',Request::instance()->post('zcuan'))
-            ->update(['status' => $zhi]);
         return true;
     }
     public function messages()
@@ -322,7 +344,10 @@ class Index extends Common
     public function removeMessage()
     {
         $this->checkPermissions(5);
-        Db::name('guestbook')->where('id',Request::instance()->post('id'))->delete();
+        if($this->verification())
+        {
+            Db::name('guestbook')->where('id',Request::instance()->post('id'))->delete();
+        }
         return true;
     }
     public function recycle()
@@ -356,33 +381,99 @@ class Index extends Common
     public function removeArticle()
     {
         $this->checkPermissions(6);
-        Db::name('posts')->where('id',Request::instance()->post('id'))->delete();
-        Db::name('term_relationships')->where('object_id',Request::instance()->post('id'))->delete();
-        Db::name('comments')->where('post_id',Request::instance()->post('id'))->delete();
+        if($this->verification())
+        {
+            if($this->permissions > 5)
+            {
+                $re = Db::name('posts')->where('id',Request::instance()->post('id'))->where('post_author', Session::get($this->session_prefix.'user_id'))->delete();
+                if(!empty($re))
+                {
+                    Db::name('term_relationships')->where('object_id',Request::instance()->post('id'))->delete();
+                    Db::name('comments')->where('post_id',Request::instance()->post('id'))->delete();
+                }
+            }
+            else
+            {
+                Db::name('posts')->where('id',Request::instance()->post('id'))->delete();
+                Db::name('term_relationships')->where('object_id',Request::instance()->post('id'))->delete();
+                Db::name('comments')->where('post_id',Request::instance()->post('id'))->delete();
+            }
+        }
         return true;
     }
     public function reductionArticle()
     {
         $this->checkPermissions(6);
-        Db::name('posts')
-            ->where('id', Request::instance()->post('id'))
-            ->update(['status' => 1]);
+        if($this->verification())
+        {
+            if($this->permissions > 5)
+            {
+                Db::name('posts')
+                    ->where('id', Request::instance()->post('id'))
+                    ->where('post_author', Session::get($this->session_prefix.'user_id'))
+                    ->update(['status' => 1]);
+            }
+            else
+            {
+                Db::name('posts')
+                    ->where('id', Request::instance()->post('id'))
+                    ->update(['status' => 1]);
+            }
+        }
         return true;
     }
     public function recycleBatch()
     {
         $this->checkPermissions(6);
-        switch(Request::instance()->post('cz')){
-            case 'phuanyuan':
-                Db::name('posts')
-                    ->where('id','in',Request::instance()->post('zcuan'))
-                    ->update(['status' => 1]);
-                break;
-            case 'pshanchu':
-                Db::name('posts')->where('id','in',Request::instance()->post('zcuan'))->delete();
-                Db::name('term_relationships')->where('object_id','in',Request::instance()->post('zcuan'))->delete();
-                Db::name('comments')->where('post_id','in',Request::instance()->post('zcuan'))->delete();
-                break;
+        if($this->verification())
+        {
+            switch(Request::instance()->post('cz')){
+                case 'phuanyuan':
+                    if($this->permissions > 5)
+                    {
+                        Db::name('posts')
+                            ->where('id','in',Request::instance()->post('zcuan'))
+                            ->where('post_author', Session::get($this->session_prefix.'user_id'))
+                            ->update(['status' => 1]);
+                    }
+                    else
+                    {
+                        Db::name('posts')
+                            ->where('id','in',Request::instance()->post('zcuan'))
+                            ->update(['status' => 1]);
+                    }
+                    break;
+                case 'pshanchu':
+                    if($this->permissions > 5)
+                    {
+                        $re = Db::name('posts')->where('id','in',Request::instance()->post('zcuan'))->where('post_author', Session::get($this->session_prefix.'user_id'))->field('id')->select();
+                        $idstr = '';
+                        foreach($re as $val)
+                        {
+                            if($idstr == '')
+                            {
+                                $idstr = $val['id'];
+                            }
+                            else
+                            {
+                                $idstr .= ',' . $val['id'];
+                            }
+                        }
+                        if(!empty($idstr))
+                        {
+                            Db::name('posts')->where('id','in',$idstr)->delete();
+                            Db::name('term_relationships')->where('object_id','in',$idstr)->delete();
+                            Db::name('comments')->where('post_id','in',$idstr)->delete();
+                        }
+                    }
+                    else
+                    {
+                        Db::name('posts')->where('id','in',Request::instance()->post('zcuan'))->delete();
+                        Db::name('term_relationships')->where('object_id','in',Request::instance()->post('zcuan'))->delete();
+                        Db::name('comments')->where('post_id','in',Request::instance()->post('zcuan'))->delete();
+                    }
+                    break;
+            }
         }
         return true;
     }
@@ -513,16 +604,29 @@ class Index extends Common
     public function recycleArticle()
     {
         $this->checkPermissions(6);
-        Db::name('posts')
-            ->where('id', Request::instance()->post('id'))
-            ->update(['status' => 0]);
+        if($this->verification())
+        {
+            if($this->permissions > 5)
+            {
+                Db::name('posts')
+                    ->where('id', Request::instance()->post('id'))
+                    ->where('post_author', Session::get($this->session_prefix.'user_id'))
+                    ->update(['status' => 0]);
+            }
+            else
+            {
+                Db::name('posts')
+                    ->where('id', Request::instance()->post('id'))
+                    ->update(['status' => 0]);
+            }
+        }
         return true;
     }
     public function rewrite()
     {
         $this->checkUser();
         $this->checkPermissions(6);
-        if(Request::instance()->has('postId','post'))
+        if(Request::instance()->has('postId','post') && $this->verification())
         {
             $rule = [
                 'biaoti' => 'require',
@@ -542,9 +646,24 @@ class Index extends Common
                 $this->error($validate->getError());
                 return false;
             }
+            if($this->permissions > 5)
+            {
+                $us = Session::get($this->session_prefix.'user_id');
+                $tmpart = Db::name('posts')->where('id',Request::instance()->post('postId'))->field('post_author')->find();
+                if($tmpart['post_author'] != $us)
+                {
+                    $this->error(Lang::get('Your access rights are insufficient'));
+                    exit();
+                }
+            }
             $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
             $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
-            $data = ['post_keywords' => htmlspecialchars($guanjianci), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => date("Y-m-d H:i:s"), 'post_type' => Request::instance()->post('xingshi'), 'thumbnail' => Request::instance()->post('suolvetu'), 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
+            $suolvetu = Request::instance()->post('suolvetu');
+            if(!$this->isLegalPicture($suolvetu))
+            {
+                $suolvetu = '';
+            }
+            $data = ['post_keywords' => htmlspecialchars($guanjianci), 'post_source' => htmlspecialchars(Request::instance()->post('laiyuan')), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'comment_status' => Request::instance()->post('pinglun'), 'post_modified' => date("Y-m-d H:i:s"), 'post_type' => Request::instance()->post('xingshi'), 'thumbnail' => $suolvetu, 'istop' => Request::instance()->post('zhiding'), 'recommended' => Request::instance()->post('tuijian')];
             Db::name('posts')
                 ->where('id', Request::instance()->post('postId'))
                 ->update($data);
@@ -562,7 +681,9 @@ class Index extends Common
             $params = [
                 'id' => Request::instance()->post('postId')
             ];
-            Hook::listen('rewrite_post',$params);
+            Hook::listen('rewrite_post',$params,$this->ccc);
+            Hook::add('rewrite_post_later',$this->plugins);
+            Hook::listen('rewrite_post_later',$params,$this->ccc);
         }
         $classify = Db::name('term_relationships')->field('term_id')->where('object_id',Request::instance()->get('art'))->select();
         $fenlei =$this->getfenlei();
@@ -584,10 +705,20 @@ class Index extends Common
         {
             $wzid = Request::instance()->get('art');
         }
-        $data = Db::name('posts')->where('id',$wzid)->select();
-        $data[0]['post_content'] = str_replace('<img class="img-responsive"','<img',$data[0]['post_content']);
-        $this->assign('data', $data[0]);
+        $data = Db::name('posts')->where('id',$wzid)->find();
+        if($this->permissions > 5)
+        {
+            $us = Session::get($this->session_prefix.'user_id');
+            if($data['post_author'] != $us)
+            {
+                $this->error(Lang::get('Your access rights are insufficient'));
+                exit();
+            }
+        }
+        $data['post_content'] = str_replace('<img class="img-responsive"','<img',$data['post_content']);
+        $this->assign('data', $data);
         $this->writeAlias($wzid);
+        $this->writeAppend($wzid);
         $this->switchEditor();
         $this->assign('backstageMenu', 'neirong');
         $this->assign('option', 'articles');
@@ -597,42 +728,58 @@ class Index extends Common
     public function modify()
     {
         $this->checkPermissions(6);
-        $xiugai = '';
-        $zhi = 0;
-        switch(Request::instance()->post('cz')){
-            case 'shenhe':
-                $xiugai = 'post_status';
-                $zhi = 1;
-                break;
-            case 'weishenhe':
-                $xiugai = 'post_status';
-                $zhi = 0;
-                break;
-            case 'zhiding':
-                $xiugai = 'istop';
-                $zhi = 1;
-                break;
-            case 'weizhiding':
-                $xiugai = 'istop';
-                $zhi = 0;
-                break;
-            case 'tuijian':
-                $xiugai = 'recommended';
-                $zhi = 1;
-                break;
-            case 'weituijian':
-                $xiugai = 'recommended';
-                $zhi = 0;
-                break;
-            case 'pshanchu':
-                $xiugai = 'status';
-                $zhi = 0;
-                break;
-        }
-        if(!empty($xiugai)){
-            Db::name('posts')
-                ->where('id','in',Request::instance()->post('zcuan'))
-                ->update([$xiugai => $zhi]);
+        if($this->verification())
+        {
+            $xiugai = '';
+            $zhi = 0;
+            switch(Request::instance()->post('cz')){
+                case 'shenhe':
+                    $xiugai = 'post_status';
+                    $zhi = 1;
+                    break;
+                case 'weishenhe':
+                    $xiugai = 'post_status';
+                    $zhi = 0;
+                    break;
+                case 'zhiding':
+                    $xiugai = 'istop';
+                    $zhi = 1;
+                    break;
+                case 'weizhiding':
+                    $xiugai = 'istop';
+                    $zhi = 0;
+                    break;
+                case 'tuijian':
+                    $xiugai = 'recommended';
+                    $zhi = 1;
+                    break;
+                case 'weituijian':
+                    $xiugai = 'recommended';
+                    $zhi = 0;
+                    break;
+                case 'pshanchu':
+                    $xiugai = 'status';
+                    $zhi = 0;
+                    break;
+            }
+            if(!empty($xiugai)){
+                if($this->permissions > 5)
+                {
+                    if($xiugai == 'status')
+                    {
+                        Db::name('posts')
+                            ->where('id','in',Request::instance()->post('zcuan'))
+                            ->where('post_author', Session::get($this->session_prefix.'user_id'))
+                            ->update([$xiugai => $zhi]);
+                    }
+                }
+                else
+                {
+                    Db::name('posts')
+                        ->where('id','in',Request::instance()->post('zcuan'))
+                        ->update([$xiugai => $zhi]);
+                }
+            }
         }
         return true;
     }
@@ -640,7 +787,17 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('biaoti','post'))
+        $template = Db::name('options')
+            ->where('option_name','template')
+            ->field('option_value')
+            ->find();
+        $dir = glob(APP_PATH.'../public/'.$template['option_value'].'/page/*.html');
+        foreach($dir as $key => $val)
+        {
+            $tmpdir = basename($val);
+            $dir[$key] = $tmpdir;
+        }
+        if(Request::instance()->has('biaoti','post') && $this->verification())
         {
             $rule = [
                 'biaoti' => 'require',
@@ -662,18 +819,17 @@ class Index extends Common
             }
             $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
             $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => Request::instance()->post('fabushijian'), 'post_type' => 1, 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
-            Db::name('posts')->insert($data);
-        }
-        $template = Db::name('options')
-            ->where('option_name','template')
-            ->field('option_value')
-            ->find();
-        $dir = glob(APP_PATH.'../public/'.$template['option_value'].'/page/*.html');
-        foreach($dir as $key => $val)
-        {
-            $tmpdir = basename($val);
-            $dir[$key] = $tmpdir;
+            $suolvetu = Request::instance()->post('suolvetu');
+            if(!$this->isLegalPicture($suolvetu))
+            {
+                $suolvetu = '';
+            }
+            $template = Request::instance()->post('template');
+            if(in_array($template,$dir))
+            {
+                $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_date' => Request::instance()->post('fabushijian'), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => Request::instance()->post('fabushijian'), 'post_type' => 1, 'thumbnail' => $suolvetu, 'template' => $template];
+                Db::name('posts')->insert($data);
+            }
         }
         $this->assign('dir', $dir);
         $this->switchEditor();
@@ -699,15 +855,18 @@ class Index extends Common
     public function removePage()
     {
         $this->checkPermissions(3);
-        Db::name('posts')
-            ->where('id',Request::instance()->post('id'))
-            ->delete();
+        if($this->verification())
+        {
+            Db::name('posts')
+                ->where('id',Request::instance()->post('id'))
+                ->delete();
+        }
         return true;
     }
     public function removeAllPage()
     {
         $this->checkPermissions(3);
-        if(Request::instance()->post('cz') == 'pshanchu')
+        if(Request::instance()->post('cz') == 'pshanchu' && $this->verification())
         {
             Db::name('posts')
                 ->where('id', 'in', Request::instance()->post('zcuan'))
@@ -719,7 +878,17 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('postId','post'))
+        $template = Db::name('options')
+            ->where('option_name','template')
+            ->field('option_value')
+            ->find();
+        $dir = glob(APP_PATH.'../public/'.$template['option_value'].'/page/*.html');
+        foreach($dir as $key => $val)
+        {
+            $tmpdir = basename($val);
+            $dir[$key] = $tmpdir;
+        }
+        if(Request::instance()->has('postId','post') && $this->verification())
         {
             $rule = [
                 'biaoti' => 'require',
@@ -741,10 +910,19 @@ class Index extends Common
             }
             $guanjianci = str_replace('，',',',Request::instance()->post('guanjianci'));
             $neirong = str_replace('<img','<img class="img-responsive"',Request::instance()->post('neirong'));
-            $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => Request::instance()->post('suolvetu'), 'template' => Request::instance()->post('template')];
-            Db::name('posts')
-                ->where('id', Request::instance()->post('postId'))
-                ->update($data);
+            $suolvetu = Request::instance()->post('suolvetu');
+            if(!$this->isLegalPicture($suolvetu))
+            {
+                $suolvetu = '';
+            }
+            $template = Request::instance()->post('template');
+            if(in_array($template,$dir))
+            {
+                $data = ['post_author' => Session::get($this->session_prefix.'user_id'), 'post_keywords' => htmlspecialchars($guanjianci), 'post_content' => $neirong, 'post_title' => htmlspecialchars(Request::instance()->post('biaoti')), 'post_excerpt' => htmlspecialchars(Request::instance()->post('zhaiyao')), 'post_modified' => date("Y-m-d H:i:s"), 'thumbnail' => $suolvetu, 'template' => $template];
+                Db::name('posts')
+                    ->where('id', Request::instance()->post('postId'))
+                    ->update($data);
+            }
         }
         $wzid = 0;
         if(Request::instance()->has('postId','post'))
@@ -758,16 +936,6 @@ class Index extends Common
         $data = Db::name('posts')->where('id',$wzid)->find();
         $data['post_content'] = str_replace('<img class="img-responsive"','<img',$data['post_content']);
         $this->assign('data', $data);
-        $template = Db::name('options')
-            ->where('option_name','template')
-            ->field('option_value')
-            ->find();
-        $dir = glob(APP_PATH.'../public/'.$template['option_value'].'/page/*.html');
-        foreach($dir as $key => $val)
-        {
-            $tmpdir = basename($val);
-            $dir[$key] = $tmpdir;
-        }
         $this->assign('dir', $dir);
         $this->switchEditor();
         $this->assign('backstageMenu', 'yemian');
@@ -822,7 +990,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->isPost())
+        if(Request::instance()->isPost() && $this->verification())
         {
             $pageSettings = Db::name('options')
                 ->where('option_name','pageSettings')
@@ -830,14 +998,17 @@ class Index extends Common
             $pageSettings = unserialize($pageSettings['option_value']);
             foreach(Request::instance()->post() as $key => $val)
             {
-                $sx = explode('_',$key);
-                if($sx[0] == 'biaoti')
+                if(substr_count($key,'_') == 2)
                 {
-                    $pageSettings[$sx[1]][$sx[2]][$sx[0]] = htmlspecialchars($val);
-                }
-                else
-                {
-                    $pageSettings[$sx[1]][$sx[2]][$sx[0]] = $val;
+                    $sx = explode('_',$key);
+                    if($sx[0] == 'biaoti')
+                    {
+                        $pageSettings[$sx[1]][$sx[2]][$sx[0]] = htmlspecialchars($val);
+                    }
+                    else
+                    {
+                        $pageSettings[$sx[1]][$sx[2]][$sx[0]] = $val;
+                    }
                 }
             }
             Db::name('options')
@@ -859,7 +1030,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->isPost())
+        if(Request::instance()->isPost() && $this->verification())
         {
             $rule = [
                 'slideshow' => 'require'
@@ -891,7 +1062,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->isPost())
+        if(Request::instance()->isPost() && $this->verification())
         {
             $rule = [
                 'slideshow' => 'require'
@@ -936,7 +1107,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('paixu','post'))
+        if(Request::instance()->has('paixu','post') && $this->verification())
         {
             $paixu = Request::instance()->post();
             foreach($paixu as $key => $val)
@@ -958,44 +1129,50 @@ class Index extends Common
     public function removeSlide()
     {
         $this->checkPermissions(3);
-        $slide = Db::name('slide')
-            ->where('slide_id', Request::instance()->post('id'))
-            ->field('slide_pic')
-            ->find();
-        $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-        $yfile = str_replace($yuming['option_value'],'',$slide['slide_pic']);
-        if(!empty($yfile) && $this->isLegalPicture($slide['slide_pic'])){
-            $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
-            $yfile = str_replace("/", DS, $yfile);
-            @unlink(APP_PATH . '..'. DS . $yfile);
+        if($this->verification())
+        {
+            $slide = Db::name('slide')
+                ->where('slide_id', Request::instance()->post('id'))
+                ->field('slide_pic')
+                ->find();
+            $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+            $yfile = str_replace($yuming['option_value'],'',$slide['slide_pic']);
+            if(!empty($yfile) && $this->isLegalPicture($slide['slide_pic'])){
+                $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
+                $yfile = str_replace("/", DS, $yfile);
+                @unlink(APP_PATH . '..'. DS . $yfile);
+            }
+            Db::name('slide')
+                ->where('slide_id',Request::instance()->post('id'))
+                ->delete();
         }
-        Db::name('slide')
-            ->where('slide_id',Request::instance()->post('id'))
-            ->delete();
         return true;
     }
     public function yincang_qiyong()
     {
         $this->checkPermissions(3);
-        $zt = Request::instance()->post('zt');
-        if($zt == 1)
+        if($this->verification())
         {
-            $zt = 0;
+            $zt = Request::instance()->post('zt');
+            if($zt == 1)
+            {
+                $zt = 0;
+            }
+            else
+            {
+                $zt = 1;
+            }
+            Db::name('slide')
+                ->where('slide_id', Request::instance()->post('id'))
+                ->update(['slide_status' => $zt]);
         }
-        else
-        {
-            $zt = 1;
-        }
-        Db::name('slide')
-            ->where('slide_id', Request::instance()->post('id'))
-            ->update(['slide_status' => $zt]);
         return true;
     }
     public function addLinks()
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->isPost())
+        if(Request::instance()->isPost() && $this->verification())
         {
             $rule = [
                 'mingcheng' => 'require',
@@ -1031,7 +1208,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('paixu','post'))
+        if(Request::instance()->has('paixu','post') && $this->verification())
         {
             $paixu = Request::instance()->post();
             foreach($paixu as $key => $val)
@@ -1054,7 +1231,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->isPost())
+        if(Request::instance()->isPost() && $this->verification())
         {
             $rule = [
                 'mingcheng' => 'require',
@@ -1102,37 +1279,43 @@ class Index extends Common
     public function link_yincang_qiyong()
     {
         $this->checkPermissions(3);
-        $zt = Request::instance()->post('zt');
-        if($zt == 1)
+        if($this->verification())
         {
-            $zt = 0;
+            $zt = Request::instance()->post('zt');
+            if($zt == 1)
+            {
+                $zt = 0;
+            }
+            else
+            {
+                $zt = 1;
+            }
+            Db::name('links')
+                ->where('link_id', Request::instance()->post('id'))
+                ->update(['link_status' => $zt]);
         }
-        else
-        {
-            $zt = 1;
-        }
-        Db::name('links')
-            ->where('link_id', Request::instance()->post('id'))
-            ->update(['link_status' => $zt]);
         return true;
     }
     public function removeLink()
     {
         $this->checkPermissions(3);
-        $slide = Db::name('links')
-            ->where('link_id', Request::instance()->post('id'))
-            ->field('link_image')
-            ->find();
-        $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-        $yfile = str_replace($yuming['option_value'],'',$slide['link_image']);
-        if(!empty($yfile) && $this->isLegalPicture($slide['link_image'])){
-            $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
-            $yfile = str_replace("/", DS, $yfile);
-            @unlink(APP_PATH . '..'. DS . $yfile);
+        if($this->verification())
+        {
+            $slide = Db::name('links')
+                ->where('link_id', Request::instance()->post('id'))
+                ->field('link_image')
+                ->find();
+            $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+            $yfile = str_replace($yuming['option_value'],'',$slide['link_image']);
+            if(!empty($yfile) && $this->isLegalPicture($slide['link_image'])){
+                $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
+                $yfile = str_replace("/", DS, $yfile);
+                @unlink(APP_PATH . '..'. DS . $yfile);
+            }
+            Db::name('links')
+                ->where('link_id',Request::instance()->post('id'))
+                ->delete();
         }
-        Db::name('links')
-            ->where('link_id',Request::instance()->post('id'))
-            ->delete();
         return true;
     }
     public function general()
@@ -1172,25 +1355,28 @@ class Index extends Common
     public function lahei_qiyong()
     {
         $this->checkPermissions(3);
-        $zt = Request::instance()->post('zt');
-        if($zt == 1)
+        if($this->verification())
         {
-            $zt = 0;
+            $zt = Request::instance()->post('zt');
+            if($zt == 1)
+            {
+                $zt = 0;
+            }
+            else
+            {
+                $zt = 1;
+            }
+            Db::name('users')
+                ->where('id', Request::instance()->post('id'))
+                ->update(['user_status' => $zt]);
         }
-        else
-        {
-            $zt = 1;
-        }
-        Db::name('users')
-            ->where('id', Request::instance()->post('id'))
-            ->update(['user_status' => $zt]);
         return true;
     }
     public function addmanageuser()
     {
         $this->checkUser();
         $this->checkPermissions(1);
-        if(Request::instance()->has('yonghuming','post'))
+        if(Request::instance()->has('yonghuming','post') && $this->verification())
         {
             $rule = [
                 'yonghuming' => 'require',
@@ -1256,7 +1442,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(1);
-        if(Request::instance()->has('uid','post'))
+        if(Request::instance()->has('uid','post') && $this->verification())
         {
             Db::name('users')
                 ->where('id', Request::instance()->post('uid'))
@@ -1280,25 +1466,28 @@ class Index extends Common
     public function lahei_qiyong_bu()
     {
         $this->checkPermissions(1);
-        $zt = Request::instance()->post('zt');
-        if($zt == 1)
+        if($this->verification())
         {
-            $zt = 0;
+            $zt = Request::instance()->post('zt');
+            if($zt == 1)
+            {
+                $zt = 0;
+            }
+            else
+            {
+                $zt = 1;
+            }
+            Db::name('users')
+                ->where('id', Request::instance()->post('id'))
+                ->update(['user_status' => $zt]);
         }
-        else
-        {
-            $zt = 1;
-        }
-        Db::name('users')
-            ->where('id', Request::instance()->post('id'))
-            ->update(['user_status' => $zt]);
         return true;
     }
     public function category()
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('fenleiming','post'))
+        if(Request::instance()->has('fenleiming','post') && $this->verification())
         {
             $rule = [
                 'fenleiming' => 'require'
@@ -1347,7 +1536,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('navcid','post'))
+        if(Request::instance()->has('navcid','post') && $this->verification())
         {
             $rule = [
                 'fenleiming' => 'require'
@@ -1398,16 +1587,19 @@ class Index extends Common
     public function removemanagemc()
     {
         $this->checkPermissions(3);
-        Db::name('nav_cat')
-            ->where('navcid',Request::instance()->post('id'))
-            ->delete();
+        if($this->verification())
+        {
+            Db::name('nav_cat')
+                ->where('navcid',Request::instance()->post('id'))
+                ->delete();
+        }
         return true;
     }
     public function addmenu()
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('caidanming','post'))
+        if(Request::instance()->has('caidanming','post') && $this->verification())
         {
             $rule = [
                 'caidanming' => 'require'
@@ -1434,8 +1626,29 @@ class Index extends Common
             {
                 $lianjie = Request::instance()->post('lianjie');
             }
+            $ischongfu = false;
+            $chongfu = Operc::getc('menuCategoryRepeat');
+            $chongfu = unserialize($chongfu);
+            if(empty($chongfu))
+            {
+                $chongfu = [];
+            }
+            if(stripos($lianjie,'/category/') !== false || stripos($lianjie,'/page/') !== false)
+            {
+                $xtlianjie = Db::name('nav')->where('href',$lianjie)->where('status',1)->field('id')->find();
+                if(!empty($xtlianjie))
+                {
+                    $ischongfu = true;
+                    $chongfu[$xtlianjie['id']] = $lianjie;
+                }
+            }
             $data = ['cid' => Request::instance()->post('caidanfenlei'), 'parent_id' => Request::instance()->post('fuji'), 'label' => htmlspecialchars(Request::instance()->post('caidanming')), 'target' => Request::instance()->post('dakaifangshi'), 'href' => $lianjie, 'icon' => $this->filterJavascript(Request::instance()->post('tubiao')), 'status' => Request::instance()->post('zhuangtai')];
-            Db::name('nav')->insert($data);
+            $vid = Db::name('nav')->insertGetId($data);
+            if($ischongfu == true)
+            {
+                $chongfu[$vid] = $lianjie;
+                Operc::setc('menuCategoryRepeat',serialize($chongfu));
+            }
         }
         $cid = 0;
         if(Request::instance()->has('cid','get'))
@@ -1492,7 +1705,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('caidanId','post'))
+        if(Request::instance()->has('caidanId','post') && $this->verification())
         {
             $rule = [
                 'caidanming' => 'require'
@@ -1523,6 +1736,59 @@ class Index extends Common
             Db::name('nav')
                 ->where('id', Request::instance()->post('caidanId'))
                 ->update($data);
+            $chongfu = Operc::getc('menuCategoryRepeat');
+            $chongfu = unserialize($chongfu);
+            if(empty($chongfu))
+            {
+                $chongfu = [];
+            }
+            $oldlink = Request::instance()->post('oldlink');
+            $id = Request::instance()->post('caidanId');
+            $originalstate = Request::instance()->post('originalstate');
+            $newState = Request::instance()->post('zhuangtai');
+            $pdlj = false;
+            if($lianjie != $oldlink)
+            {
+                if(Operc::isCorP($oldlink))
+                {
+                    unset($chongfu[$id]);
+                    $this->delSingleArray($chongfu);
+                }
+                if(Operc::isCorP($lianjie) && $newState == 1)
+                {
+                    $xtlianjie = Db::name('nav')->where('href',$lianjie)->where('id','neq',$id)->where('status',1)->field('id,href')->select();
+                    if(!empty($xtlianjie))
+                    {
+                        foreach($xtlianjie as $key => $val)
+                        {
+                            $chongfu[$val['id']] = $val['href'];
+                        }
+                        $chongfu[$id] = $lianjie;
+                    }
+                    $pdlj = true;
+                }
+            }
+            if($newState != $originalstate)
+            {
+                if($newState == 1 && $pdlj == false)
+                {
+                    $xtlianjie = Db::name('nav')->where('href',$lianjie)->where('id','neq',$id)->where('status',1)->field('id,href')->select();
+                    if(!empty($xtlianjie))
+                    {
+                        foreach($xtlianjie as $key => $val)
+                        {
+                            $chongfu[$val['id']] = $val['href'];
+                        }
+                        $chongfu[$id] = $lianjie;
+                    }
+                }
+                elseif($newState == 0)
+                {
+                    unset($chongfu[$id]);
+                    $this->delSingleArray($chongfu);
+                }
+            }
+            Operc::setc('menuCategoryRepeat',serialize($chongfu));
         }
         $caidanxiang = Db::name('nav')
             ->where('id', Request::instance()->get('c'))
@@ -1533,6 +1799,8 @@ class Index extends Common
             $zidingyi = $caidanxiang['href'];
         }
         $this->assign('zidingyi', $zidingyi);
+        $this->assign('oldlink', $caidanxiang['href']);
+        $this->assign('originalstate', $caidanxiang['status']);
         $caidanxiang['icon'] = str_replace('"','&#34;',$caidanxiang['icon']);
         $this->assign('cdxiang', $caidanxiang);
         $this->addModifyMenu($caidanxiang['cid']);
@@ -1568,7 +1836,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('paixu','post'))
+        if(Request::instance()->has('paixu','post') && $this->verification())
         {
             $paixu = Request::instance()->post();
             foreach($paixu as $key => $val)
@@ -1581,12 +1849,24 @@ class Index extends Common
                 }
             }
         }
-        if(Request::instance()->has('d','get'))
+        if(Request::instance()->has('d','get') && $this->verification(true))
         {
-            Db::name('nav')->where('id',Request::instance()->get('d'))->delete();
+            $id = Request::instance()->get('d');
+            Db::name('nav')->where('id',$id)->delete();
             Db::name('nav')
-                ->where('parent_id', Request::instance()->get('d'))
+                ->where('parent_id', $id)
                 ->update(['parent_id' => Request::instance()->get('f')]);
+            $xtcaidan = Operc::getc('menuCategoryRepeat');
+            $xtcaidan = unserialize($xtcaidan);
+            if(!empty($xtcaidan) && is_array($xtcaidan))
+            {
+                if(isset($xtcaidan[$id]))
+                {
+                    unset($xtcaidan[$id]);
+                }
+                $this->delSingleArray($xtcaidan);
+                Operc::setc('menuCategoryRepeat',serialize($xtcaidan));
+            }
         }
         $cdfenlei = Db::name('nav_cat')->field('navcid,nav_name')->order('active desc')->select();
         $this->assign('cdfenlei', $cdfenlei);
@@ -1622,7 +1902,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('title','post'))
+        if(Request::instance()->has('title','post') && $this->verification())
         {
             $rule = [
                 'email' => 'email',
@@ -1677,6 +1957,18 @@ class Index extends Common
                 $closeSlide = 1;
             }
             $spare['closeSlide'] = $closeSlide;
+            $openMessage = 1;
+            if(Request::instance()->has('openMessage','post') && Request::instance()->post('openMessage') == 'on')
+            {
+                $openMessage = 0;
+            }
+            $spare['openMessage'] = $openMessage;
+            $closeComment = 0;
+            if(Request::instance()->has('closeComment','post') && Request::instance()->post('closeComment') == 'on')
+            {
+                $closeComment = 1;
+            }
+            $spare['closeComment'] = $closeComment;
             $datu = 0;
             if(Request::instance()->has('datu','post') && Request::instance()->post('datu') == 'on')
             {
@@ -1717,6 +2009,12 @@ class Index extends Common
                 $closeSitemap = 1;
             }
             $spare['closeSitemap'] = $closeSitemap;
+            $closeRSS = 0;
+            if(Request::instance()->has('closeRSS','post') && Request::instance()->post('closeRSS') == 'on')
+            {
+                $closeRSS = 1;
+            }
+            $spare['closeRSS'] = $closeRSS;
             $spare = serialize($spare);
             Db::name('options')
                 ->where('option_name', 'title')
@@ -1775,7 +2073,7 @@ class Index extends Common
         foreach($dir as $key => $val)
         {
             $tmpdir = basename($val);
-            if($tmpdir == 'common')
+            if($tmpdir == 'common' || $tmpdir == 'data')
             {
                 unset($dir[$key]);
             }
@@ -1813,6 +2111,10 @@ class Index extends Common
         if(!isset($data['rewrite']) && $this->is_rewrite() == true)
         {
             $data['rewrite'] = 1;
+        }
+        if(!isset($data['openMessage']))
+        {
+            $data['openMessage'] = 1;
         }
         $this->assign('data', $data);
         $now = time();
@@ -1854,7 +2156,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(3);
-        if(Request::instance()->has('themeName','post'))
+        if(Request::instance()->has('themeName','post') && $this->verification())
         {
             Db::name('options')
                 ->where('option_name', 'template')
@@ -1869,7 +2171,7 @@ class Index extends Common
         foreach($dir as $key => $val)
         {
             $tmpdir = basename($val);
-            if($tmpdir != 'common')
+            if($tmpdir != 'common' && $tmpdir != 'data')
             {
                 $url = $domain.'public/common/images/screenshot.jpg';
                 $path = APP_PATH.'../public/'.$tmpdir.'/screenshot.jpg';
@@ -1909,7 +2211,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(6);
-        if(Request::instance()->has('user_nicename','post'))
+        if(Request::instance()->has('user_nicename','post') && $this->verification())
         {
             $rule = [
                 'email' => 'require|email'
@@ -1931,26 +2233,39 @@ class Index extends Common
                 ->where('id', Session::get($this->session_prefix.'user_id'))
                 ->field('avatar')
                 ->find();
-            $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-            if(Request::instance()->post('avatar') != $avatar['avatar'])
+            $ava = $avatar['avatar'];
+            if($this->isLegalPicture(Request::instance()->post('avatar')))
             {
-                $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
-                if(!empty($yfile) && $this->isLegalPicture(Request::instance()->post('avatar'))){
-                    $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
-                    $yfile = str_replace("/", DS, $yfile);
-                    @unlink(APP_PATH . '..'. DS . $yfile);
+                $yuming = Db::name('options')->where('option_name','domain')->field('option_value')->find();
+                if(Request::instance()->post('avatar') != $avatar['avatar'])
+                {
+                    $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
+                    if(!empty($yfile)){
+                        $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
+                        if($this->cpicpre($yfile))
+                        {
+                            $yfile = str_replace("/", DS, $yfile);
+                            @unlink(APP_PATH . '..'. DS . $yfile);
+                        }
+                    }
+                }
+                $tmpav = Request::instance()->post('avatar');
+                if($this->cpicpre($tmpav))
+                {
+                    $ava = $tmpav;
                 }
             }
-            $ava = Request::instance()->post('avatar');
-            if($this->isLegalPicture($ava) == false)
-            {
-                $ava = '';
-            }
             $xingbie = Request::instance()->post('sex');
+            $birthday = htmlspecialchars(Request::instance()->post('birthday'));
+            if(empty($birthday))
+            {
+                $birthday = null;
+            }
             $pdata = [
                 'user_nicename' => htmlspecialchars(Request::instance()->post('user_nicename')),
+                'user_email' => htmlspecialchars(Request::instance()->post('email')),
                 'sex' => intval($xingbie),
-                'birthday' => htmlspecialchars(Request::instance()->post('birthday')),
+                'birthday' => $birthday,
                 'user_url' => htmlspecialchars(Request::instance()->post('user_url')),
                 'signature' => htmlspecialchars(Request::instance()->post('signature')),
                 'avatar' => $ava
@@ -1976,7 +2291,7 @@ class Index extends Common
             'ext' => 'jpg,png,gif,jpeg'
         ];
         $file->validate($validate);
-        $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
+        $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads',true,true,$this->picpre());
         if($info){
             echo $info->getSaveName();
         }
@@ -1989,7 +2304,7 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(6);
-        if(Request::instance()->has('oldPassword','post'))
+        if(Request::instance()->has('oldPassword','post') && $this->verification())
         {
             $rule = [
                 'oldPassword' => 'require',
@@ -2068,13 +2383,52 @@ class Index extends Common
     {
         $this->checkUser();
         $this->checkPermissions(5);
-        if(Request::instance()->has('clearcache','post'))
+        if(Request::instance()->has('clearcache','post') && $this->verification())
         {
             Cache::clear();
         }
         $this->assign('backstageMenu', 'xitong');
         $this->assign('option', 'clearcache');
         return $this->view();
+    }
+    public function shoucang()
+    {
+        $this->checkUser();
+        $data = Db::name('user_favorites')->where('uid',Session::get($this->session_prefix.'user_id'))->order('createtime desc')->paginate(10);
+        $this->assign('data', $data);
+        $this->assign('root', $this->root());
+        $this->assign('backstageMenu', 'neirong');
+        $this->assign('option', 'shoucang');
+        return $this->view();
+    }
+    public function removeshoucang()
+    {
+        if($this->verification())
+        {
+            Db::name('user_favorites')->where('id',Request::instance()->post('id'))->where('uid',Session::get($this->session_prefix.'user_id'))->delete();
+        }
+        return true;
+    }
+    public function pinglun()
+    {
+        $this->checkUser();
+        $data = Db::name('comments')
+            ->where('uid',Session::get($this->session_prefix.'user_id'))
+            ->order('createtime desc')
+            ->paginate(10);
+        $this->assign('data', $data);
+        $this->assign('root', $this->root());
+        $this->assign('backstageMenu', 'neirong');
+        $this->assign('option', 'pinglun');
+        return $this->view();
+    }
+    public function removepinglun()
+    {
+        if($this->verification())
+        {
+            Db::name('comments')->where('id',Request::instance()->post('id'))->where('uid',Session::get($this->session_prefix.'user_id'))->delete();
+        }
+        return true;
     }
     public function plugin()
     {
@@ -2139,6 +2493,11 @@ class Index extends Common
                     $quanxian = 1;
                 }
             }
+            $appliance = 'all';
+            if(preg_match("/(适用|適用|Appliance)\s*(：|:)(.*)/i", $pluginStr ,$matches))
+            {
+                $appliance = strtolower(trim($matches[3]));
+            }
             $data[] = [
                 'plugin' => $pluginName,
                 'name' => Lang::get($pName),
@@ -2146,7 +2505,8 @@ class Index extends Common
                 'author' => $pluginAuth,
                 'version' => $pluginVers,
                 'pluginUrl' => $pluginUri,
-                'jurisdiction' => $quanxian
+                'jurisdiction' => $quanxian,
+                'appliance' => $appliance
             ];
         }
         $dataArr = [];
@@ -2162,6 +2522,10 @@ class Index extends Common
                 $data[$key]['open'] = 0;
             }
             if(Session::has($this->session_prefix.'user_type') && Session::get($this->session_prefix.'user_type') > $val['jurisdiction'])
+            {
+                unset($data[$key]);
+            }
+            if($val['appliance'] != 'all' && $val['appliance'] != 'cms')
             {
                 unset($data[$key]);
             }
@@ -2181,46 +2545,54 @@ class Index extends Common
     public function pluginkaiguan()
     {
         $this->checkPermissions(3);
-        $norecord = false;
-        $plugins = Db::name('options')->where('option_name','plugins')->field('option_value')->find();
-        if(!empty($plugins))
+        if($this->verification())
         {
-            $plugins = unserialize($plugins['option_value']);
+            $norecord = false;
+            $plugins = Db::name('options')->where('option_name','plugins')->field('option_value')->find();
+            if(!empty($plugins))
+            {
+                $plugins = unserialize($plugins['option_value']);
+            }
+            else
+            {
+                $norecord = true;
+                $plugins = [];
+            }
+            $pluginame = Request::instance()->post('pn');
+            $find = array_search($pluginame,$plugins);
+            $params = [
+                'plugin' => $pluginame
+            ];
+            if($find === false)
+            {
+                $pluginpath = APP_PATH.'plugins/'.$pluginame.'/'.ucfirst($pluginame).'.php';
+                if(is_file($pluginpath))
+                {
+                    $plugins[] = $pluginame;
+                    Hook::add('open','app\\plugins\\'.$pluginame.'\\'.ucfirst($pluginame));
+                    Hook::listen('open',$params,$this->ccc);
+                }
+            }
+            else
+            {
+                unset($plugins[$find]);
+                Hook::add('close','app\\plugins\\'.$pluginame.'\\'.ucfirst($pluginame));
+                Hook::listen('close',$params,$this->ccc);
+            }
+            if($norecord == true)
+            {
+                $data = ['option_name' => 'plugins', 'option_value' => serialize($plugins), 'autoload' => 0];
+                Db::name('options')->insert($data);
+            }
+            else
+            {
+                Db::name('options')
+                    ->where('option_name','plugins')
+                    ->update(['option_value' => serialize($plugins)]);
+            }
+            Cache::rm('plugins');
+            Cache::rm('pluginslist');
         }
-        else
-        {
-            $norecord = true;
-            $plugins = [];
-        }
-        $find = array_search(Request::instance()->post('pn'),$plugins);
-        $params = [
-            'plugin' => Request::instance()->post('pn')
-        ];
-        if($find === false)
-        {
-            $plugins[] = Request::instance()->post('pn');
-            Hook::add('open','app\\plugins\\'.Request::instance()->post('pn').'\\'.ucfirst(Request::instance()->post('pn')));
-            Hook::listen('open',$params);
-        }
-        else
-        {
-            unset($plugins[$find]);
-            Hook::add('close','app\\plugins\\'.Request::instance()->post('pn').'\\'.ucfirst(Request::instance()->post('pn')));
-            Hook::listen('close',$params);
-        }
-        if($norecord == true)
-        {
-            $data = ['option_name' => 'plugins', 'option_value' => serialize($plugins), 'autoload' => 0];
-            Db::name('options')->insert($data);
-        }
-        else
-        {
-            Db::name('options')
-                ->where('option_name','plugins')
-                ->update(['option_value' => serialize($plugins)]);
-        }
-        Cache::rm('plugins');
-        Cache::rm('pluginslist');
         return true;
     }
     public function plugins($plugin)
@@ -2232,9 +2604,9 @@ class Index extends Common
         $params = [];
         if(Request::instance()->isPost())
         {
-            Hook::listen('settings_post',$params);
+            Hook::listen('settings_post',$params,$this->ccc);
         }
-        Hook::listen('settings',$params);
+        Hook::listen('settings',$params,$this->ccc);
         $nofile = false;
         $readme = APP_PATH.'plugins/'.$plugin.'/readme.txt';
         if(!is_file($readme))
@@ -2395,17 +2767,20 @@ class Index extends Common
     }
     private function view($template = '')
     {
-        $domain = Cache::get('domain');
-        if($domain == false)
+        $this->assign('domain', $this->host());
+        $this->assign('fulldomain', $this->domain());
+        $random_verification = $this->getver();
+        $this->assign('verification', md5($random_verification.$this->getUser()));
+        $version = $this->getConfig(Config::get('version'));
+        $ensure = '';
+        $ensure_time = Cache::get('catfish_ensure_time');
+        if($ensure_time == false && $this->actualDomain() && stripos($_SERVER['HTTP_HOST'],$version['official']) === false)
         {
-            $domain = Db::name('options')->where('option_name','domain')->field('option_value')->find();
-            $domain = $domain['option_value'];
-            Cache::set('domain',$domain,3600);
+            $ensure = base64_decode('IGRhdGEtY2F0ZmlzaD0iY2F0ZmlzaCI=');
         }
-        $this->assign('domain', $domain);
-        $version = Config::get('version');
-        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank" id="catfish">'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
+        $this->assign('catfish', '<a href="http://www.'.$version['official'].'/" target="_blank"'.base64_decode('IGlkPSJjYXRmaXNoIg==').$ensure.'>'.$version['name'].'&nbsp;'.$version['number'].'</a>&nbsp;&nbsp;');
         $this->assign('executionTime', Debug::getRangeTime('begin','end',4).'s');
+        $this->veoput($version,$ensure);
         $view = $this->fetch($template);
         return $view;
     }
@@ -2437,6 +2812,16 @@ class Index extends Common
         }
         return $domain;
     }
+    private function root()
+    {
+        $root = '';
+        $dm = Url::build('/');
+        if(strpos($dm,'/index.php') !== false)
+        {
+            $root = 'index.php/';
+        }
+        return $root;
+    }
     private function switchEditor()
     {
         Hook::add('switch_editor',$this->plugins);
@@ -2446,7 +2831,7 @@ class Index extends Common
             'editor' => '',
             'js' => ''
         ];
-        Hook::listen('switch_editor',$editorParams);
+        Hook::listen('switch_editor',$editorParams,$this->ccc);
         if(!empty($editorParams['editor_css']))
         {
             $this->assign('editor_css', $editorParams['editor_css']);
@@ -2471,10 +2856,23 @@ class Index extends Common
             'id' => $id,
             'view' => ''
         ];
-        Hook::listen('write_alias',$aliasParams);
+        Hook::listen('write_alias',$aliasParams,$this->ccc);
         if(!empty($aliasParams['view']))
         {
             $this->assign('write_alias', $aliasParams['view']);
+        }
+    }
+    private function writeAppend($id)
+    {
+        Hook::add('write_append',$this->plugins);
+        $aliasParams = [
+            'id' => $id,
+            'view' => ''
+        ];
+        Hook::listen('write_append',$aliasParams,$this->ccc);
+        if(!empty($aliasParams['view']))
+        {
+            $this->assign('write_append', $aliasParams['view']);
         }
     }
 }

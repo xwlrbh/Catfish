@@ -31,7 +31,12 @@ class Index extends Common
         if(Request::instance()->isPost())
         {
             $xingbie = Request::instance()->post('xingbie');
-            $data = ['user_nicename' => htmlspecialchars(Request::instance()->post('nicheng')), 'user_url' => htmlspecialchars(Request::instance()->post('gerenwangzhi')), 'sex' => intval($xingbie), 'birthday' => htmlspecialchars(Request::instance()->post('shengri')), 'signature' => htmlspecialchars(Request::instance()->post('qianming'))];
+            $birthday = htmlspecialchars(Request::instance()->post('shengri'));
+            if(empty($birthday))
+            {
+                $birthday = null;
+            }
+            $data = ['user_nicename' => htmlspecialchars(Request::instance()->post('nicheng')), 'user_url' => htmlspecialchars(Request::instance()->post('gerenwangzhi')), 'sex' => intval($xingbie), 'birthday' => $birthday, 'signature' => htmlspecialchars(Request::instance()->post('qianming'))];
             Db::name('users')
                 ->where('id', Session::get($this->session_prefix.'user_id'))
                 ->update($data);
@@ -120,14 +125,20 @@ class Index extends Common
                     $yfile = str_replace($yuming['option_value'],'',$avatar['avatar']);
                     if(!empty($yfile)){
                         $yfile = substr($yfile,0,1)=='/' ? substr($yfile,1) : $yfile;
-                        $yfile = str_replace("/", DS, $yfile);
-                        @unlink(APP_PATH . '..'. DS . $yfile);
+                        if($this->cpicpre($yfile))
+                        {
+                            $yfile = str_replace("/", DS, $yfile);
+                            @unlink(APP_PATH . '..'. DS . $yfile);
+                        }
                     }
                 }
                 $data = ['avatar' => Request::instance()->post('avatar')];
-                Db::name('users')
-                    ->where('id', Session::get($this->session_prefix.'user_id'))
-                    ->update($data);
+                if($this->cpicpre($data['avatar']))
+                {
+                    Db::name('users')
+                        ->where('id', Session::get($this->session_prefix.'user_id'))
+                        ->update($data);
+                }
             }
         }
         $this->receive();
@@ -142,7 +153,7 @@ class Index extends Common
             'ext' => 'jpg,png,gif,jpeg'
         ];
         $file->validate($validate);
-        $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads');
+        $info = $file->move(ROOT_PATH . 'data' . DS . 'uploads',true,true,$this->picpre());
         if($info){
             $image = \think\Image::open(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
             $width = $image->width();
@@ -154,7 +165,7 @@ class Index extends Common
             echo $info->getSaveName();
         }
         else{
-            echo $file->getError();
+            echo '';
         }
     }
     public function shoucang()
@@ -198,14 +209,14 @@ class Index extends Common
         if(Request::instance()->isPost())
         {
             $params = [];
-            Hook::listen('user_post_append',$params);
+            Hook::listen('user_post_append',$params,$this->ccc);
         }
         Hook::add('user_view_append',$this->plugins);
         $params = [
             'name' => $name,
             'view' => ''
         ];
-        Hook::listen('user_view_append',$params);
+        Hook::listen('user_view_append',$params,$this->ccc);
         $title = '';
         if(isset($this->params['user_menu_append'][$name]['title']))
         {
@@ -230,18 +241,92 @@ class Index extends Common
         if(Request::instance()->isPost())
         {
             $params = [];
-            Hook::listen('user_post_top',$params);
+            Hook::listen('user_post_top',$params,$this->ccc);
         }
         Hook::add('user_view_top',$this->plugins);
         $params = [
             'name' => $name,
             'view' => ''
         ];
-        Hook::listen('user_view_top',$params);
+        Hook::listen('user_view_top',$params,$this->ccc);
         $title = '';
         if(isset($this->params['user_menu_top'][$name]['title']))
         {
             $title = $this->params['user_menu_top'][$name]['title'];
+        }
+        else if(isset($params['title']))
+        {
+            $title = $params['title'];
+        }
+        $this->assign('menuTitle', $title);
+        $this->assign('data', $params['view']);
+        $this->assign('active', $name);
+        $this->assign('isTop', '1');
+        $view = $this->fetch(APP_PATH.'user/view/index/plugin.html');
+        return $view;
+    }
+    public function plugingp($name)
+    {
+        $this->checkUser();
+        $this->receive();
+        $ng = explode('.',$name);
+        $name = $ng[0];
+        $group = $ng[1];
+        Hook::add('user_post_group_append',$this->plugins);
+        if(Request::instance()->isPost())
+        {
+            $params = [];
+            Hook::listen('user_post_group_append',$params,$this->ccc);
+        }
+        Hook::add('user_view_group_append',$this->plugins);
+        $params = [
+            'name' => $name,
+            'group' => $group,
+            'view' => ''
+        ];
+        Hook::listen('user_view_group_append',$params,$this->ccc);
+
+        $title = '';
+        if(isset($this->params['user_menu_group_append'][$group][$name]['title']))
+        {
+            $title = $this->params['user_menu_group_append'][$group][$name]['title'];
+        }
+        else if(isset($params['title']))
+        {
+            $title = $params['title'];
+        }
+        $this->assign('menuTitle', $title);
+        $this->assign('data', $params['view']);
+        $this->assign('active', $name);
+        $this->assign('isTop', '0');
+        $view = $this->fetch(APP_PATH.'user/view/index/plugin.html');
+        return $view;
+    }
+    public function plugingt($name)
+    {
+        $this->checkUser();
+        $this->receive();
+        $ng = explode('.',$name);
+        $name = $ng[0];
+        $group = $ng[1];
+        Hook::add('user_post_group_top',$this->plugins);
+        if(Request::instance()->isPost())
+        {
+            $params = [];
+            Hook::listen('user_post_group_top',$params,$this->ccc);
+        }
+        Hook::add('user_view_group_top',$this->plugins);
+        $params = [
+            'name' => $name,
+            'group' => $group,
+            'view' => ''
+        ];
+        Hook::listen('user_view_group_top',$params,$this->ccc);
+
+        $title = '';
+        if(isset($this->params['user_menu_group_top'][$group][$name]['title']))
+        {
+            $title = $this->params['user_menu_group_top'][$group][$name]['title'];
         }
         else if(isset($params['title']))
         {

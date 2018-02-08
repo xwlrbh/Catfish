@@ -335,5 +335,19 @@ return [
     'When you need website maintenance, you can use to close the site' => 'При необходимости технического обслуживания веб-сайта, он может быть использован, чтобы закрыть сайт',
     'Whether to close the site map' => 'Независимо от того, чтобы закрыть карту сайта',
     'Close the site map' => 'Закрыть Карта сайта',
-    'The site map is turned on by default, where you can turn off the site map' => 'Карта сайта включена по умолчанию, где вы можете закрыть карту сайта'
+    'The site map is turned on by default, where you can turn off the site map' => 'Карта сайта включена по умолчанию, где вы можете закрыть карту сайта',
+    'My collection' => 'Моя коллекция',
+    'My comments' => 'Мои комментарии',
+    'Collection time' => 'Время сбора',
+    'View original' => 'Просмотреть исходный текст',
+    'Original' => 'оригинал',
+    'Whether to close the message' => 'Закрывать ли сообщение',
+    'Close the message' => 'Закрыть сообщение',
+    'Close message requires subject support' => 'Закрыть сообщение требует поддержки темы',
+    'Whether to close the comment' => 'Закрыть комментарий',
+    'Close the comment' => 'Закрыть комментарий',
+    'After closing the comment, setting a comment when writing an article will be invalidated' => 'После закрытия комментария установка комментария при написании статьи будет признана недействительной',
+    'Whether to close RSS' => 'Закрывать ли RSS',
+    'Close RSS' => 'Закрыть RSS',
+    'The default is to open RSS, where you can turn off RSS' => 'По умолчанию открывается RSS, вы можете закрыть RSS в этом месте'
 ];

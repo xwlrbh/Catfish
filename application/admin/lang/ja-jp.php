@@ -335,5 +335,19 @@ return [
     'When you need website maintenance, you can use to close the site' => 'あなたがウェブサイトのメンテナンスが必要な場合は、サイトをシャットダウンするために使用することができます',
     'Whether to close the site map' => 'サイトマップを閉じるかどうか',
     'Close the site map' => '閉じるサイトマップ',
-    'The site map is turned on by default, where you can turn off the site map' => 'サイトマップは、サイトマップを閉じることができ、デフォルトで有効になっています'
+    'The site map is turned on by default, where you can turn off the site map' => 'サイトマップは、サイトマップを閉じることができ、デフォルトで有効になっています',
+    'My collection' => '私のコレクション',
+    'My comments' => '私のコメント',
+    'Collection time' => '収集時間',
+    'View original' => '元のテキストを表示',
+    'Original' => 'オリジナル',
+    'Whether to close the message' => 'メッセージを閉じるかどうか',
+    'Close the message' => 'メッセージを閉じる',
+    'Close message requires subject support' => 'メッセージを閉じるには件名のサポートが必要です',
+    'Whether to close the comment' => 'コメントを閉じるかどうか',
+    'Close the comment' => 'コメントを閉じる',
+    'After closing the comment, setting a comment when writing an article will be invalidated' => 'コメントを閉じると、記事を書くときにコメントを設定すると無効になります',
+    'Whether to close RSS' => 'RSSを閉じるかどうか',
+    'Close RSS' => '閉じるRSS',
+    'The default is to open RSS, where you can turn off RSS' => 'デフォルトでは、ここからRSSをオフにすることができます'
 ];

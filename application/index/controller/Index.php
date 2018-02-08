@@ -1,7 +1,8 @@
 <?php
 /**
  * Project: Catfish.
- * Author: A.J
+ * Author: A.J <804644245@qq.com>
+ * Copyright: http://www.catfish-cms.com All rights reserved.
  * Date: 2016/9/29
  */
 namespace app\index\controller;
@@ -16,6 +17,8 @@ use think\Validate;
 use think\Hook;
 use think\Lang;
 
+use think\Config;
+
 class Index extends Common
 {
     public function index()
@@ -27,47 +30,57 @@ class Index extends Common
         Hook::add('home_side_top',$this->plugins);
         Hook::add('home_side_mid',$this->plugins);
         Hook::add('home_side_bottom',$this->plugins);
-        Hook::listen('home_top',$this->params);
-        Hook::listen('home_mid',$this->params);
-        Hook::listen('home_bottom',$this->params);
-        Hook::listen('home_extend',$this->params);
-        Hook::listen('home_side_top',$this->params);
-        Hook::listen('home_side_mid',$this->params);
-        Hook::listen('home_side_bottom',$this->params);
+        Hook::listen('home_top',$this->params,$this->ccc);
+        Hook::listen('home_mid',$this->params,$this->ccc);
+        Hook::listen('home_bottom',$this->params,$this->ccc);
+        Hook::listen('home_extend',$this->params,$this->ccc);
+        Hook::listen('home_side_top',$this->params,$this->ccc);
+        Hook::listen('home_side_mid',$this->params,$this->ccc);
+        Hook::listen('home_side_bottom',$this->params,$this->ccc);
         if(isset($this->params['home_top']))
         {
-            $this->assign('home_top', $this->params['home_top']);
+            $this->home_top = $this->params['home_top'];
         }
+        $this->assign('home_top', $this->home_top);
         if(isset($this->params['home_mid']))
         {
-            $this->assign('home_mid', $this->params['home_mid']);
+            $this->home_mid = $this->params['home_mid'];
         }
+        $this->assign('home_mid', $this->home_mid);
         if(isset($this->params['home_bottom']))
         {
-            $this->assign('home_bottom', $this->params['home_bottom']);
+            $this->home_bottom = $this->params['home_bottom'];
         }
+        $this->assign('home_bottom', $this->home_bottom);
         if(isset($this->params['home_extend']))
         {
             $this->assign('home_extend', $this->params['home_extend']);
         }
+        else
+        {
+            $this->assign('home_extend', '');
+        }
         if(isset($this->params['home_side_top']))
         {
-            $this->assign('home_side_top', $this->params['home_side_top']);
+            $this->home_side_top = $this->params['home_side_top'];
         }
+        $this->assign('home_side_top', $this->home_side_top);
         if(isset($this->params['home_side_mid']))
         {
-            $this->assign('home_side_mid', $this->params['home_side_mid']);
+            $this->home_side_mid = $this->params['home_side_mid'];
         }
+        $this->assign('home_side_mid', $this->home_side_mid);
         if(isset($this->params['home_side_bottom']))
         {
-            $this->assign('home_side_bottom', $this->params['home_side_bottom']);
+            $this->home_side_bottom = $this->params['home_side_bottom'];
         }
+        $this->assign('home_side_bottom', $this->home_side_bottom);
         $param = '';
         Hook::add('view_post',$this->plugins);
-        Hook::listen('view_post',$param);
+        Hook::listen('view_post',$param,$this->ccc);
         $param = '';
         Hook::add('home_plugin_name',$this->plugins);
-        Hook::listen('home_plugin_name',$param);
+        Hook::listen('home_plugin_name',$param,$this->ccc);
         if(!empty($param))
         {
             $this->assign('plugin_name', $param);
@@ -80,7 +93,8 @@ class Index extends Common
             Cache::set('links',$data_links,3600);
         }
         $this->assign('links', $data_links);
-        $template = $this->receive('index');
+        $template = $this->checkc($this->receive('index'));
+        $this->unifiedAssignment('home');
         $this->assign('pageUrl', $this->getpage());
         if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/index.html'))
         {
@@ -102,45 +116,45 @@ class Index extends Common
             Hook::add('article_list_side_top',$this->plugins);
             Hook::add('article_list_side_mid',$this->plugins);
             Hook::add('article_list_side_bottom',$this->plugins);
-            Hook::listen('article_list_top',$this->params);
-            Hook::listen('article_list_mid',$this->params);
-            Hook::listen('article_list_bottom',$this->params);
-            Hook::listen('article_list_side_top',$this->params);
-            Hook::listen('article_list_side_mid',$this->params);
-            Hook::listen('article_list_side_bottom',$this->params);
+            Hook::listen('article_list_top',$this->params,$this->ccc);
+            Hook::listen('article_list_mid',$this->params,$this->ccc);
+            Hook::listen('article_list_bottom',$this->params,$this->ccc);
+            Hook::listen('article_list_side_top',$this->params,$this->ccc);
+            Hook::listen('article_list_side_mid',$this->params,$this->ccc);
+            Hook::listen('article_list_side_bottom',$this->params,$this->ccc);
             if(isset($this->params['article_list_top']))
             {
-                $this->assign('article_list_top', $this->params['article_list_top']);
+                $this->article_list_top = $this->params['article_list_top'];
             }
             if(isset($this->params['article_list_mid']))
             {
-                $this->assign('article_list_mid', $this->params['article_list_mid']);
+                $this->article_list_mid = $this->params['article_list_mid'];
             }
             if(isset($this->params['article_list_bottom']))
             {
-                $this->assign('article_list_bottom', $this->params['article_list_bottom']);
+                $this->article_list_bottom = $this->params['article_list_bottom'];
             }
             if(isset($this->params['article_list_side_top']))
             {
-                $this->assign('article_list_side_top', $this->params['article_list_side_top']);
+                $this->article_list_side_top = $this->params['article_list_side_top'];
             }
             if(isset($this->params['article_list_side_mid']))
             {
-                $this->assign('article_list_side_mid', $this->params['article_list_side_mid']);
+                $this->article_list_side_mid = $this->params['article_list_side_mid'];
             }
             if(isset($this->params['article_list_side_bottom']))
             {
-                $this->assign('article_list_side_bottom', $this->params['article_list_side_bottom']);
+                $this->article_list_side_bottom = $this->params['article_list_side_bottom'];
             }
             $param = '';
             Hook::add('view_post',$this->plugins);
-            Hook::listen('view_post',$param);
+            Hook::listen('view_post',$param,$this->ccc);
             $type = '0,2,3,4,5,6,7,8';
             if(Request::instance()->has('type','get'))
             {
                 $tmpType = Request::instance()->get('type');
                 Hook::add('get_type',$this->plugins);
-                Hook::listen('get_type',$tmpType);
+                Hook::listen('get_type',$tmpType,$this->ccc);
                 $type = $tmpType;
             }
             $order = [
@@ -148,7 +162,7 @@ class Index extends Common
                 'way' => 'desc'
             ];
             Hook::add('order_article',$this->plugins);
-            Hook::listen('order_article',$order);
+            Hook::listen('order_article',$order,$this->ccc);
             $page = 1;
             if(Request::instance()->has('page','get'))
             {
@@ -157,8 +171,8 @@ class Index extends Common
             $data = Cache::get('article'.$type.$page);
             if($data == false)
             {
-                $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                    ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                    ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                     ->where('post_status','=',1)
                     ->where('post_type','in',$type)
                     ->where('status','=',1)
@@ -184,14 +198,16 @@ class Index extends Common
             $data['page'] = $page;
             $data['pluginName'] = $pluginName;
             Hook::add('filter_articleList',$this->plugins);
-            Hook::listen('filter_articleList',$data);
+            Hook::listen('filter_articleList',$data,$this->ccc);
             unset($data['lang']);
             unset($data['page']);
             unset($data['pluginName']);
             $this->assign('fenlei', $data);
             $this->assign('pages', $pages);
+            $this->links();
+            $template = $this->checkc($this->receive());
             $this->assign('daohang1', Lang::get('Article list'));
-            $template = $this->receive();
+            $this->unifiedAssignment();
             $this->assign('pageUrl', $this->getpage());
             $param = [
                 'type' => '',
@@ -201,10 +217,10 @@ class Index extends Common
             {
                 $tmpType = Request::instance()->get('type');
                 Hook::add('get_type',$this->plugins);
-                Hook::listen('get_type',$tmpType);
+                Hook::listen('get_type',$tmpType,$this->ccc);
                 $param['type'] = $tmpType;
                 Hook::add('category_template',$this->plugins);
-                Hook::listen('category_template',$param);
+                Hook::listen('category_template',$param,$this->ccc);
             }
             if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/category'.$param['template'].'.html'))
             {
@@ -221,14 +237,14 @@ class Index extends Common
             if(!is_int($id))
             {
                 Hook::add('alias_article',$this->plugins);
-                Hook::listen('alias_article',$id);
+                Hook::listen('alias_article',$id,$this->ccc);
             }
             Db::name('posts')
                 ->where('id', $id)
                 ->setInc('post_hits');
             $noArticle = false;
-            $data = Db::view('posts','id,post_keywords as guanjianzi,post_source as laiyuan,post_content as zhengwen,post_title as biaoti,post_excerpt as zhaiyao,comment_status,post_modified as fabushijian,post_type,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+            $data = Db::view('posts','id,post_keywords as guanjianzi,post_source as laiyuan,post_content as zhengwen,post_title as biaoti,post_excerpt as zhaiyao,comment_status,post_modified as fabushijian,post_type,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                 ->where('posts.id',$id)
                 ->where('status','=',1)
                 ->find();
@@ -236,6 +252,7 @@ class Index extends Common
                 'type' => '',
                 'pluginName' => ''
             ];
+            $title_easy = '';
             if(!empty($data))
             {
                 if(isset($this->options_spare['timeFormat']) && !empty($this->options_spare['timeFormat']) && isset($data['fabushijian']))
@@ -244,7 +261,7 @@ class Index extends Common
                 }
                 $param['type'] = $data['post_type'];
                 Hook::add('plugin_name',$this->plugins);
-                Hook::listen('plugin_name',$param);
+                Hook::listen('plugin_name',$param,$this->ccc);
                 if((!isset($this->options_spare['datu']) || $this->options_spare['datu'] != 1) && isset($data['suolvetu']) && !empty($data['suolvetu']))
                 {
                     $tuArr = explode('/',$data['suolvetu']);
@@ -319,10 +336,11 @@ class Index extends Common
                     unset($fenyeArr[0]);
                     $data['fenye'] = $fenyeArr;
                 }
+                $data['guanjianzu'] = $this->getgjz($data['guanjianzi']);
                 $data['lang'] = $this->lang;
                 $data['pluginName'] = $param['pluginName'];
                 Hook::add('filter_article',$this->plugins);
-                Hook::listen('filter_article',$data);
+                Hook::listen('filter_article',$data,$this->ccc);
                 unset($data['pluginName']);
                 unset($data['lang']);
                 Hook::add('read',$this->plugins);
@@ -330,10 +348,15 @@ class Index extends Common
                     'title' => $data['biaoti'],
                     'content' => $data['zhengwen']
                 ];
-                Hook::listen('read',$params);
+                Hook::listen('read',$params,$this->ccc);
                 $data['biaoti'] = $params['title'];
                 $data['zhengwen'] = $params['content'];
+                if(Request::instance()->isMobile())
+                {
+                    $this->changeOutput($data['zhengwen']);
+                }
                 $this->assign('neirong', $data);
+                $title_easy = $data['biaoti'].' | ';
             }
             else
             {
@@ -366,80 +389,106 @@ class Index extends Common
                 'title' => $data['biaoti'],
                 'post_type' =>$post_type
             ];
-            Hook::listen('article_top',$this->params);
-            Hook::listen('article_mid',$this->params);
-            Hook::listen('article_bottom',$this->params);
-            Hook::listen('article_extend',$this->params);
-            Hook::listen('article_side_top',$this->params);
-            Hook::listen('article_side_mid',$this->params);
-            Hook::listen('article_side_bottom',$this->params);
-            Hook::listen('comment_top',$this->params);
-            Hook::listen('comment_mid',$this->params);
-            Hook::listen('comment_bottom',$this->params);
+            Hook::listen('article_top',$this->params,$this->ccc);
+            Hook::listen('article_mid',$this->params,$this->ccc);
+            Hook::listen('article_bottom',$this->params,$this->ccc);
+            Hook::listen('article_extend',$this->params,$this->ccc);
+            Hook::listen('article_side_top',$this->params,$this->ccc);
+            Hook::listen('article_side_mid',$this->params,$this->ccc);
+            Hook::listen('article_side_bottom',$this->params,$this->ccc);
+            Hook::listen('comment_top',$this->params,$this->ccc);
+            Hook::listen('comment_mid',$this->params,$this->ccc);
+            Hook::listen('comment_bottom',$this->params,$this->ccc);
             if(isset($this->params['article_top']))
             {
-                $this->assign('article_top', $this->params['article_top']);
+                $this->article_top = $this->params['article_top'];
             }
+            $this->assign('article_top', $this->article_top);
             if(isset($this->params['article_mid']))
             {
-                $this->assign('article_mid', $this->params['article_mid']);
+                $this->article_mid = $this->params['article_mid'];
             }
+            $this->assign('article_mid', $this->article_mid);
             if(isset($this->params['article_bottom']))
             {
-                $this->assign('article_bottom', $this->params['article_bottom']);
+                $this->article_bottom = $this->params['article_bottom'];
             }
+            $this->assign('article_bottom', $this->article_bottom);
             if(isset($this->params['article_extend']))
             {
                 $this->assign('article_extend', $this->params['article_extend']);
             }
+            else
+            {
+                $this->assign('article_extend', '');
+            }
             if(isset($this->params['article_side_top']))
             {
-                $this->assign('article_side_top', $this->params['article_side_top']);
+                $this->article_side_top = $this->params['article_side_top'];
             }
+            $this->assign('article_side_top', $this->article_side_top);
             if(isset($this->params['article_side_mid']))
             {
-                $this->assign('article_side_mid', $this->params['article_side_mid']);
+                $this->article_side_mid = $this->params['article_side_mid'];
             }
+            $this->assign('article_side_mid', $this->article_side_mid);
             if(isset($this->params['article_side_bottom']))
             {
-                $this->assign('article_side_bottom', $this->params['article_side_bottom']);
+                $this->article_side_bottom = $this->params['article_side_bottom'];
             }
+            $this->assign('article_side_bottom', $this->article_side_bottom);
             if(isset($this->params['comment_top']))
             {
                 $this->assign('comment_top', $this->params['comment_top']);
+            }
+            else
+            {
+                $this->assign('comment_top', '');
             }
             if(isset($this->params['comment_mid']))
             {
                 $this->assign('comment_mid', $this->params['comment_mid']);
             }
+            else
+            {
+                $this->assign('comment_mid', '');
+            }
             if(isset($this->params['comment_bottom']))
             {
                 $this->assign('comment_bottom', $this->params['comment_bottom']);
             }
+            else
+            {
+                $this->assign('comment_bottom', '');
+            }
             $param = '';
             Hook::add('view_post',$this->plugins);
-            Hook::listen('view_post',$param);
-            $previous = Db::name('posts')->where('id','<',$id)->where('post_type',$post_type)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_title as biaoti')->order('id desc')->find();
+            Hook::listen('view_post',$param,$this->ccc);
+            if($post_type == 0 || $post_type == 8)
+            {
+                $post_type = '0,8';
+            }
+            $previous = Db::name('posts')->where('id','<',$id)->where('post_status','=',1)->where('status','=',1)->where('post_type','in',$post_type)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_title as biaoti')->order('id desc')->find();
             if(!empty($previous))
             {
                 $previous['href'] = Url::build('/article/'.$previous['id']);
                 Hook::add('url_article_previous',$this->plugins);
-                Hook::listen('url_article_previous',$previous['href']);
+                Hook::listen('url_article_previous',$previous['href'],$this->ccc);
                 $previous['lang'] = $this->lang;
                 Hook::add('filter_prevArticle',$this->plugins);
-                Hook::listen('filter_prevArticle',$previous);
+                Hook::listen('filter_prevArticle',$previous,$this->ccc);
                 unset($previous['lang']);
             }
             $this->assign('previous', $previous);
-            $next = Db::name('posts')->where('id','>',$id)->where('post_type',$post_type)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_title as biaoti')->order('id')->find();
+            $next = Db::name('posts')->where('id','>',$id)->where('post_status','=',1)->where('status','=',1)->where('post_type','in',$post_type)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_title as biaoti')->order('id')->find();
             if(!empty($next))
             {
                 $next['href'] = Url::build('/article/'.$next['id']);
                 Hook::add('url_article_next',$this->plugins);
-                Hook::listen('url_article_next',$next['href']);
+                Hook::listen('url_article_next',$next['href'],$this->ccc);
                 $next['lang'] = $this->lang;
                 Hook::add('filter_nextArticle',$this->plugins);
-                Hook::listen('filter_nextArticle',$next);
+                Hook::listen('filter_nextArticle',$next,$this->ccc);
                 unset($next['lang']);
             }
             $this->assign('next', $next);
@@ -456,13 +505,23 @@ class Index extends Common
                 $this->assign('pinglun', $pinglun['data']);
                 $this->assign('pages', $pages);
             }
+            $closeComment = 0;
+            if(isset($this->options_spare['closeComment']) && $this->options_spare['closeComment'] == 1)
+            {
+                $closeComment = 1;
+            }
+            Hook::add('close_comment',$this->plugins);
+            Hook::listen('close_comment',$closeComment,$this->ccc);
+            $this->assign('closeComment', $closeComment);
             $yunxupinglun = 0;
             if(isset($data['comment_status']) && $data['comment_status'] == 1 && $this->notAllowLogin != 1)
             {
                 $yunxupinglun = 1;
             }
             $this->assign('yunxupinglun', $yunxupinglun);
-            $template = $this->receive();
+            $template = $this->checkc($this->receive());
+            $this->assign('title_easy', $title_easy);
+            $this->unifiedAssignment('article');
             $guanjianzi = '';
             if(isset($data['guanjianzi']))
             {
@@ -475,6 +534,31 @@ class Index extends Common
                 $zhaiyao = $data['zhaiyao'];
             }
             $this->assign('description', $zhaiyao);
+            $this->links();
+            $qurl = '';
+            if(isset($_SERVER['HTTP_REFERER']))
+            {
+                $qurl = $_SERVER['HTTP_REFERER'];
+            }
+            if(stripos($qurl, '/category/') !== false)
+            {
+                $parseUrl = parse_url($qurl);
+                $udarr = explode('/',$parseUrl['path']);
+                $ud = end($udarr);
+                $udarr = explode('.',$ud);
+                array_pop($udarr);
+                $hz = 0;
+                if(isset($udarr[1]))
+                {
+                    $hz = $udarr[1];
+                }
+                if(!is_int($udarr[0]))
+                {
+                    Hook::add('alias_category',$this->plugins);
+                    Hook::listen('alias_category',$udarr[0],$this->ccc);
+                }
+                $this->menuPath($udarr[0],'category',$hz);
+            }
             $this->assign('pageUrl', $this->getpage());
             $templateFile = 'article';
             $param = [
@@ -485,7 +569,7 @@ class Index extends Common
             {
                 $param['type'] = $data['post_type'];
                 Hook::add('article_template',$this->plugins);
-                Hook::listen('article_template',$param);
+                Hook::listen('article_template',$param,$this->ccc);
                 switch($data['post_type'])
                 {
                     case 2:
@@ -567,7 +651,7 @@ class Index extends Common
                 ]);
             $param = '';
             Hook::add('comment_post',$this->plugins);
-            Hook::listen('comment_post',$param);
+            Hook::listen('comment_post',$param,$this->ccc);
         }
     }
     public function zan()
@@ -603,48 +687,54 @@ class Index extends Common
         Hook::add('category_side_top',$this->plugins);
         Hook::add('category_side_mid',$this->plugins);
         Hook::add('category_side_bottom',$this->plugins);
-        Hook::listen('category_top',$this->params);
-        Hook::listen('category_mid',$this->params);
-        Hook::listen('category_bottom',$this->params);
-        Hook::listen('category_side_top',$this->params);
-        Hook::listen('category_side_mid',$this->params);
-        Hook::listen('category_side_bottom',$this->params);
+        Hook::listen('category_top',$this->params,$this->ccc);
+        Hook::listen('category_mid',$this->params,$this->ccc);
+        Hook::listen('category_bottom',$this->params,$this->ccc);
+        Hook::listen('category_side_top',$this->params,$this->ccc);
+        Hook::listen('category_side_mid',$this->params,$this->ccc);
+        Hook::listen('category_side_bottom',$this->params,$this->ccc);
         if(isset($this->params['category_top']))
         {
-            $this->assign('category_top', $this->params['category_top']);
+            $this->category_top = $this->params['category_top'];
         }
         if(isset($this->params['category_mid']))
         {
-            $this->assign('category_mid', $this->params['category_mid']);
+            $this->category_mid = $this->params['category_mid'];
         }
         if(isset($this->params['category_bottom']))
         {
-            $this->assign('category_bottom', $this->params['category_bottom']);
+            $this->category_bottom = $this->params['category_bottom'];
         }
         if(isset($this->params['category_side_top']))
         {
-            $this->assign('category_side_top', $this->params['category_side_top']);
+            $this->category_side_top = $this->params['category_side_top'];
         }
         if(isset($this->params['category_side_mid']))
         {
-            $this->assign('category_side_mid', $this->params['category_side_mid']);
+            $this->category_side_mid = $this->params['category_side_mid'];
         }
         if(isset($this->params['category_side_bottom']))
         {
-            $this->assign('category_side_bottom', $this->params['category_side_bottom']);
+            $this->category_side_bottom = $this->params['category_side_bottom'];
         }
         $param = '';
         Hook::add('view_post',$this->plugins);
-        Hook::listen('view_post',$param);
+        Hook::listen('view_post',$param,$this->ccc);
+        $hz = 0;
+        if(preg_match('/^(\S+)\.(\d+)$/i', $id, $matches))
+        {
+            $id = $matches[1];
+            $hz = $matches[2];
+        }
         if(!is_int($id))
         {
             Hook::add('alias_category',$this->plugins);
-            Hook::listen('alias_category',$id);
+            Hook::listen('alias_category',$id,$this->ccc);
         }
         $fenleiming = Db::name('terms')->where('id',$id)->field('id,term_name')->find();
         $fenleiming['lang'] = $this->lang;
         Hook::add('filter_categoryName',$this->plugins);
-        Hook::listen('filter_categoryName',$fenleiming);
+        Hook::listen('filter_categoryName',$fenleiming,$this->ccc);
         unset($fenleiming['lang']);
         $type = '';
         $categoryType = Cache::get('category_type'.$id);
@@ -664,7 +754,7 @@ class Index extends Common
             $type = ','.$categoryType;
             $param['type'] = $categoryType;
             Hook::add('plugin_name',$this->plugins);
-            Hook::listen('plugin_name',$param);
+            Hook::listen('plugin_name',$param,$this->ccc);
         }
         $this->assign('plugin_name', $param['pluginName']);
         $order = [
@@ -672,13 +762,8 @@ class Index extends Common
             'way' => 'desc'
         ];
         Hook::add('order_category',$this->plugins);
-        Hook::listen('order_category',$order);
-        $flm = '';
-        if(isset($fenleiming['term_name']))
-        {
-            $flm = $fenleiming['term_name'];
-        }
-        $this->assign('daohang1', $flm);
+        Hook::listen('order_category',$order,$this->ccc);
+        $this->menuPath($id,'category',$hz);
         $page = 1;
         if(Request::instance()->has('page','get'))
         {
@@ -702,26 +787,74 @@ class Index extends Common
         $pages = $data->render();
         $pageArr = $data->toArray();
         $data = $this->addLargerPicture($this->addArticleHref($pageArr['data']));
+        unset($pageArr['data']);
         $data['lang'] = $this->lang;
         $data['page'] = $page;
         $data['id'] = $id;
         $data['pluginName'] = $param['pluginName'];
         Hook::add('filter_category',$this->plugins);
-        Hook::listen('filter_category',$data);
+        Hook::listen('filter_category',$data,$this->ccc);
         unset($data['lang']);
         unset($data['page']);
         unset($data['id']);
         unset($data['pluginName']);
         $this->assign('fenlei', $data);
         $this->assign('pages', $pages);
-        $template = $this->receive();
+        $this->assign('paging', $pageArr);
+        $this->links();
+        $subclass = Cache::get('category_subclass'.$id);
+        if($subclass == false)
+        {
+            $subclass = [];
+            $zcaidan = Db::name('nav_cat')->where('active',1)->field('navcid')->find();
+            if(!empty($zcaidan))
+            {
+                if($hz == 0)
+                {
+                    $dcaidan = Db::name('nav')->where('cid',$zcaidan['navcid'])->where('href','/index/Index/category/id/'.$id)->where('parent_id',0)->where('status',1)->field('id')->find();
+                    $hz = $dcaidan['id'];
+                }
+                $subclass = Db::name('nav')->where('parent_id',$hz)->where('status',1)->where('href','like','%category%')->field('label,target,href,icon')->order('listorder asc')->select();
+                if(!empty($subclass))
+                {
+                    foreach($subclass as $key => $val)
+                    {
+                        $subclass[$key]['href'] = Url::build(str_replace(['/index/Index','/id'],'',$val['href']));
+                        $tmp = explode('/',rtrim($val['href'],'/'));
+                        $zid = end($tmp);
+                        $cdata = Db::view('term_relationships','term_id')
+                            ->view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,post_type as type,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan','posts.id=term_relationships.object_id')
+                            ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+                            ->where('term_id','=',$zid)
+                            ->where('post_status','=',1)
+                            ->where('post_type','in','0,2,3,4,5,6,7,8'.$type)
+                            ->where('status','=',1)
+                            ->where('post_date','<= time',date('Y-m-d H:i:s'))
+                            ->order('istop desc,'.$order['name'].' '.$order['way'])
+                            ->limit($this->everyPageShows)
+                            ->select();
+                        $subclass[$key]['list'] = $this->addArticleHref($cdata);
+                    }
+                }
+            }
+            Cache::set('category_subclass'.$id,$subclass,3600);
+        }
+        $this->assign('zilei', $subclass);
+        $template = $this->checkc($this->receive());
+        $flm = '';
+        if(isset($fenleiming['term_name']))
+        {
+            $flm = $fenleiming['term_name'];
+        }
+        $this->assign('daohang1', $flm);
+        $this->unifiedAssignment();
         $this->assign('pageUrl', $this->getpage());
         $param = [
             'type' => $categoryType,
             'template' => ''
         ];
         Hook::add('category_template',$this->plugins);
-        Hook::listen('category_template',$param);
+        Hook::listen('category_template',$param,$this->ccc);
         if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/category'.$param['template'].'.html'))
         {
             $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/mobile/category'.$param['template'].'.html');
@@ -734,10 +867,16 @@ class Index extends Common
     }
     public function page($id)
     {
+        $hz = 0;
+        if(preg_match('/^(\S+)\.(\d+)$/i', $id, $matches))
+        {
+            $id = $matches[1];
+            $hz = $matches[2];
+        }
         if(!is_int($id))
         {
             Hook::add('alias_page',$this->plugins);
-            Hook::listen('alias_page',$id);
+            Hook::listen('alias_page',$id,$this->ccc);
         }
         $data = Db::name('posts')
             ->where('id',$id)
@@ -745,7 +884,7 @@ class Index extends Common
             ->find();
         $data['lang'] = $this->lang;
         Hook::add('filter_page',$this->plugins);
-        Hook::listen('filter_page',$data);
+        Hook::listen('filter_page',$data,$this->ccc);
         unset($data['lang']);
         $this->assign('page', $data);
         $this->slide();
@@ -760,45 +899,58 @@ class Index extends Common
             'id' => $data['id'],
             'template' => $data['template']
         ];
-        Hook::listen('page_top',$this->params);
-        Hook::listen('page_mid',$this->params);
-        Hook::listen('page_bottom',$this->params);
-        Hook::listen('page_extend',$this->params);
-        Hook::listen('page_side_top',$this->params);
-        Hook::listen('page_side_mid',$this->params);
-        Hook::listen('page_side_bottom',$this->params);
+        Hook::listen('page_top',$this->params,$this->ccc);
+        Hook::listen('page_mid',$this->params,$this->ccc);
+        Hook::listen('page_bottom',$this->params,$this->ccc);
+        Hook::listen('page_extend',$this->params,$this->ccc);
+        Hook::listen('page_side_top',$this->params,$this->ccc);
+        Hook::listen('page_side_mid',$this->params,$this->ccc);
+        Hook::listen('page_side_bottom',$this->params,$this->ccc);
         if(isset($this->params['page_top']))
         {
-            $this->assign('page_top', $this->params['page_top']);
+            $this->page_top = $this->params['page_top'];
         }
+        $this->assign('page_top', $this->page_top);
         if(isset($this->params['page_mid']))
         {
-            $this->assign('page_mid', $this->params['page_mid']);
+            $this->page_mid = $this->params['page_mid'];
         }
+        $this->assign('page_mid', $this->page_mid);
         if(isset($this->params['page_bottom']))
         {
-            $this->assign('page_bottom', $this->params['page_bottom']);
+            $this->page_bottom = $this->params['page_bottom'];
         }
+        $this->assign('page_bottom', $this->page_bottom);
         if(isset($this->params['page_extend']))
         {
             $this->assign('page_extend', $this->params['page_extend']);
         }
+        else
+        {
+            $this->assign('page_extend', '');
+        }
         if(isset($this->params['page_side_top']))
         {
-            $this->assign('page_side_top', $this->params['page_side_top']);
+            $this->page_side_top = $this->params['page_side_top'];
         }
+        $this->assign('page_side_top', $this->page_side_top);
         if(isset($this->params['page_side_mid']))
         {
-            $this->assign('page_side_mid', $this->params['page_side_mid']);
+            $this->page_side_mid = $this->params['page_side_mid'];
         }
+        $this->assign('page_side_mid', $this->page_side_mid);
         if(isset($this->params['page_side_bottom']))
         {
-            $this->assign('page_side_bottom', $this->params['page_side_bottom']);
+            $this->page_side_bottom = $this->params['page_side_bottom'];
         }
+        $this->assign('page_side_bottom', $this->page_side_bottom);
         $param = '';
         Hook::add('view_post',$this->plugins);
-        Hook::listen('view_post',$param);
-        $template = $this->receive('page');
+        Hook::listen('view_post',$param,$this->ccc);
+        $this->links();
+        $this->menuPath($id,'page',$hz);
+        $template = $this->checkc($this->receive('page'));
+        $this->unifiedAssignment('page');
         $this->assign('keyword', $data['guanjianzi']);
         $this->assign('description', $data['zhaiyao']);
         $this->assign('pageUrl', $this->getpage());
@@ -814,6 +966,15 @@ class Index extends Common
     }
     public function search($word='')
     {
+        $findWord = '';
+        if($word != '')
+        {
+            $findWord = urldecode(trim($word));
+        }
+        elseif(Request::instance()->has('keyword','get'))
+        {
+            $findWord = urldecode(trim(Request::instance()->get('keyword')));
+        }
         Hook::add('search_top',$this->plugins);
         Hook::add('search_mid',$this->plugins);
         Hook::add('search_bottom',$this->plugins);
@@ -821,51 +982,64 @@ class Index extends Common
         Hook::add('search_side_mid',$this->plugins);
         Hook::add('search_side_bottom',$this->plugins);
         $this->params = [
-            'keyword' => Request::instance()->get('keyword')
+            'keyword' => $findWord
         ];
-        Hook::listen('search_top',$this->params);
-        Hook::listen('search_mid',$this->params);
-        Hook::listen('search_bottom',$this->params);
-        Hook::listen('search_side_top',$this->params);
-        Hook::listen('search_side_mid',$this->params);
-        Hook::listen('search_side_bottom',$this->params);
+        Hook::listen('search_top',$this->params,$this->ccc);
+        Hook::listen('search_mid',$this->params,$this->ccc);
+        Hook::listen('search_bottom',$this->params,$this->ccc);
+        Hook::listen('search_side_top',$this->params,$this->ccc);
+        Hook::listen('search_side_mid',$this->params,$this->ccc);
+        Hook::listen('search_side_bottom',$this->params,$this->ccc);
         if(isset($this->params['search_top']))
         {
-            $this->assign('search_top', $this->params['search_top']);
+            $this->search_top = $this->params['search_top'];
         }
         if(isset($this->params['search_mid']))
         {
-            $this->assign('search_mid', $this->params['search_mid']);
+            $this->search_mid = $this->params['search_mid'];
         }
         if(isset($this->params['search_bottom']))
         {
-            $this->assign('search_bottom', $this->params['search_bottom']);
+            $this->search_bottom = $this->params['search_bottom'];
         }
         if(isset($this->params['search_side_top']))
         {
-            $this->assign('search_side_top', $this->params['search_side_top']);
+            $this->search_side_top = $this->params['search_side_top'];
         }
         if(isset($this->params['search_side_mid']))
         {
-            $this->assign('search_side_mid', $this->params['search_side_mid']);
+            $this->search_side_mid = $this->params['search_side_mid'];
         }
         if(isset($this->params['search_side_bottom']))
         {
-            $this->assign('search_side_bottom', $this->params['search_side_bottom']);
+            $this->search_side_bottom = $this->params['search_side_bottom'];
         }
         $param = '';
         Hook::add('view_post',$this->plugins);
-        Hook::listen('view_post',$param);
+        Hook::listen('view_post',$param,$this->ccc);
         $type = '0,2,3,4,5,6,7,8';
         if(Request::instance()->has('type','get'))
         {
             $tmpType = Request::instance()->get('type');
             Hook::add('get_type',$this->plugins);
-            Hook::listen('get_type',$tmpType);
+            Hook::listen('get_type',$tmpType,$this->ccc);
             $type = $tmpType;
         }
+        if($word != '')
+        {
+            $queryStr = [
+                'type' => $type
+            ];
+        }
+        else
+        {
+            $queryStr = [
+                'keyword' => urlencode($findWord),
+                'type' => $type
+            ];
+        }
         $isDate = false;
-        $search_key = trim(Request::instance()->get('keyword'));
+        $search_key = $findWord;
         if(substr($search_key,0,4) == 'date')
         {
             $search_key = substr($search_key,4);
@@ -877,18 +1051,18 @@ class Index extends Common
         }
         $search = [
             'lang' => $this->lang,
-            'key' => Request::instance()->get('keyword'),
+            'key' => $findWord,
             'ids' => '',
             'isDate' => $isDate
         ];
         Hook::add('search',$this->plugins);
-        Hook::listen('search',$search);
+        Hook::listen('search',$search,$this->ccc);
         $order = [
             'name' => 'post_modified',
             'way' => 'desc'
         ];
         Hook::add('order_search',$this->plugins);
-        Hook::listen('order_search',$order);
+        Hook::listen('order_search',$order,$this->ccc);
         if($isDate == true)
         {
             $search_key_start = $search_key;
@@ -900,8 +1074,8 @@ class Index extends Common
             }
             $search_key_start .= ' 00:00:00';
             $search_key_end .= ' 23:59:59';
-            $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+            $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                 ->where('post_status','=',1)
                 ->where('post_type','in',$type)
                 ->where('status','=',1)
@@ -909,28 +1083,22 @@ class Index extends Common
                 ->where('post_modified', 'between time', [$search_key_start, $search_key_end])
                 ->order($order['name'].' '.$order['way'])
                 ->paginate($this->everyPageShows,false,[
-                    'query' => [
-                        'keyword' => Request::instance()->get('keyword'),
-                        'type' => $type
-                    ]
+                    'query' => $queryStr
                 ]);
         }
         else
         {
-            $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
-                ->view('users','user_login,user_nicename as nicheng','users.id=posts.post_author')
+            $data = Db::view('posts','id,post_keywords as guanjianzi,post_title as biaoti,post_excerpt as zhaiyao,post_modified as fabushijian,comment_count as pinglunshu,thumbnail as suolvetu,post_hits as yuedu,post_like as zan')
+                ->view('users','user_login as yonghu,user_nicename as nicheng,avatar as touxiang,sex as xingbie','users.id=posts.post_author')
                 ->where('post_status','=',1)
                 ->where('post_type','in',$type)
                 ->where('status','=',1)
                 ->where('post_date','<= time',date('Y-m-d H:i:s'))
-                ->where('post_keywords|post_title|post_excerpt','like','%'.Request::instance()->get('keyword').'%')
+                ->where('post_keywords|post_title|post_excerpt','like','%'.$findWord.'%')
                 ->whereOr('id','in',$search['ids'])
                 ->order($order['name'].' '.$order['way'])
                 ->paginate($this->everyPageShows,false,[
-                    'query' => [
-                        'keyword' => Request::instance()->get('keyword'),
-                        'type' => $type
-                    ]
+                    'query' => $queryStr
                 ]);
         }
         $pages = $data->render();
@@ -940,6 +1108,7 @@ class Index extends Common
         {
             $this->assign('sousuo', Lang::get('No search found'));
         }
+        unset($pageArr['data']);
         $pluginName = '';
         if(Request::instance()->has('type','get'))
         {
@@ -949,13 +1118,16 @@ class Index extends Common
         $data['lang'] = $this->lang;
         $data['pluginName'] = $pluginName;
         Hook::add('filter_search',$this->plugins);
-        Hook::listen('filter_search',$data);
+        Hook::listen('filter_search',$data,$this->ccc);
         unset($data['lang']);
         unset($data['pluginName']);
         $this->assign('fenlei', $data);
         $this->assign('pages', $pages);
+        $this->assign('paging', $pageArr);
+        $this->links();
+        $template = $this->checkc($this->receive());
         $this->assign('daohang1', Lang::get('Search'));
-        $template = $this->receive();
+        $this->unifiedAssignment();
         $this->assign('pageUrl', $this->getpage());
         $param = [
             'type' => '',
@@ -965,10 +1137,10 @@ class Index extends Common
         {
             $tmpType = Request::instance()->get('type');
             Hook::add('get_type',$this->plugins);
-            Hook::listen('get_type',$tmpType);
+            Hook::listen('get_type',$tmpType,$this->ccc);
             $param['type'] = $tmpType;
             Hook::add('category_template',$this->plugins);
-            Hook::listen('category_template',$param);
+            Hook::listen('category_template',$param,$this->ccc);
         }
         if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/category'.$param['template'].'.html'))
         {
@@ -1012,19 +1184,77 @@ class Index extends Common
     }
     private function getpage()
     {
-        if($_SERVER['PHP_SELF'] == '/index.php')
+        if($_SERVER['REQUEST_URI'] == '/index.php')
         {
             $phpSelf = Url::build('/index');
             Hook::add('url_menu',$this->plugins);
-            Hook::listen('url_menu',$phpSelf);
+            Hook::listen('url_menu',$phpSelf,$this->ccc);
             return $phpSelf;
         }
         else
         {
-            $phpSelf = str_replace('/index.php','',$_SERVER['PHP_SELF']);
+            $phpSelf = str_replace('/index.php','',$_SERVER['REQUEST_URI']);
             Hook::add('url_menu',$this->plugins);
-            Hook::listen('url_menu',$phpSelf);
+            Hook::listen('url_menu',$phpSelf,$this->ccc);
             return $phpSelf;
+        }
+    }
+    public function cpage($name)
+    {
+        $cpage = [
+            'name' => $name,
+            'keyword' => '',
+            'description' => '',
+            'path' => '',
+            'view' => ''
+        ];
+        Hook::add('custom_page',$this->plugins);
+        Hook::listen('custom_page',$cpage,$this->ccc);
+        if(empty($cpage['path']) && empty($cpage['view']))
+        {
+            $this->redirect(Url::build('/error'));
+            exit;
+        }
+        else
+        {
+            $this->links();
+            $template = $this->checkc($this->receive('cpage'));
+            $this->assign('daohang', $this->pnavigation[$name]);
+            $this->assign('keyword', $cpage['keyword']);
+            $this->assign('description', $cpage['description']);
+            $this->assign('pageUrl', $this->getpage());
+            if(!empty($cpage['view']))
+            {
+                if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/header.html'))
+                {
+                    $this->assign('header', 'public/'.$template.'/mobile/header.html');
+                }
+                else
+                {
+                    $this->assign('header', 'public/'.$template.'/header.html');
+                }
+                if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/footer.html'))
+                {
+                    $this->assign('footer', 'public/'.$template.'/mobile/footer.html');
+                }
+                else
+                {
+                    $this->assign('footer', 'public/'.$template.'/footer.html');
+                }
+                $this->assign('cpage', $cpage['view']);
+                $view = $this->fetch();
+                return $view;
+            }
+            elseif(!empty($cpage['path']))
+            {
+                $path = str_replace('\\','/',$cpage['path']);
+                if(substr($path,0,1) == '/')
+                {
+                    $path = ltrim($path,'/');
+                }
+                $htmls = $this->fetch(APP_PATH.'plugins/'.$path);
+                return $htmls;
+            }
         }
     }
     public function sitemap()
@@ -1047,7 +1277,7 @@ class Index extends Common
             $root = 'index.php/';
         }
         $domain = rtrim(trim($domain . $root),'/');
-        $sm = Db::name('posts')->where('post_status','=',1)->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')->where('status','=',1)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_modified')->order('post_modified desc')->limit(50000)->select();
+        $sm = Db::name('posts')->where('post_status','=',1)->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')->where('status','=',1)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_title,post_modified')->order('post_modified desc')->limit(45000)->select();
         if(!empty($sm))
         {
             foreach($sm as $key => $val)
@@ -1057,9 +1287,32 @@ class Index extends Common
             }
         }
         Hook::add('filter_sitemap',$this->plugins);
-        Hook::listen('filter_sitemap',$sm);
+        Hook::listen('filter_sitemap',$sm,$this->ccc);
+        $menu = $this->getmenu();
         $str = '<?xml version="1.0" encoding="UTF-8"?>';
         $str .= '<urlset>';
+        $smItem = [];
+        foreach($menu as $mkey => $mval)
+        {
+            $ikey = str_replace('menu','item',$mkey);
+            $tmpArr = $this->getMenuItem($mval);
+            foreach($tmpArr as $key => $val)
+            {
+                $str .= '<url>';
+                $str .= '<loc>' . $domain . $val['href'] . '</loc>';
+                $str .= '<lastmod>' . date('Y-m-d',time()) . '</lastmod>';
+                $str .= '<changefreq>daily</changefreq>';
+                $str .= '<priority>1.0</priority>';
+                $str .= '</url>';
+                $smItem[$ikey][] = [
+                    'biaoti' => $val['biaoti'],
+                    'href' => $domain . $val['href']
+                ];
+            }
+        }
+        $smItem['changdu'] = count($smItem);
+        $this->assign('smItem', $smItem);
+        $smArticle = [];
         foreach($sm as $key => $val)
         {
             $str .= '<url>';
@@ -1068,11 +1321,30 @@ class Index extends Common
             $str .= '<changefreq>daily</changefreq>';
             $str .= '<priority>1.0</priority>';
             $str .= '</url>';
+            $smArticle[] = [
+                'biaoti' => $val['post_title'],
+                'href' => $domain . $val['href']
+            ];
         }
+        $smArticle['changdu'] = count($smArticle);
+        $this->assign('smArticle', $smArticle);
         $str .= '</urlset>';
         file_put_contents(APP_PATH . '../sitemap.xml',$str);
-        header("Content-type: text/xml");
-        echo $str;
+        Lang::load(APP_PATH . '../public/common/html/sitemap/lang/'.$this->lang.'.php');
+        $template = $this->checkc($this->receive());
+        if(Request::instance()->isMobile() && is_file(APP_PATH.'../public/'.$template.'/mobile/sitemap.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/mobile/sitemap.html');
+        }
+        elseif(is_file(APP_PATH.'../public/'.$template.'/sitemap.html'))
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/'.$template.'/sitemap.html');
+        }
+        else
+        {
+            $htmls = $this->fetch(APP_PATH.'../public/common/html/sitemap/index.html');
+        }
+        echo $htmls;
     }
     public function _empty()
     {
@@ -1096,5 +1368,82 @@ class Index extends Common
             $htmls = $this->fetch(APP_PATH.'../public/common/html/404/index.html');
         }
         return $htmls;
+    }
+    public function rss()
+    {
+        if(isset($this->options_spare['closeRSS']) && $this->options_spare['closeRSS'] == 1)
+        {
+            return $this->lost();
+        }
+        $data_options = Cache::get('options');
+        if($data_options == false)
+        {
+            $data_options = Db::name('options')->where('autoload',1)->field('option_name,option_value')->select();
+            Cache::set('options',$data_options,3600);
+        }
+        $channel = [];
+        foreach($data_options as $val)
+        {
+            if($val['option_name'] == 'title')
+            {
+                $channel['title'] = $val['option_value'];
+            }
+            if($val['option_name'] == 'domain')
+            {
+                $channel['link'] = $val['option_value'];
+            }
+            if($val['option_name'] == 'description')
+            {
+                $channel['description'] = $val['option_value'];
+            }
+            if($val['option_name'] == 'logo')
+            {
+                $channel['logo'] = $val['option_value'];
+            }
+        }
+        $root = '';
+        $dm = Url::build('/');
+        if(strpos($dm,'/index.php') !== false)
+        {
+            $root = 'index.php/';
+        }
+        $domain = rtrim(trim($channel['link'] . $root),'/');
+        $sub = ["title" => $channel['title'], "url" => $channel['logo'], "link" => $channel['link']];
+        $sm = Db::name('posts')->where('post_status','=',1)->where('post_type',['=',0],['=',2],['=',3],['=',4],['=',5],['=',6],['=',7],['=',8],'or')->where('status','=',1)->where('post_date','<= time',date('Y-m-d H:i:s'))->field('id,post_title,post_excerpt,post_modified')->order('post_modified desc')->limit(20)->select();
+        if(!empty($sm))
+        {
+            foreach($sm as $key => $val)
+            {
+                $sm[$key]['post_modified'] = date($this->options_spare['timeFormat'],strtotime($val['post_modified']));
+                $sm[$key]['href'] = '/article/' . $val['id'] . '.html';
+            }
+        }
+        Hook::add('filter_rss',$this->plugins);
+        Hook::listen('filter_rss',$sm,$this->ccc);
+        $rss = new Rss();
+        $rss->addChannel();
+        $rss->addChannelElement('title', $channel['title']);
+        $rss->addChannelElement('link', $channel['link']);
+        $rss->addChannelElement('description', $channel['description']);
+        $rss->addChannelElement('language', $this->lang);
+        $rss->addChannelElementWithSub('image', $sub);
+        if(!empty($sm))
+        {
+            foreach($sm as $key => $val)
+            {
+                $rss->addItem();
+                $rss->addItemElement('title', $val['post_title']);
+                $rss->addItemElement('link', $domain . $val['href']);
+                $rss->addItemElement('description', $val['post_excerpt']);
+                $rss->addItemElement('pubDate', $val['post_modified']);
+                $rss->addItemElement('guid', $domain . $val['href'] . '#item' . $val['id']);
+            }
+        }
+        header("Content-type: text/xml; charset=utf-8");
+        echo $rss->toString();
+    }
+    public function feed()
+    {
+        $this->rss();
     }
 }

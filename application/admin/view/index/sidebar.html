@@ -37,6 +37,8 @@
                                 {:lang('All comments')}
                             </button>
                         </a>
+                        {/if}
+                        {if condition="$permissions < 5"}
                         <a href="{:Url('/admin/Index/messages')}">
                             <button type="button" class="btn btn-default btn-block{eq name="option" value="messages"} btn-primary{/eq}">
                                 {:lang('All messages')}

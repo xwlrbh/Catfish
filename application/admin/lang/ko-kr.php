@@ -335,5 +335,19 @@ return [
     'When you need website maintenance, you can use to close the site' => '당신이 웹 사이트 유지 보수를 필요로 할 때, 사이트를 종료 할 수 있습니다',
     'Whether to close the site map' => '사이트 맵을 종료할지 여부',
     'Close the site map' => '닫기 사이트 맵',
-    'The site map is turned on by default, where you can turn off the site map' => '사이트 맵은 사용자가 사이트 맵을 닫을 수 있습니다 기본적으로 활성화되어 있습니다'
+    'The site map is turned on by default, where you can turn off the site map' => '사이트 맵은 사용자가 사이트 맵을 닫을 수 있습니다 기본적으로 활성화되어 있습니다',
+    'My collection' => '내 컬렉션',
+    'My comments' => '내 의견',
+    'Collection time' => '수집 시간',
+    'View original' => '원문보기',
+    'Original' => '원본',
+    'Whether to close the message' => '메시지를 닫을 지 여부',
+    'Close the message' => '메시지를 닫으십시오.',
+    'Close message requires subject support' => '닫기 메시지에는 제목 지원이 필요합니다.',
+    'Whether to close the comment' => '주석을 닫을 지 여부',
+    'Close the comment' => '댓글 닫기',
+    'After closing the comment, setting a comment when writing an article will be invalidated' => '댓글을 닫은 후 기사 작성시 댓글 설정이 무효화됩니다.',
+    'Whether to close RSS' => 'RSS를 닫을 지 여부',
+    'Close RSS' => 'RSS 닫기',
+    'The default is to open RSS, where you can turn off RSS' => '기본값은 RSS를 여는 것입니다.이 장소에서 RSS를 닫을 수 있습니다.'
 ];

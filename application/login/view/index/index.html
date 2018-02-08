@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="copyright" content="Catfish CMS All Rights Reserved">
+    <meta name="robots" content="noindex,noarchive">
     <title>{:lang('User login')}</title>
     <link rel="icon" href="{$domain}public/common/images/favicon.ico">
     <link rel="stylesheet" href="{$domain}public/common/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{$domain}public/common/css/catfishBottom.css">
     <script src="{$domain}public/common/js/jquery.min.js"></script>
     <script src="{$domain}public/common/js/login.js"></script>
 </head>
 <body style="background-color: #006666;{notempty name="login_background"} background: url('{$login_background}');background-size: cover;{/notempty}">
+<div class="container-fluid" id="catfishContentBlock">
     <div class="row">
         <br>
         <div class="hidden-xs"><br><br></div>
@@ -45,7 +49,7 @@
                         <div class="text-center">
                             <button type="submit" class="btn btn-default">{:lang('Log in')}</button>
                         </div>
-                        <a href="{:Url('/')}">{:lang('Home')}</a>
+                        <a href="{:Url('/index')}">{:lang('Home')}</a>
                         <a href="{:Url('login/Index/register')}" class="pull-right">{:lang('Sign up')}</a>
                     </form>
                 </div>
@@ -53,19 +57,20 @@
             {notempty name="login_annex"}{$login_annex}{/notempty}
         </div>
     </div>
-    <div class="container-fluid">
-        <div class="row">
-            <div style="position: absolute; bottom: 5px; right: 10px;">{$catfish}</div>
-        </div>
+</div>
+<div class="container-fluid" id="catfishFooter">
+    <div class="row">
+        <div>{$catfish}</div>
     </div>
-    {notempty name="login_background"}
-    <script>
-        $(document).ready(function(){
-            $("#denglukuang").css("opacity",0.85);
-            $("input").css({"background-color":"#eee"});
-        });
-    </script>
-    {/notempty}
-    <script src="{$domain}public/common/js/user/footer.js"></script>
+</div>
+{notempty name="login_background"}
+<script>
+    $(document).ready(function(){
+        $("#denglukuang").css("opacity",0.85);
+        $("input").css({"background-color":"#eee"});
+    });
+</script>
+{/notempty}
+<script src="{$domain}public/common/js/user/footer.js"></script>
 </body>
 </html>

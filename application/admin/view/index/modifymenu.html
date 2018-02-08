@@ -50,6 +50,7 @@
                     {/volist}
                     {/notempty}
                 </select>
+                <input type="hidden" name="oldlink" value="{$oldlink}">
                 <p class="help-block">{:lang('Custom link')}：</p>
                 <input type="text" class="form-control" value="{$zidingyi}" name="zidingyi" placeholder="http://">
             </div>
@@ -70,8 +71,10 @@
                     <option value="1"{if condition="$cdxiang.status eq 1"} selected{/if}>{:lang('Display')}</option>
                     <option value="0"{if condition="$cdxiang.status eq 0"} selected{/if}>{:lang('Hide')}</option>
                 </select>
+                <input type="hidden" name="originalstate" value="{$originalstate}">
             </div>
             <div class="text-center"><br>
+                <input type="hidden" name="verification" value="{$verification}">
                 <button type="submit" class="btn btn-default" id="baocun">{:lang('Save')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing.gif" width="16" height="16"></span></button>
             </div>
         </form>

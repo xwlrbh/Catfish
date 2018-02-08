@@ -295,7 +295,7 @@ class File extends SplFileObject
      * @param  boolean          $replace 同名文件是否覆盖
      * @return false|SplFileInfo false-失败 否则返回SplFileInfo实例
      */
-    public function move($path, $savename = true, $replace = true)
+    public function move($path, $savename = true, $replace = true, $prefix = '')
     {
         // 文件上传失败，捕获错误代码
         if (!empty($this->info['error'])) {
@@ -315,7 +315,7 @@ class File extends SplFileObject
         }
         $path = rtrim($path, DS) . DS;
         // 文件保存命名规则
-        $saveName = $this->buildSaveName($savename);
+        $saveName = $this->buildSaveName($savename,$prefix);
         $filename = $path . $saveName;
 
         // 检测目录
@@ -348,7 +348,7 @@ class File extends SplFileObject
      * @param  string|bool   $savename    保存的文件名 默认自动生成
      * @return string
      */
-    protected function buildSaveName($savename)
+    protected function buildSaveName($savename, $prefix = '')
     {
         if (true === $savename) {
             // 自动生成文件名
@@ -358,14 +358,14 @@ class File extends SplFileObject
                 switch ($this->rule) {
                     case 'md5':
                         $md5      = md5_file($this->filename);
-                        $savename = substr($md5, 0, 2) . DS . substr($md5, 2);
+                        $savename = substr($md5, 0, 2) . DS . $prefix . substr($md5, 2);
                         break;
                     case 'sha1':
                         $sha1     = sha1_file($this->filename);
-                        $savename = substr($sha1, 0, 2) . DS . substr($sha1, 2);
+                        $savename = substr($sha1, 0, 2) . DS . $prefix . substr($sha1, 2);
                         break;
                     case 'date':
-                        $savename = date('Ymd') . DS . md5(microtime(true));
+                        $savename = date('Ymd') . DS . $prefix . md5(microtime(true));
                         break;
                     default:
                         $savename = call_user_func($this->rule);

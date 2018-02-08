@@ -4,7 +4,8 @@
  * Description: The Announcement Plugin displays a bulletin at the top of the Home page
  * Author: A.J
  * Version: V1.0
- * Plugin URL: www.catfish-cms.top
+ * Plugin URL: www.catfish-cms.com
+ * Appliance: cms
  */
 namespace app\plugins\announcement;
 
@@ -16,6 +17,7 @@ class Announcement extends Plugin
     public function open(&$params)
     {
         //插件开启时执行，传入参数$this->plugin为插件名
+        $this->statement('Catfish cms plugin');//声明鲶鱼cms插件，用来区别鲶鱼Blog插件
         $this->set($this->plugin.'_announcement','');//设置用来存储公告的变量,建议变量名使用“插件名_变量名”的格式
     }
     public function close(&$params)
@@ -37,7 +39,7 @@ class Announcement extends Plugin
     public function settings_post(&$params)
     {
         //后台设置，表单提交，$this->plugin为插件名
-        $this->set($this->plugin.'_announcement',input('post.announcement_gonggao'));
+        $this->set($this->plugin.'_announcement',$this->getPost('announcement_gonggao'));
     }
 
     //输出公告内容

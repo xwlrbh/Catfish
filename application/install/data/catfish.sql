@@ -106,7 +106,9 @@ CREATE TABLE `catfish_nav` (
   `status` int(2) NOT NULL DEFAULT '1',
   `listorder` int(6) DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `cid` (`cid`)
+  KEY `cid` (`cid`),
+  KEY `href` (`href`),
+  KEY `listorder` (`listorder`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 --

@@ -10,7 +10,7 @@ $(document).ready(function(){
         cancelButton: $('#quxiao').text(),
         confirm: function(){
             var obj = this.$target;
-            $.post("removePage", { id: this.$target.parent().parent().children(":eq(0)").children("input").val()},
+            $.post("removePage", { id: this.$target.parent().parent().children(":eq(0)").children("input").val(), verification: $("#verification").text()},
                 function(data){
                     obj.parent().parent().remove();
                 });
@@ -52,7 +52,7 @@ $.extend({'caozuo':function(obj,cz){
     });
     if(zcuan != ''){
         obj.children("span").removeClass("hidden");
-        $.post("removeAllPage", { zcuan: zcuan, cz: cz},
+        $.post("removeAllPage", { zcuan: zcuan, cz: cz, verification: $("#verification").text()},
             function(data){
                 obj.children("span").addClass("hidden");
                 $.each(ind, function(i, value) {

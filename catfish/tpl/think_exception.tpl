@@ -410,7 +410,7 @@
     <?php } ?>
 
     <div class="copyright">
-        <span>Catfish</span>
+        <span>Catfish CMS</span>
     </div>
     <?php if(\think\App::$debug) { ?>
     <script>

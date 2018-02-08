@@ -1,5 +1,5 @@
 {include file="public/blog/header.html" /}
-{notempty name="home_top"}{$home_top}{/notempty}
+{$home_top}
 <div class="container">
     <div class="row">
         <div class="col-md-8">
@@ -22,11 +22,10 @@
             </div>
             {/volist}
             {$hunhe.hunhe1.pages}
-            {notempty name="home_bottom"}{$home_bottom}{/notempty}
+            {$home_bottom}
         </div>
         <div class="col-md-4">
-            {notempty name="side_top"}{$side_top}{/notempty}
-            {notempty name="home_side_top"}{$home_side_top}{/notempty}
+            {$home_side_top_group}
             {notempty name="tuijian"}
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -62,8 +61,7 @@
                     {/volist}
                 </div>
             </div>
-            {notempty name="home_side_bottom"}{$home_side_bottom}{/notempty}
-            {notempty name="side_bottom"}{$side_bottom}{/notempty}
+            {$home_side_bottom_group}
         </div>
     </div>
 </div>

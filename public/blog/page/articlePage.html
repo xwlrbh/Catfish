@@ -6,7 +6,7 @@
                 <li><a href="{$url.href}">首页</a></li>
                 <li class="active">{$page.biaoti|subtext=28}</li>
             </ol>
-            {notempty name="page_top"}{$page_top}{/notempty}
+            {$page_top}
             <div class="panel panel-default">
                 <div class="panel-body">
                     {empty name="page"}
@@ -17,18 +17,17 @@
                 </div>
             </div>
             <div class="panel panel-default">
-                {notempty name="page_mid"}{$page_mid}{/notempty}
+                {$page_mid}
                 {notempty name="page"}
                 <div class="panel-body">
                     <h4 style="line-height: 1.5em">{$page.zhengwen}</h4>
                 </div>
                 {/notempty}
-                {notempty name="page_bottom"}{$page_bottom}{/notempty}
+                {$page_bottom}
             </div>
         </div>
         <div class="col-md-4">
-            {notempty name="side_top"}{$side_top}{/notempty}
-            {notempty name="page_side_top"}{$page_side_top}{/notempty}
+            {$page_side_top_group}
             {notempty name="tuijian"}
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -66,8 +65,7 @@
                 </div>
             </div>
             {/notempty}
-            {notempty name="page_side_bottom"}{$page_side_bottom}{/notempty}
-            {notempty name="side_bottom"}{$side_bottom}{/notempty}
+            {$page_side_bottom_group}
         </div>
     </div>
 </div>

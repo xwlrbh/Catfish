@@ -27,7 +27,7 @@
                         &nbsp;|&nbsp;
                         <a href="{:Url('modifyclassify')}?c={$vo.id}">{:lang('Edit')}</a>
                         &nbsp;|&nbsp;
-                        <a class="twitter" data-title="{:lang('Confirm to delete?')}" href="{:Url('classify')}?d={$vo.id}&f={$vo.parent_id}">{:lang('Delete')}</a>
+                        <a class="twitter" data-title="{:lang('Confirm to delete?')}" href="{:Url('classify')}?d={$vo.id}&f={$vo.parent_id}&verification={$verification}">{:lang('Delete')}</a>
                     </td>
                 </tr>
                 {/volist}

@@ -1,11 +1,13 @@
 <?php
 /**
- * Project: Catfish.
- * Author: A.J
+ * Project: Catfish CMS.
+ * Author: A.J <804644245@qq.com>
+ * Copyright: http://www.catfish-cms.com All rights reserved.
  * Date: 2016/10/2
  */
 namespace app\admin\controller;
 
+use app\common\Operc;
 use think\Controller;
 use think\Session;
 use think\Cookie;
@@ -14,12 +16,15 @@ use think\Url;
 use think\Cache;
 use think\Db;
 use think\Lang;
+use think\Request;
 
 class Common extends Controller
 {
     protected $plugins = [];
     protected $session_prefix;
     protected $lang;
+    protected $cocc;
+    protected $ccc;
     protected $permissions;
     public function _initialize()
     {
@@ -83,7 +88,7 @@ class Common extends Controller
         foreach((array)$pluginslist as $pkey => $pval)
         {
             $this->plugins[] = 'app\\plugins\\'.$pval['plugin'].'\\'.ucfirst($pval['plugin']);
-            if($pval['isShow'] == true && (Session::has($this->session_prefix.'user_type') && Session::get($this->session_prefix.'user_type') <= $pval['jurisdiction']))
+            if($pval['isShow'] == true)
             {
                 Lang::load(APP_PATH . 'plugins/'.$pval['plugin'].'/lang/'.$this->lang.'.php');
             }
@@ -94,6 +99,8 @@ class Common extends Controller
         }
         $this->assign('pluginslist', $pluginslist);
         $this->assign('numberOfPlugins', count($pluginslist,COUNT_NORMAL));
+        $this->cocc = 'f2537c2b6878f66fc3bafbeb13cb8932';
+        $this->ccc = 'Catfish CMS Copyright';
         $this->permissions = Session::get($this->session_prefix.'user_type');
         $this->assign('permissions', Session::get($this->session_prefix.'user_type'));
     }
@@ -103,6 +110,8 @@ class Common extends Controller
     }
     protected function checkUser()
     {
+        if(!isset($this->cocc) || $this->cocc != md5('Copyright owned by catfish CMS'))
+            $this->quit();
         Debug::remark('begin');
         if(!Session::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user_id') && Cookie::has($this->session_prefix.'user'))
         {
@@ -121,10 +130,12 @@ class Common extends Controller
         if(!Session::has($this->session_prefix.'user_id'))
         {
             $this->redirect(Url::build('/login'));
+            exit();
         }
         if(Session::get($this->session_prefix.'user_type') >= 7)
         {
             $this->redirect(Url::build('/user'));
+            exit();
         }
         $this->assign('user', $this->getUser());
     }
@@ -142,6 +153,18 @@ class Common extends Controller
         Cookie::delete($this->session_prefix.'user_p');
         $this->redirect(Url::build('/login'));
     }
+    protected function getConfig($c)
+    {
+        if(md5($c['official'].$c['name']) != '3b293cb9031a1077a22bf6704bf4755e')
+        {
+            $this->redirect(Url::build('/error'));
+            exit();
+        }
+        else
+        {
+            return $c;
+        }
+    }
     protected function is_rewrite()
     {
         if(function_exists('apache_get_modules'))
@@ -157,10 +180,14 @@ class Common extends Controller
     private function filterLanguages($parameter)
     {
         $param = strtolower($parameter);
-        if($param == 'zh')
+        if($param == 'zh' || strpos($param,'zh-hans') !== false || strpos($param,'zh-chs') !== false)
         {
             Lang::range('zh-cn');
             return 'zh-cn';
+        }
+        else if($param == 'zh-tw' || strpos($param,'zh-hant') !== false || strpos($param,'zh-cht') !== false){
+            Lang::range('zh-tw');
+            return 'zh-tw';
         }
         else if(stripos($param,'zh') === false)
         {
@@ -235,7 +262,7 @@ class Common extends Controller
     protected function getVersion($dm)
     {
         $ch = curl_init();
-        $url = 'http://www.'.$dm.'/_version/?dm='.urlencode($_SERVER['HTTP_HOST'].Url::build('/'));
+        $url = 'http://www.'.$dm.'/_version/?tl='.urlencode(Operc::getTitle()).'&dm='.urlencode($_SERVER['HTTP_HOST'].Url::build('/'));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727;http://www.baidu.com)');
@@ -302,15 +329,27 @@ class Common extends Controller
     }
     protected function isLegalPicture($picture)
     {
-        $pathinfo = pathinfo($picture);
-        if(isset($pathinfo['extension']))
+        if(stripos($picture,'>') === false && strpos($picture,'"') === false && strpos($picture,'\'') === false)
         {
-            if(in_array($pathinfo['extension'],['jpeg','jpg','png','gif']) && stripos($pathinfo['dirname'],'/data/') !== false)
+            $pathinfo = pathinfo($picture);
+            if(isset($pathinfo['extension']))
             {
-                return true;
+                if(in_array(strtolower($pathinfo['extension']),['jpeg','jpg','png','gif']) && stripos($pathinfo['dirname'],'/data/') !== false)
+                {
+                    return true;
+                }
             }
         }
         return false;
+    }
+    protected function veoput($ver,$en)
+    {
+        $this->assign(base64_decode('Y2F0ZmlzaA=='), base64_decode('PGEgaHJlZj0iaHR0cDovL3d3dy4=').$ver['official'].'/" '.base64_decode('dGFyZ2V0PSJfYmxhbmsi').base64_decode('IGlkPSJjYXRmaXNoIg==').$en.'>'.$ver['name'].'&nbsp;'.$ver['number'].base64_decode('PC9hPiZuYnNwOyZuYnNwOw=='));
+        if(md5($ver['name'].$ver['official']) != '65c9045ad9994f188955a62245675bf7')
+        {
+            $this->redirect(Url::build('/error'));
+            exit();
+        }
     }
     protected function checkPermissions($permissions)
     {
@@ -319,5 +358,105 @@ class Common extends Controller
             $this->error(Lang::get('Your access rights are insufficient'));
             exit();
         }
+    }
+    protected function actualDomain()
+    {
+        $dm = $_SERVER['HTTP_HOST'];
+        $dm = str_replace(':','',$dm);
+        $dmArr = explode('.',$dm);
+        if(stripos($dm,'localhost') !== false || $this->isIntArr($dmArr))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    private function isIntArr($arr)
+    {
+        foreach($arr as $val)
+        {
+            if(!is_numeric($val))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    protected function verification($isGet = false)
+    {
+        $gever = '';
+        if(Request::instance()->has('verification','post') && $isGet == false)
+        {
+            $gever = Request::instance()->post('verification');
+        }
+        elseif(Request::instance()->has('verification','get') && $isGet == true)
+        {
+            $gever = Request::instance()->get('verification');
+        }
+        if(!empty($gever))
+        {
+            $verification = $this->getver();
+            if($gever == md5($verification.$this->getUser()))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    protected function delSingleArray(&$array)
+    {
+        if(is_array($array) && count($array) > 0)
+        {
+            $tmpArr = array_count_values($array);
+            foreach($array as $key => $val)
+            {
+                if($tmpArr[$val] == 1)
+                {
+                    unset($array[$key]);
+                }
+            }
+        }
+    }
+    protected function getver()
+    {
+        $random_verification = Cache::get('random_verification');
+        if($random_verification == false)
+        {
+            $random_verification = Operc::getc('random_verification');
+            if(empty($random_verification))
+            {
+                $random_verification = md5(rand().time());
+                Operc::setc('random_verification',$random_verification);
+            }
+            Cache::set('random_verification',$random_verification,864000);
+        }
+        return $random_verification;
+    }
+    protected function picpre()
+    {
+        $uid = Session::get($this->session_prefix.'user_id');
+        $pre = substr(md5($uid.$this->getver()),0,8);
+        return $pre.'-';
+    }
+    protected function cpicpre($pic)
+    {
+        $picArr = explode('/',$pic);
+        $pic = strstr(end($picArr),'-',true);
+        $uid = Session::get($this->session_prefix.'user_id');
+        $pre = substr(md5($uid.$this->getver()),0,8);
+        if($pre == $pic)
+        {
+            return true;
+        }
+        return false;
     }
 }

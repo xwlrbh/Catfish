@@ -335,5 +335,19 @@ return [
     'When you need website maintenance, you can use to close the site' => '当您需要网站维护时，可以用来关闭站点',
     'Whether to close the site map' => '是否关闭网站地图',
     'Close the site map' => '关闭网站地图',
-    'The site map is turned on by default, where you can turn off the site map' => '默认开启网站地图，您可以在这里关闭网站地图'
+    'The site map is turned on by default, where you can turn off the site map' => '默认开启网站地图，您可以在这里关闭网站地图',
+    'My collection' => '我的收藏',
+    'My comments' => '我的评论',
+    'Collection time' => '收藏时间',
+    'View original' => '查看原文',
+    'Original' => '原文',
+    'Whether to close the message' => '是否关闭留言',
+    'Close the message' => '关闭留言',
+    'Close message requires subject support' => '关闭留言需要主题支持',
+    'Whether to close the comment' => '是否关闭评论',
+    'Close the comment' => '关闭评论',
+    'After closing the comment, setting a comment when writing an article will be invalidated' => '关闭评论后，写文章时设置评论将失效',
+    'Whether to close RSS' => '是否关闭RSS',
+    'Close RSS' => '关闭RSS',
+    'The default is to open RSS, where you can turn off RSS' => '默认开启RSS，您可以在这里关闭RSS'
 ];

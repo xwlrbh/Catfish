@@ -12,7 +12,7 @@ $(document).ready(function(){
             if(action == 'confirm'){
                 //删除
                 var obj = this.$target;
-                $.post("removeArticle", { id: this.$target.parent().parent().children(":eq(0)").children("input").val()},
+                $.post("removeArticle", { id: this.$target.parent().parent().children(":eq(0)").children("input").val(), verification: $("#verification").text()},
                     function(data){
                         obj.parent().parent().remove();
                     });
@@ -29,7 +29,7 @@ $(document).ready(function(){
             if(action == 'confirm'){
                 //还原
                 var obj = this.$target;
-                $.post("reductionArticle", { id: this.$target.parent().parent().children(":eq(0)").children("input").val()},
+                $.post("reductionArticle", { id: this.$target.parent().parent().children(":eq(0)").children("input").val(), verification: $("#verification").text()},
                     function(data){
                         obj.parent().parent().remove();
                     });
@@ -83,7 +83,7 @@ $.extend({'caozuo':function(obj,cz){
     });
     if(zcuan != ''){
         obj.children("span").removeClass("hidden");
-        $.post("recycleBatch", { zcuan: zcuan, cz: cz},
+        $.post("recycleBatch", { zcuan: zcuan, cz: cz, verification: $("#verification").text()},
             function(data){
                 obj.children("span").addClass("hidden");
                 $.each(ind, function(i, value) {

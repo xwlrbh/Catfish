@@ -9,7 +9,7 @@ $(document).ready(function(){
         cancelButton: $('#quxiao').text(),
         confirm: function(){
             var obj = this.$target;
-            $.post("removemanagemc", { id: this.$target.parent().parent().children(":eq(0)").text()},
+            $.post("removemanagemc", { id: this.$target.parent().parent().children(":eq(0)").text(), verification: $("#verification").text()},
                 function(data){
                     obj.parent().parent().remove();
                 });

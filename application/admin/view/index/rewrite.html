@@ -52,7 +52,11 @@
                     </select>
                     <p class="help-block">{:lang('Windows: Hold down the Ctrl button to select multiple options, Mac: Press the command button to select multiple options')}</p>
                 </div>
+                {notempty name="write_append"}
+                {$write_append}
+                {/notempty}
                 <div class="text-center">
+                    <input type="hidden" name="verification" value="{$verification}">
                     <button type="submit" class="btn btn-default" id="baocun">{:lang('Save')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing.gif" width="16" height="16"></span></button>
                 </div><br><br>
             </div>

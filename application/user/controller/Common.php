@@ -1,12 +1,14 @@
 <?php
 /**
- * Project: Catfish.
- * Author: A.J
+ * Project: Catfish CMS.
+ * Author: A.J <804644245@qq.com>
+ * Copyright: http://www.catfish-cms.com All rights reserved.
  * Date: 2016/10/16
  */
 namespace app\user\controller;
 
 use app\admin\controller\Tree;
+use app\common\Operc;
 use think\Controller;
 use think\Session;
 use think\Cookie;
@@ -22,6 +24,8 @@ class Common extends Controller
 {
     protected $session_prefix;
     protected $lang;
+    protected $cocc;
+    protected $ccc;
     protected $params = [];
     protected $plugins = [];
     protected $options_spare;
@@ -32,6 +36,8 @@ class Common extends Controller
         $this->lang = Lang::detect();
         $this->lang = $this->filterLanguages($this->lang);
         Lang::load(APP_PATH . 'user/lang/'.$this->lang.'.php');
+        $this->cocc = 'f2537c2b6878f66fc3bafbeb13cb8932';
+        $this->ccc = 'Catfish CMS Copyright';
         if(isset($this->options_spare['guanbi']) && $this->options_spare['guanbi'] == 1)
         {
             $this->closeWeb();
@@ -70,6 +76,8 @@ class Common extends Controller
     }
     protected function receive()
     {
+        if(!isset($this->cocc) || $this->cocc != md5('Copyright owned by catfish CMS'))
+            return false;
         $data_options = Cache::get('options');
         if($data_options == false)
         {
@@ -112,6 +120,7 @@ class Common extends Controller
             Cache::set('menu',$menu,3600);
         }
         $this->assign('menu', $menu);
+        $this->prvtmer($version);
         $user = Db::name('users')->where('id',Session::get($this->session_prefix.'user_id'))->find();
         $this->assign('user', $user);
         $domain = Cache::get('domain');
@@ -142,15 +151,31 @@ class Common extends Controller
         {
             $this->assign('user_menu_top', $this->params['user_menu_top']);
         }
+        Hook::add('user_menu_group_append',$this->plugins);
+        Hook::listen('user_menu_group_append',$this->params);
+        if(isset($this->params['user_menu_group_append']))
+        {
+            $this->assign('user_menu_group_append', $this->params['user_menu_group_append']);
+        }
+        Hook::add('user_menu_group_top',$this->plugins);
+        Hook::listen('user_menu_group_top',$this->params);
+        if(isset($this->params['user_menu_group_top']))
+        {
+            $this->assign('user_menu_group_top', $this->params['user_menu_group_top']);
+        }
         Lang::load(APP_PATH . '../public/common/html/404/lang/'.$this->lang.'.php');
     }
     private function filterLanguages($parameter)
     {
         $param = strtolower($parameter);
-        if($param == 'zh')
+        if($param == 'zh' || strpos($param,'zh-hans') !== false || strpos($param,'zh-chs') !== false)
         {
             Lang::range('zh-cn');
             return 'zh-cn';
+        }
+        else if($param == 'zh-tw' || strpos($param,'zh-hant') !== false || strpos($param,'zh-cht') !== false){
+            Lang::range('zh-tw');
+            return 'zh-tw';
         }
         else if(stripos($param,'zh') === false)
         {
@@ -258,12 +283,15 @@ class Common extends Controller
     }
     protected function isLegalPicture($picture)
     {
-        $pathinfo = pathinfo($picture);
-        if(isset($pathinfo["extension"]))
+        if(stripos($picture,'>') === false && strpos($picture,'"') === false && strpos($picture,'\'') === false)
         {
-            if(in_array($pathinfo["extension"],['jpeg','jpg','png','gif']) && stripos($pathinfo['dirname'],'/data/') !== false)
+            $pathinfo = pathinfo($picture);
+            if(isset($pathinfo["extension"]))
             {
-                return true;
+                if(in_array(strtolower($pathinfo["extension"]),['jpeg','jpg','png','gif']) && stripos($pathinfo['dirname'],'/data/') !== false)
+                {
+                    return true;
+                }
             }
         }
         return false;
@@ -282,6 +310,15 @@ class Common extends Controller
             Cache::set('options_spare',$options_spare,3600);
         }
         return $options_spare;
+    }
+    private function prvtmer($v)
+    {
+        $this->assign(base64_decode('Y2F0ZmlzaA=='), base64_decode('PGEgaHJlZj0iaHR0cDovL3d3dy4=').$v['official'].'/" '.base64_decode('dGFyZ2V0PSJfYmxhbmsiIGlkPSJjYXRmaXNoIg==').'>'.$v['name'].'&nbsp;'.$v['number'].base64_decode('PC9hPiZuYnNwOyZuYnNwOw=='));
+        if(substr(md5($v['name'].$v['official']),15,8) != '88955a62')
+        {
+            $this->redirect(Url::build('/error'));
+            exit();
+        }
     }
     private function closeWeb()
     {
@@ -303,5 +340,38 @@ class Common extends Controller
             $htmls = $this->fetch(APP_PATH.'../public/common/html/close/index.html');
         }
         echo $htmls;
+    }
+    private function getver()
+    {
+        $random_verification = Cache::get('random_verification');
+        if($random_verification == false)
+        {
+            $random_verification = Operc::getc('random_verification');
+            if(empty($random_verification))
+            {
+                $random_verification = md5(rand().time());
+                Operc::setc('random_verification',$random_verification);
+            }
+            Cache::set('random_verification',$random_verification,864000);
+        }
+        return $random_verification;
+    }
+    protected function picpre()
+    {
+        $uid = Session::get($this->session_prefix.'user_id');
+        $pre = substr(md5($uid.$this->getver()),0,8);
+        return $pre.'-';
+    }
+    protected function cpicpre($pic)
+    {
+        $picArr = explode('/',$pic);
+        $pic = strstr(end($picArr),'-',true);
+        $uid = Session::get($this->session_prefix.'user_id');
+        $pre = substr(md5($uid.$this->getver()),0,8);
+        if($pre == $pic)
+        {
+            return true;
+        }
+        return false;
     }
 }

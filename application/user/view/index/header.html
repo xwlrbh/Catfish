@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="copyright" content="Catfish CMS All Rights Reserved">
+    <meta name="robots" content="noindex,noarchive">
     <title>{$title} | {$subtitle}</title>
     <meta name="keywords" content="{$keyword}">
     <meta name="description" content="{$description}">
@@ -23,23 +25,23 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{:Url('/')}">
+            <a class="navbar-brand" href="{:Url('/index')}">
                 <img alt="{:lang('Catfish CMS')}" src="{if condition="$logo eq ''"}{$domain}public/{$template}/images/catfish.png{else /}{$logo}{/if}" width="20" height="20">
             </a>
-            <a class="navbar-brand" href="{:Url('/')}">{$title}</a>
+            <a class="navbar-brand" href="{:Url('/index')}">{$title}</a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav" id="daohangcaidan">
                 {notempty name="menu"}
                 {volist name="menu.menu1" id="vo"}
                 {empty name="vo.children"}
-                <li><a href="{notempty name="vo.zidingyi"}{$vo.href}{else /}{:Url($vo.href)}{/notempty}" target="{$vo.target}">{if condition="$vo.icon neq ''"}{$vo.icon} {/if}{$vo.label}</a></li>
+                <li><a href="{$vo.href}" target="{$vo.target}">{if condition="$vo.icon neq ''"}{$vo.icon} {/if}{$vo.label}</a></li>
                 {else /}
                 <li class="dropdown">
-                    <a href="{notempty name="vo.zidingyi"}{$vo.href}{else /}{:Url($vo.href)}{/notempty}" class="dropdown-toggle" data-toggle="dropdown" target="{$vo.target}">{if condition="$vo.icon neq ''"}{$vo.icon} {/if}{$vo.label} <span class="caret"></span></a>
+                    <a href="{$vo.href}" class="dropdown-toggle" data-toggle="dropdown" target="{$vo.target}">{if condition="$vo.icon neq ''"}{$vo.icon} {/if}{$vo.label} <span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
                         {volist name="vo.children" id="voc"}
-                        <li><a href="{notempty name="voc.zidingyi"}{$voc.href}{else /}{:Url($voc.href)}{/notempty}" target="{$voc.target}">{if condition="$voc.icon neq ''"}{$voc.icon} {/if}{$voc.label}</a></li>
+                        <li><a href="{$voc.href}" target="{$voc.target}">{if condition="$voc.icon neq ''"}{$voc.icon} {/if}{$voc.label}</a></li>
                         {/volist}
                     </ul>
                 </li>
@@ -71,6 +73,17 @@
     <div class="row">
         <div class="col-md-3">
             <div class="list-group">
+                {notempty name="user_menu_group_top"}
+                {volist name="user_menu_group_top" id="vogt" }
+                {assign name="kft" value="$key" /}
+                {volist name="vogt" id="vo"}
+                <a href="{:Url('/user/Index/plugingt/name/'.$vo.name.'.'.$kft)}" class="list-group-item{if condition="($active == $vo.name) AND ($isTop == '0') "} active{/if}">
+                {$vo.title}
+                </a>
+                {/volist}
+                <div style="height: 10px;"></div>
+                {/volist}
+                {/notempty}
                 {notempty name="user_menu_top"}
                 {volist name="user_menu_top" id="vo"}
                 <a href="{:Url('/user/Index/plugint/name/'.$vo.name)}" class="list-group-item{if condition="($active == $vo.name) AND ($isTop == '1') "} active{/if}">
@@ -98,6 +111,17 @@
                 <a href="{:Url('/user/Index/plugin/name/'.$vo.name)}" class="list-group-item{if condition="($active == $vo.name) AND ($isTop == '0') "} active{/if}">
                 {$vo.title}
                 </a>
+                {/volist}
+                {/notempty}
+                {notempty name="user_menu_group_append"}
+                {volist name="user_menu_group_append" id="vog" }
+                {assign name="kf" value="$key" /}
+                <div style="height: 10px;"></div>
+                {volist name="vog" id="vo"}
+                <a href="{:Url('/user/Index/plugingp/name/'.$vo.name.'.'.$kf)}" class="list-group-item{if condition="($active == $vo.name) AND ($isTop == '0') "} active{/if}">
+                {$vo.title}
+                </a>
+                {/volist}
                 {/volist}
                 {/notempty}
             </div>

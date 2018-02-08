@@ -4,9 +4,14 @@
         <div>
             <ol class="breadcrumb">
                 <li><a href="{$url.href}">首页</a></li>
+                {notempty name="daohang"}
+                {volist name="daohang" id="vo"}
+                <li>{if condition="$vo.icon neq ''"}{$vo.icon} {/if}<a href="{$vo.href}">{$vo.label}</a></li>
+                {/volist}
+                {/notempty}
                 <li class="active">{$page.biaoti|subtext=28}</li>
             </ol>
-            {notempty name="page_top"}{$page_top}{/notempty}
+            {$page_top}
             <div class="panel panel-default">
                 <div class="panel-body">
                     {empty name="page"}
@@ -17,13 +22,13 @@
                 </div>
             </div>
             <div class="panel panel-default">
-                {notempty name="page_mid"}{$page_mid}{/notempty}
+                {$page_mid}
                 {notempty name="page"}
                 <div class="panel-body">
                     <h4 style="line-height: 1.5em">{$page.zhengwen}</h4>
                 </div>
                 {/notempty}
-                {notempty name="page_bottom"}{$page_bottom}{/notempty}
+                {$page_bottom}
             </div>
         </div>
     </div>

@@ -23,6 +23,7 @@
     <div>
         <p>
             <input type="hidden" name="paixu" value="paixu">
+            <input type="hidden" name="verification" value="{$verification}">
             <button type="submit" id="pshanchu" class="btn btn-primary btn-sm">{:lang('Sort')}<span class="hidden">&nbsp;<img src="{$domain}public/common/images/zhixing_bai.gif" width="14" height="14"></span></button>
         </p>
     </div>
@@ -56,7 +57,7 @@
                         &nbsp;|&nbsp;
                         <a href="{:Url('modifymenu')}?c={$vo.id}">{:lang('Edit')}</a>
                         &nbsp;|&nbsp;
-                        <a class="twitter" data-title="{:lang('Confirm to delete?')}" href="{:Url('managemenu')}?d={$vo.id}&f={$vo.parent_id}&cid={$cid}">{:lang('Delete')}</a>
+                        <a class="twitter" data-title="{:lang('Confirm to delete?')}" href="{:Url('managemenu')}?d={$vo.id}&f={$vo.parent_id}&cid={$cid}&verification={$verification}">{:lang('Delete')}</a>
                     </td>
                 </tr>
                 {/volist}

@@ -50,7 +50,7 @@ return [
     'Confirm password' => 'パスワードを認証する',
     'Previous' => '前',
     'Installation will be completed, rest for a while now!' => '取り付け中、少々お待ち下さい！',
-    'Congratulations, the installation is complete!' => 'おめでとう、インストールは完了です！',
+    'Congratulations! Installation has been completed!' => 'おめでとう、インストールは完了です！',
     'Thank you for your support of the Catfish CMS system!' => 'Catfish CMS システムのご支援ありがとうございました！',
     'Is not still immersed in the installation of happiness, but the installation is over, then you will continue to use the site in the process of happiness, let us start!' => '幸福のインストールにまだ浸っていないが、インストールが終わった後、あなたは幸福の過程でサイトを使用し続ける、私たちを始めましょう！',
     'Enter the home page' => 'ホームページに入る',

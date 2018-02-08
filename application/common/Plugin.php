@@ -14,6 +14,7 @@ use think\Cache;
 use think\Session;
 use think\Url;
 use think\Validate;
+use think\Request;
 
 class Plugin extends Controller
 {
@@ -81,7 +82,6 @@ class Plugin extends Controller
     }
     protected function upload($width = 0, $height = 0)
     {
-        //$width，$height不等于0时，生成缩略图
         $file = request()->file('file');
         $validate = [
             'ext' => 'jpg,png,gif,jpeg'
@@ -91,7 +91,6 @@ class Plugin extends Controller
         if($info){
             if($width > 0 && $height >0)
             {
-                //生成缩略图
                 $image = \think\Image::open(ROOT_PATH . 'data' . DS . 'uploads' . DS . $info->getSaveName());
                 $tuwidth = $image->width();
                 $tuheight = $image->height();
@@ -101,12 +100,12 @@ class Plugin extends Controller
                 }
             }
             echo $info->getSaveName();
+            return true;
         }else{
-            // 上传失败获取错误信息
-            echo $file->getError();
+            echo '';
+            return false;
         }
     }
-    //获取分类
     protected function category()
     {
         $data = Db::name('terms')->field('id,term_name,parent_id')->select();
@@ -175,13 +174,11 @@ class Plugin extends Controller
         }
         return $category;
     }
-    //获取用户id
     protected function userID()
     {
         $session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
         return Session::get($session_prefix.'user_id');
     }
-    //获取用户名
     protected function user()
     {
         $session_prefix = 'catfish'.str_replace(['/','.',' ','-'],['','?','*','|'],Url::build('/'));
@@ -189,12 +186,10 @@ class Plugin extends Controller
     }
     protected function prefix()
     {
-        //返回表前缀
         return Config::get('database.prefix');
     }
     protected function execute($statement)
     {
-        //执行语句
         if(strtolower(substr(ltrim($statement),0,6)) == 'select' || strtolower(substr(ltrim($statement),0,4)) == 'show')
         {
             try{
@@ -212,7 +207,6 @@ class Plugin extends Controller
             }
         }
     }
-    //给标签添加数据
     protected function add(&$params,$label,$data)
     {
         if(isset($params[$label]))
@@ -239,38 +233,64 @@ class Plugin extends Controller
     {
         $params[$label][$array['name']] = $array;
     }
+    protected function addGroup(&$params,$label,$group,$array)
+    {
+        $params[$label][$group][$array['name']] = $array;
+    }
+    protected function importFiles($files)
+    {
+        $re = '';
+        foreach($files as $file)
+        {
+            $re .= $this->import($file);
+        }
+        return $re;
+    }
     protected function import($path)
     {
         $path = str_replace('\\','/',$path);
+        $path = trim($path, '/');
         $pathinfo = pathinfo($path);
-        $pluginName = get_class($this);
-        $pluginName = str_replace('\\','/',$pluginName);
-        $pluginName = trim($pluginName,'/');
-        $pluginNameArr = explode('/',$pluginName);
-        $pluginNameArr = array_slice($pluginNameArr,-2,1);
-        $pluginName = $pluginNameArr[0];
-        $path = substr($path,0,1) == '/' ? substr($path,1) : $path;
+        $pluginName = $this->getPlugin();
         $file = APP_PATH.'plugins/'.$pluginName.'/'.$path;
         if(is_file($file))
         {
-            $content = file_get_contents($file);
-            if($pathinfo['extension'] == 'js')
+            if($pathinfo['extension'] == 'html')
             {
-                return '<script type="text/javascript"> ' . $content . ' </script>';
-            }
-            elseif($pathinfo['extension'] == 'css')
-            {
-                return '<style type="text/css"> ' . $content . ' </style>';
-            }
-            elseif(in_array($pathinfo['extension'],['jpeg','jpg','png','gif']))
-            {
-                $domain = $this->domain();
-                $domain = substr($domain,-1,1) == '/' ? substr($domain,0,strlen($domain)-1) : $domain;
-                return $domain . Url::build('/multimedia') . '?path='.urlencode($pluginName.'/'.$path).'&ext='.$pathinfo['extension'].'&media=image';
+                $mobile = $pathinfo['dirname'].'/mobile/'.$pathinfo['basename'];
+                if(Request::instance()->isMobile() && is_file(APP_PATH.'plugins/'.$pluginName.'/'.$mobile))
+                {
+                    $mobile = APP_PATH.'plugins/'.$pluginName.'/'.$mobile;
+                    $view = $this->fetch($mobile);
+                    return $view;
+                }
+                else
+                {
+                    $view = $this->fetch($file);
+                    return $view;
+                }
             }
             else
             {
-                return '';
+                $content = file_get_contents($file);
+                if($pathinfo['extension'] == 'js')
+                {
+                    return '<script type="text/javascript"> ' . $content . ' </script>';
+                }
+                elseif($pathinfo['extension'] == 'css')
+                {
+                    return '<style type="text/css"> ' . $content . ' </style>';
+                }
+                elseif(in_array($pathinfo['extension'],['jpeg','jpg','png','gif']))
+                {
+                    $domain = $this->domain();
+                    $domain = substr($domain,-1,1) == '/' ? substr($domain,0,strlen($domain)-1) : $domain;
+                    return $domain . Url::build('/multimedia') . '?path='.urlencode($pluginName.'/'.$path).'&ext='.$pathinfo['extension'].'&media=image';
+                }
+                else
+                {
+                    return '';
+                }
             }
         }
         else
@@ -292,6 +312,17 @@ class Plugin extends Controller
     protected function binding($view,$name,&$params,$title = '')
     {
         if(isset($params['name']) && $params['name'] == $name)
+        {
+            $params['view'] = $view;
+            if(!empty($title))
+            {
+                $params['title'] = $title;
+            }
+        }
+    }
+    protected function bindingGroup($view,$name,$group,&$params,$title = '')
+    {
+        if(isset($params['name']) && $params['name'] == $name && isset($params['group']) && $params['group'] == $group)
         {
             $params['view'] = $view;
             if(!empty($title))
@@ -333,16 +364,34 @@ class Plugin extends Controller
         $validate = new Validate($rule, $msg);
         return $validate;
     }
-    protected function uhref($label,$isTop = false)
+    protected function uhref($label,$isTop = false, $isGroup = false)
     {
         if($isTop == true)
         {
-            return Url::build('/user/Index/plugint/name/'.$label);
+            if($isGroup == true)
+            {
+                return Url::build('/user/Index/plugingt/name/'.$label);
+            }
+            else
+            {
+                return Url::build('/user/Index/plugint/name/'.$label);
+            }
         }
         else
         {
-            return Url::build('/user/Index/plugin/name/'.$label);
+            if($isGroup == true)
+            {
+                return Url::build('/user/Index/plugingp/name/'.$label);
+            }
+            else
+            {
+                return Url::build('/user/Index/plugin/name/'.$label);
+            }
         }
+    }
+    protected function phref()
+    {
+        return Url::build('/admin/Index/plugins/plugin/'.$this->getPlugin());
     }
     protected function bindUser($userInfo)
     {
@@ -409,5 +458,268 @@ class Plugin extends Controller
             }
         }
         closedir($dir);
+    }
+    protected function subdirectory()
+    {
+        return rtrim(Url::build('/'),'/');
+    }
+    protected function statement($statement)
+    {
+        if(!(strcasecmp(strtolower($statement),base64_decode('Y2F0ZmlzaCBjbXMgcGx1Z2lu')) == 0 ? true : false) && !(strcasecmp(strtolower($statement),base64_decode('Y2F0ZmlzaCBhbGwgcGx1Z2lu')) == 0 ? true : false))
+        exit();
+    }
+    protected function getVersion()
+    {
+        $version = Config::get('version');
+        return trim($version['number']);
+    }
+    protected function getCatfishType()
+    {
+        $version = Config::get('version');
+        return trim($version['catfishType']);
+    }
+    protected function getPost($param = '')
+    {
+        if($param == '')
+        {
+            $tmp = Request::instance()->post();
+            if(empty($tmp))
+            {
+                return false;
+            }
+            else
+            {
+                return $tmp;
+            }
+        }
+        else
+        {
+            if(Request::instance()->has($param,'post'))
+            {
+                return urldecode(Request::instance()->post($param));
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    protected function getGet($param = '')
+    {
+        if($param == '')
+        {
+            $tmp = Request::instance()->get();
+            if(empty($tmp))
+            {
+                return false;
+            }
+            else
+            {
+                return $tmp;
+            }
+        }
+        else
+        {
+            if(Request::instance()->has($param,'get'))
+            {
+                return urldecode(Request::instance()->get($param));
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    protected function addMainMenu(&$params,$label,$href,$position = 'last',$target = '_self',$icon = '')
+    {
+        $jian = array_keys((array)$params);
+        if($jian[0] != 'menu1')
+        {
+            return false;
+        }
+        $firstFloorMainMenuLen = count($params['menu1']);
+        if($target == '')
+        {
+            $target = '_self';
+        }
+        $arr[] = [
+            'id' => 0,
+            'parent_id' => 0,
+            'label' => $label,
+            'target' => $target,
+            'href' => Url::build('/cpage/'.$href),
+            'icon' => $icon
+        ];
+        $isover = false;
+        $layer = [];
+        if($position == 'first')
+        {
+            $layer[] = 0;
+            $isover = true;
+        }
+        elseif($position == 'second')
+        {
+            $layer[] = 1;
+            $isover = true;
+        }
+        elseif($position == 'last' || $position == '' || !preg_match('/^\d+(,\d+)*$/', $position))
+        {
+            $layer[] = $firstFloorMainMenuLen;
+            $isover = true;
+        }
+        if($isover == false)
+        {
+            $poarr = explode(',',$position);
+            foreach($poarr as $val)
+            {
+                $layer[] = $val;
+            }
+            $isover = true;
+        }
+        if($layer[0] >= $firstFloorMainMenuLen)
+        {
+            $layer[0] = $firstFloorMainMenuLen;
+        }
+        $tmpmenu = $this->appendMenu($params['menu1'],$layer,$arr);
+        $daohang = $tmpmenu['daohang'];
+        unset($tmpmenu['daohang']);
+        $params['menu1'] = $tmpmenu;
+        $params['daohang'][$href] = $daohang;
+        return true;
+    }
+    private function appendMenu($menu,$layer,$arr,$daohang = [])
+    {
+        if(count($layer) == 1)
+        {
+            $cmenu = count($menu);
+            if($layer[0] >= $cmenu)
+            {
+                $layer[0] = $cmenu;
+            }
+            array_splice($menu,$layer[0],0,(array)$arr);
+            $daohang[] = [
+                'id' => 0,
+                'label' => $arr[0]['label'],
+                'icon' => $arr[0]['icon'],
+                'href' => $arr[0]['href']
+            ];
+            $menu['daohang'] = $daohang;
+            return $menu;
+        }
+        else
+        {
+            $fst = array_shift($layer);
+            $cmenu = count($menu);
+            if($fst >= $cmenu)
+            {
+                $fst = $cmenu;
+            }
+            if(isset($menu[$fst]['children']))
+            {
+                $daohang[] = [
+                    'id' => $menu[$fst]['id'],
+                    'label' => $menu[$fst]['label'],
+                    'icon' => $menu[$fst]['icon'],
+                    'href' => $menu[$fst]['href']
+                ];
+                $tmpmenu = $this->appendMenu($menu[$fst]['children'],$layer,$arr,$daohang);
+                $tmpdaohang = $tmpmenu['daohang'];
+                unset($tmpmenu['daohang']);
+                $menu[$fst]['children'] = $tmpmenu;
+                $menu['daohang'] = $tmpdaohang;
+                return $menu;
+            }
+            else
+            {
+                array_splice($menu,$fst,0,(array)$arr);
+                $daohang[] = [
+                    'id' => 0,
+                    'label' => $arr[0]['label'],
+                    'icon' => $arr[0]['icon'],
+                    'href' => $arr[0]['href']
+                ];
+                $menu['daohang'] = $daohang;
+                return $menu;
+            }
+        }
+    }
+    protected function bindingMenu(&$params,$name)
+    {
+        if($params['name'] == $name)
+        {
+            return true;
+        }
+        return false;
+    }
+    protected function defineIncludeFile($files, $path = 'page')
+    {
+        $lei = $this->getPlugin();
+        if($path != '')
+        {
+            $path = trim($path,'/');
+            $path = $path.'/';
+        }
+        $files = explode(',',$files);
+        foreach($files as $val)
+        {
+            if(Request::instance()->isMobile() && is_file(APP_PATH.'plugins/'.$lei.'/'.$path.'mobile/'.$val.'.html'))
+            {
+                $this->assign($val, 'application/plugins/'.$lei.'/'.$path.'mobile/'.$val.'.html');
+            }
+            else
+            {
+                $this->assign($val, 'application/plugins/'.$lei.'/'.$path.$val.'.html');
+            }
+        }
+    }
+    private function getPlugin()
+    {
+        $lei = get_called_class();
+        $lei = str_replace('\\','/',$lei);
+        $lei = trim($lei,'/');
+        $leiArr = explode('/',$lei);
+        $leiArr = array_slice($leiArr,-2,1);
+        return $leiArr[0];
+    }
+    protected function importTheme(&$params, $path)
+    {
+        $lei = $this->getPlugin();
+        $path = str_replace('\\','/',$path);
+        $path = trim($path, '/');
+        $file = pathinfo($path);
+        if($file['dirname'] == '.')
+        {
+            $mobile = 'mobile/'.$file['basename'];
+        }
+        else
+        {
+            $mobile = $file['dirname'].'/mobile/'.$file['basename'];
+        }
+        if(Request::instance()->isMobile() && is_file(APP_PATH.'plugins/'.$lei.'/'.$mobile))
+        {
+            $params['path'] = $lei.'/'.$mobile;
+        }
+        else
+        {
+            $params['path'] = $lei.'/'.$path;
+        }
+    }
+    protected function pluginLabel($name, $content)
+    {
+        $this->assign('p_'.$name, $content);
+    }
+    protected function theme()
+    {
+        $template = Cache::get('template');
+        if($template == false)
+        {
+            $template = Db::name('options')->where('option_name','template')->field('option_value')->find();
+            Cache::set('template',$template,3600);
+        }
+        return $template['option_value'];
+    }
+    protected function bindingView($view,&$params)
+    {
+        $params['view'] = $view;
     }
 }

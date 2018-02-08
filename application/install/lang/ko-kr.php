@@ -50,7 +50,7 @@ return [
     'Confirm password' => '반복 암호',
     'Previous' => '전에 한 걸음',
     'Installation will be completed, rest for a while now!' => '당장 설치 완료, 잠깐!',
-    'Congratulations, the installation is complete!' => '축하드려요, 설치 완료!',
+    'Congratulations! Installation has been completed!' => '축하드려요, 설치 완료!',
     'Thank you for your support of the Catfish CMS system!' => '감사합니다. 사용 Catfish CMS!',
     'Is not still immersed in the installation of happiness, but the installation is over, then you will continue to use the site in the process of happiness, let us start!' => '너 아직도 즐거운 설치 해, 하지만 설치 이미 끝났어, 사용 사이트 도 아주 행복한, 시작할까요!',
     'Enter the home page' => '방문 홈페이지',

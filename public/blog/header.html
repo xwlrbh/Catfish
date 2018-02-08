@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{notempty name="neirong.biaoti"}{$neirong.biaoti} | {/notempty}{$title} | {$subtitle}</title>
+    <title>{$title_easy}{$title} | {$subtitle}</title>
     <meta name="keywords" content="{$keyword}">
     <meta name="description" content="{$description}">
-    <link rel="icon" href="{notempty name="ico"}{$ico}{else /}{$domain}public/common/images/favicon.ico{/notempty}">
+    <link rel="icon" href="{$ico_easy}">
     <link rel="stylesheet" href="{$domain}public/common/css/bootstrap.min.css">
     <script src="{$domain}public/common/js/jquery.min.js"></script>
     <script src="{$domain}public/common/js/bootstrap.min.js"></script>
@@ -24,7 +24,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="{$url.href}">
-                <img alt="Catfish(鲶鱼)" src="{if condition="$logo eq ''"}{$domain}public/{$template}/images/catfish.png{else /}{$logo}{/if}" width="20" height="20">
+                <img alt="Catfish(鲶鱼)" src="{$logo_easy}" width="20" height="20">
             </a>
             <a class="navbar-brand" href="{$url.href}">{$title}</a>
         </div>
@@ -69,4 +69,4 @@
         </div>
     </div>
 </nav>
-{notempty name="top"}{$top}{/notempty}
+{$top}

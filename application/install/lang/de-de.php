@@ -50,7 +50,7 @@ return [
     'Confirm password' => 'Bestätige das Passwort',
     'Previous' => 'Zurück',
     'Installation will be completed, rest for a while now!' => 'Die Installation wird abgeschlossen sein, Rest für eine Weile jetzt!',
-    'Congratulations, the installation is complete!' => 'Herzlichen Glückwunsch, die Installation ist abgeschlossen!',
+    'Congratulations! Installation has been completed!' => 'Herzlichen Glückwunsch, die Installation ist abgeschlossen!',
     'Thank you for your support of the Catfish CMS system!' => 'Vielen Dank für Ihre Unterstützung des Catfish CMS Systems!',
     'Is not still immersed in the installation of happiness, but the installation is over, then you will continue to use the site in the process of happiness, let us start!' => 'Ist noch nicht in die Installation des Glücks getaucht, aber die Installation ist vorbei, dann werden Sie weiterhin auf die Website in den Prozess des Glücks verwenden, lassen Sie uns anfangen!',
     'Enter the home page' => 'Startseite Zugang',

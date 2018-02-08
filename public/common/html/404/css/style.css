@@ -2,7 +2,7 @@
     GENERAL STYLES
 ==================================================*/
 body {
-    font-family: 'Nova Flat', cursive;
+    font-family: 'Microsoft Yahei', '微软雅黑', 'Nova Flat', cursive, 'Times New Roman', 'Arial', 'Helvetica', 'sans-serif';
     background-color: #b3c0da;
 color: #fff;
 }
@@ -16,5 +16,6 @@ color: #fff;
     font-size:150px;
     padding:10px;
 }
-
-
+.bigfont {
+    font-size:70px;
+}
